@@ -1,0 +1,456 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,booktabs,hyperref,listings,geometry,enumitem}
+\geometry{margin=2.4cm}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=3pt,
+  showstringspaces=false,
+  keepspaces=true,
+  language=bash,
+}
+\setlist[itemize]{topsep=0.3em,itemsep=0.15em}
+\setlist[enumerate]{topsep=0.3em,itemsep=0.15em}
+
+\title{Arquitectura, flujo y ejecución del proyecto\\
+\texttt{fibonacci\_tmm}}
+\author{Emanuel Orozco Gallego}
+\date{31 de agosto de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Manual de arquitectura del repositorio que reproduce
+Reyes-Gómez \textit{et al.}, Phys.\ Rev.\ B \textbf{81}, 153101 (2010).
+Describe cómo está organizado el código, cómo circulan los datos desde un
+YAML hasta una figura, qué dependencias hacen falta y cómo instalar y
+ejecutar el proyecto de punta a punta.
+La física está en \textit{Guía conceptual}; el algoritmo TMM, en
+\textit{Solución numérica e implementación}.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Qué es este repositorio}
+
+Es una reimplementación en Python del método de matriz de transferencia (TMM)
+del Brief Report de 2010. No hay servidor web ni interfaz gráfica: el producto
+son \emph{datos}, \emph{figuras} y \emph{PDFs}.
+
+Tres capas, de dentro hacia afuera:
+
+\begin{enumerate}
+\item \textbf{Biblioteca} \texttt{src/fibonacci\_tmm/}: física y numerica.
+No sabe de Matplotlib ni de números de figura.
+\item \textbf{Scripts} \texttt{scripts/}: leen YAML, llaman a la biblioteca,
+dibujan y escriben archivos.
+\item \textbf{Documentos} \texttt{docs/}: LaTeX que incrusta las figuras
+generadas.
+\end{enumerate}
+
+Los parámetros científicos no viven en el código: viven en
+\texttt{configs/figure\_0N.yaml}. Cambiar un plasma o un ángulo no exige
+editar Python.
+
+\section{Árbol del proyecto}
+
+\begin{lstlisting}
+analisis_numerico/
+  src/fibonacci_tmm/     biblioteca (layout src)
+  tests/                 pytest
+  configs/               YAML por figura + base.yaml
+  scripts/               reproduccion de Figs. 1-6
+  figures/figure_0N/     data/, output/, README.md
+  figures/reproduced/    copia de las imagenes finales
+  docs/                  auditoria, paper, guias, este documento
+  data/                  crudo / procesado / referencia (reserva)
+  notebooks/             reserva
+  pyproject.toml         paquete, pytest, pythonpath
+  requirements.txt       pip
+  Makefile               tests, figuras, PDFs
+\end{lstlisting}
+
+El entorno virtual \texttt{.venv/} y las cachés (\texttt{\_\_pycache\_\_},
+\texttt{.pytest\_cache}) no forman parte del código fuente.
+\texttt{.gitignore} también excluye auxiliares de LaTeX y el directorio
+\texttt{\_paper\_pages/} (recortes del PDF original).
+
+\section{Arquitectura de la biblioteca}
+
+El paquete usa el \emph{src layout}: las importaciones son
+\texttt{from fibonacci\_tmm.\ldots} y Setuptools busca paquetes en
+\texttt{src/} (\texttt{pyproject.toml}).
+Pytest añade \texttt{src} a \texttt{PYTHONPATH}. Los scripts hacen
+\texttt{sys.path.insert} a \texttt{src/} al arrancar.
+
+\subsection{Módulos y responsabilidades}
+
+{\footnotesize
+\begin{center}
+\begin{tabular}{llp{6.4cm}}
+\toprule
+Módulo & Depende de & Responsabilidad \\
+\midrule
+\texttt{constants.py} & --- & \(c\), GHz, mm, tolerancias \\
+\texttt{fibonacci.py} & constants & \(S_m\), \(F_m\), \(L_m\) \\
+\texttt{materials.py} & --- & aire y Drude \(\varepsilon(\omega),\mu(\omega)\) \\
+\texttt{electromagnetics.py} & constants & \(n\), \(q\), \(Q\), \(\chi\), TE/TM \\
+\texttt{params.py} & materials, electromagnetics & YAML \(\to\) SI \\
+\texttt{transfer\_matrix.py} & electromagnetics, fibonacci, params & \(M\), \(T_m\), \(R_m\) \\
+\texttt{dispersion.py} & transfer\_matrix & barrido, bandas, \(k L_m/\pi\) \\
+\texttt{plasmon\_modes.py} & dispersion, fibonacci & recuento de subbandas \\
+\texttt{bandwidth.py} & dispersion, plasmon\_modes & \(\nu_{\min},\nu_{\max}\) vs \(\theta\) \\
+\texttt{plotting.py} & dispersion, matplotlib & estilo PRB y curvas \\
+\texttt{provenance.py} & params, constants & metadatos JSON de cada corrida \\
+\texttt{\_\_init\_\_.py} & los anteriores & API pública \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+La dependencia es acíclica y va de lo más físico a lo más aplicado:
+constantes \(\to\) materiales y Fibonacci \(\to\) TMM \(\to\) barrido \(\to\)
+modos y anchos \(\to\) dibujo.
+
+\texttt{plotting.py} es el único módulo de la biblioteca que importa
+Matplotlib. El núcleo numérico puede usarse sin pintar nada.
+
+\subsection{Objetos que cruzan las fronteras}
+
+\begin{itemize}
+\item \texttt{SuperlatticeSpec}: espesores en metros y Drude en rad/s.
+Lo construye \texttt{spec\_from\_mapping} a partir del YAML.
+\item \texttt{DispersionScan}: vectores \(\nu\), \(R_m\), máscara de banda,
+\(k L_m/\pi\). Lo produce \texttt{scan\_dispersion}.
+\item \texttt{FrequencyInterval}: un trozo conexo \([\nu_{\min},\nu_{\max}]\).
+\item \texttt{BandwidthPoint}: anchos y centros a un \(\theta\) dado (Fig.~6).
+\end{itemize}
+
+\section{Capa de configuración}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Archivo & Uso \\
+\midrule
+\texttt{configs/base.yaml} & \(a=b=12\,\mathrm{mm}\), aire, \(c\) SI \\
+\texttt{configs/figure\_01.yaml} & \(\nu_e=\nu_m=3\,\mathrm{GHz}\), \(m=3,4\), cuatro \(\theta\) \\
+\texttt{configs/figure\_02.yaml} & zoom \(2\)--\(4\,\mathrm{GHz}\), \(m=3\ldots 6\) \\
+\texttt{configs/figure\_03.yaml} & como Fig.~1 con \(\nu_m=1\,\mathrm{GHz}\) \\
+\texttt{configs/figure\_04.yaml} & ventanas densas cerca de \(1\,\mathrm{GHz}\) \\
+\texttt{configs/figure\_05.yaml} & palos vs \(m=2\ldots 8\) \\
+\texttt{configs/figure\_06.yaml} & \(\nu(\theta)\) relleno, \(m=2\ldots 7\) (inferida) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Cada YAML mezcla \emph{física} (espesores, plasmas, polarización) con
+\emph{numérica de gráfica} (malla de \(\nu\), lista de \(\theta\), ventanas).
+\texttt{load\_spec} / \texttt{spec\_from\_mapping} solo leen la física.
+El resto lo consume el script de la figura.
+
+Campo \texttt{source}: \texttt{paper} si el original da los números;
+\texttt{inferred\_from\_figures\_3\_to\_5} en la Fig.~6.
+
+\section{Capa de scripts}
+
+\texttt{scripts/\_common.py} reúne utilidades compartidas: cargar YAML,
+crear los directorios de datos y de salida de cada figura, guardar
+archivos \texttt{.npz} y JSON, y escribir el sidecar de provenance.
+
+Cada \texttt{reproduce\_figure\_0N.py} hace el mismo esqueleto:
+
+\begin{enumerate}
+\item \texttt{load\_figure\_config("figure\_0N.yaml")}.
+\item Construir la malla de \(\nu\) (y de \(\theta\) si aplica).
+\item Llamar a \texttt{scan\_dispersion} o a \texttt{bandwidth\_versus\_angle}.
+\item Dibujar con \texttt{plotting}.
+\item Escribir PDF, PNG (300 dpi), SVG, datos y \texttt{README.md}.
+\item Copiar las imágenes a \texttt{figures/reproduced/figure\_0N/}.
+\end{enumerate}
+
+\texttt{reproduce\_all.py} lanza los seis scripts en orden, con el mismo
+intérprete (\texttt{sys.executable}), y aborta si uno falla
+(\texttt{check=True}).
+
+\texttt{figures/figure\_0N/generate.py} es un atajo: ejecuta el script
+correspondiente con \texttt{runpy}.
+
+\texttt{analyze\_convergence.py} no pinta el paper: estudia cómo \(\Delta\nu\)
+de la Fig.~4 cambia con el número de puntos.
+
+\section{Flujo de una corrida}
+
+El camino feliz, para \emph{una} figura, es:
+
+\begin{lstlisting}
+configs/figure_0N.yaml
+        |
+        v
+  spec_from_mapping          (mm, GHz -> SI)
+        |
+        v
+  SuperlatticeSpec
+        |
+        +--> scan_dispersion(spec, m, theta, nu, TE)
+        |         |
+        |         +--> semitrace_by_recurrence   (por defecto)
+        |         +--> allowed_mask, arccos
+        |         v
+        |    DispersionScan
+        |
+        +--> detect_plasmon_modes / allowed_intervals   (Figs. 2, 4, 5)
+        +--> bandwidth_versus_angle                     (Fig. 6)
+        |
+        v
+  plotting.save_figure
+        |
+        +--> figures/figure_0N/output/figure_0N.{pdf,png,svg}
+        +--> figures/figure_0N/data/*.npz
+        +--> figures/figure_0N/data/summary.json
+        +--> figures/figure_0N/data/metadata.json
+\end{lstlisting}
+
+Los PDFs científicos (\texttt{paper\_reimplementation.pdf}, las tres guías)
+no recalculan física: incluyen las figuras ya generadas en
+\texttt{figures/figure\_0N/output/}. Por eso hay que generar las figuras
+\emph{antes} de compilar el paper si se cambió el código.
+
+Flujo del \texttt{Makefile}:
+
+\begin{lstlisting}
+make all
+  make tests      -> pytest tests
+  make figures    -> reproduce_all.py + analyze_convergence.py
+  make paper      -> pdflatex paper_reimplementation.tex (dos pases)
+  make docs       -> pdflatex software_documentation.tex
+  make guides     -> pdflatex guia_conceptual, solucion_numerica,
+                     arquitectura; copia los PDF a la raiz
+\end{lstlisting}
+
+Cada objetivo de PDF se copia también a la raíz del repo para abrirlos sin
+entrar en \texttt{docs/}.
+
+\section{Tests}
+
+\texttt{pyproject.toml} configura \texttt{testpaths = ["tests"]} y
+\texttt{pythonpath = ["src"]}. No hace falta instalar el paquete para
+testear.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Archivo & Qué garantiza \\
+\midrule
+\texttt{test\_fibonacci.py} & palabras, inflación, \(N_B\), \(L_m\) \\
+\texttt{test\_materials.py} & ceros de Drude, \(\nu_e\), \(\nu_m\) \\
+\texttt{test\_transfer\_matrix.py} & \(\det T=1\), eqs.\ (7)--(9), dos vías de \(R_m\) \\
+\texttt{test\_dispersion.py} & máscara de banda, gap \(\langle n\rangle=0\) \\
+\texttt{test\_validation.py} & \(N_{\mathrm{modos}}=F_{m-2}\) \\
+\texttt{test\_params.py} & YAML de las seis figuras \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\texttt{conftest.py} expone dos fixtures de \texttt{SuperlatticeSpec}:
+plasmas iguales (\(3,3\,\mathrm{GHz}\), Figs.~1--2) y partidos
+(\(3,1\,\mathrm{GHz}\), Figs.~3--6).
+
+Tres casos se omiten (\texttt{skip}) cuando una identidad de Fibonacci pide
+\(k>m\). El resto debe pasar.
+
+\section{Dependencias}
+
+\subsection{Tiempo de ejecución (Python)}
+
+Declaradas en \texttt{requirements.txt} y en \texttt{pyproject.toml}.
+Python \(\ge 3.10\) (\texttt{requires-python}). El desarrollo se hizo con
+Python 3.14.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Paquete & Mínimo & Para qué \\
+\midrule
+\texttt{numpy} & 1.24 & arrays, \(\sqrt{\,}\), trigonométricas complejas \\
+\texttt{scipy} & 1.10 & (disponible; el TMM núcleo es NumPy) \\
+\texttt{matplotlib} & 3.7 & Figs.~1--6 \\
+\texttt{pyyaml} & 6.0 & configs \\
+\texttt{pytest} & 7.0 & tests (extra \texttt{dev} en pyproject) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+No hay CUDA, MPI ni bases de datos. No se descarga nada en tiempo de
+cálculo: el paper original es un PDF local.
+
+\subsection{Sistema, para los PDFs}
+
+Además de Python:
+
+\begin{itemize}
+\item \texttt{make}
+\item \texttt{pdflatex} (TeX Live). Estilos usados: \texttt{article},
+\texttt{babel-spanish}, \texttt{amsmath}, \texttt{graphicx},
+\texttt{booktabs}, \texttt{hyperref}, \texttt{listings}, \texttt{geometry},
+\texttt{siunitx}, \texttt{enumitem}.
+\end{itemize}
+
+Sin LaTeX se pueden igual ejecutar tests y figuras; fallarán solo
+\texttt{make paper}, \texttt{make docs} y \texttt{make guides}.
+
+En Arch Linux, un conjunto suficiente es el metapaquete de TeX Live más
+los estilos anteriores. En Debian/Ubuntu suele bastar
+\texttt{texlive-latex-extra} y \texttt{texlive-lang-spanish}.
+
+\subsection{Opcional}
+
+\begin{itemize}
+\item Instalar el paquete en modo editable:
+\texttt{pip install -e ".[dev]"} (entonces no hace falta el
+\texttt{sys.path} de los scripts, aunque ellos lo siguen insertando).
+\item Git: \texttt{provenance.py} intenta guardar el hash de \texttt{HEAD}
+en el JSON de cada figura; si no hay repo, el campo queda vacío.
+\end{itemize}
+
+\section{Cómo ejecutar el proyecto}
+
+Sustituya \texttt{analisis\_numerico} por la ruta real del clon.
+
+\subsection{1. Entorno}
+
+\begin{lstlisting}
+cd analisis_numerico
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+\end{lstlisting}
+
+Compruebe \texttt{python3 --version} \(\ge\) 3.10. Si \texttt{python3} no
+existe, use el intérprete concreto (por ejemplo \texttt{python3.12}).
+
+\subsection{2. Tests (recomendado primero)}
+
+\begin{lstlisting}
+.venv/bin/pytest
+# equivalente:
+make tests
+\end{lstlisting}
+
+Debe terminar con todos los casos en verde salvo tres \texttt{skipped}.
+
+\subsection{3. Figuras}
+
+\begin{lstlisting}
+.venv/bin/python scripts/reproduce_all.py
+# una sola:
+.venv/bin/python scripts/reproduce_figure_04.py
+make figures    # all + analisis de convergencia
+\end{lstlisting}
+
+Salida esperada: seis bloques ``Figura N escrita\ldots'' y archivos en
+\texttt{figures/figure\_0N/output/}.
+
+\subsection{4. Documentos PDF}
+
+\begin{lstlisting}
+make paper      # paper_reimplementation.pdf
+make docs       # software_documentation.pdf
+make guides     # guia_conceptual.pdf, solucion_numerica.pdf,
+                # arquitectura.pdf
+\end{lstlisting}
+
+\texttt{make guides} exige que las figuras existan, porque la guía conceptual
+incluye los PDF ya generados en \texttt{figures/}.
+
+\subsection{5. Todo de una vez}
+
+\begin{lstlisting}
+source .venv/bin/activate
+make all
+\end{lstlisting}
+
+Orden interno: tests \(\to\) figuras \(\to\) paper \(\to\) documentación de
+software \(\to\) guías. Si los tests fallan, \texttt{make} se detiene y no
+genera figuras.
+
+\subsection{Cambiar un parámetro y volver a correr}
+
+Edite el YAML (por ejemplo \texttt{omega\_m\_over\_2pi\_ghz} en
+\texttt{configs/figure\_03.yaml}) y ejecute solo el script de esa figura.
+No recompile el paper si no necesita el PDF actualizado.
+
+Para TM: ponga \texttt{polarization: TM} en el YAML. El original no grafica
+TM; el código sí la implementa (\(\chi=\varepsilon\)).
+
+\subsection{Limpieza}
+
+\begin{lstlisting}
+make clean    # auxiliares .aux .log .out .toc de docs/
+\end{lstlisting}
+
+No borra figuras ni el entorno virtual.
+
+\section{Problemas frecuentes}
+
+\begin{itemize}
+\item \texttt{ModuleNotFoundError: fibonacci\_tmm}: está ejecutando un
+script fuera de \texttt{scripts/} sin \texttt{src} en el path. Use los
+scripts del repo o \texttt{PYTHONPATH=src}.
+\item \texttt{ZeroDivisionError} en \(\omega=0\): el Drude diverge; el YAML
+no debe incluir el origen en el barrido (la Fig.~1 empieza en
+\(0.15\,\mathrm{GHz}\)).
+\item Fig.~1 sin gaps a \(\theta=0\) y \(\omega_e=\omega_m\): no es un bug,
+es adaptación de impedancia.
+\item \texttt{pdflatex: command not found}: instale TeX Live; tests y
+figuras no lo necesitan.
+\item Figuras viejas en el paper: regenerar con
+\texttt{reproduce\_all.py} y luego \texttt{make paper}.
+\item El \texttt{Makefile} apunta a \texttt{.venv/bin/python}. Si el venv
+está en otra ruta, invoque los comandos con el intérprete explícito.
+\end{itemize}
+
+\section{Dónde está cada documento}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+PDF en la raíz & Contenido \\
+\midrule
+\texttt{paper\_reimplementation.pdf} & artículo de la reproducción \\
+\texttt{software\_documentation.pdf} & manual corto de la API \\
+\texttt{guia\_conceptual.pdf} & física desde cero \\
+\texttt{solucion\_numerica.pdf} & TMM y código de las figuras \\
+\texttt{arquitectura.pdf} & este documento \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Fuentes LaTeX en \texttt{docs/}.
+Auditoría previa al código: \texttt{docs/fase\_A\_auditoria\_matematica.md}.
+Informe de validación: \texttt{docs/INFORME\_VALIDACION.md}.
+Paper original: PDF en la raíz del repo.
+
+\section{Resumen operativo}
+
+\begin{lstlisting}
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+pytest
+python scripts/reproduce_all.py
+make paper docs guides
+\end{lstlisting}
+
+Eso deja tests en verde, las seis figuras y todos los PDF en la raíz del
+proyecto.
+
+\end{document}

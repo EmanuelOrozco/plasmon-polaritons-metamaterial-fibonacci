@@ -1,0 +1,78 @@
+{
+  "config": "/home/emanuel/Projects/analisis_numerico/configs/figure_01.yaml",
+  "n0_gap_closed_ghz": {
+    "3": null,
+    "4": null
+  },
+  "panels": [
+    {
+      "m": 3,
+      "theta": 0.0,
+      "theta_label": "0",
+      "n_allowed": 7739,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.0,
+      "theta_label": "0",
+      "n_allowed": 7840,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "n_allowed": 7527,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "n_allowed": 7634,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "n_allowed": 8096,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "n_allowed": 6939,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "n_allowed": 4656,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "n_allowed": 3890,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    }
+  ],
+  "outputs": {
+    "pdf": "/home/emanuel/Projects/analisis_numerico/figures/figure_01/output/figure_01.pdf",
+    "png": "/home/emanuel/Projects/analisis_numerico/figures/figure_01/output/figure_01.png",
+    "svg": "/home/emanuel/Projects/analisis_numerico/figures/figure_01/output/figure_01.svg"
+  }
+}

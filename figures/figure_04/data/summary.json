@@ -1,0 +1,68 @@
+{
+  "config": "/home/emanuel/Projects/analisis_numerico/configs/figure_04.yaml",
+  "modes": [
+    {
+      "m": 3,
+      "theta": "pi/12",
+      "detected": 1,
+      "intervals": [
+        {
+          "nu_min": 0.9946365397837365,
+          "nu_max": 0.9991438214888431,
+          "width": 0.004507281705106614
+        }
+      ]
+    },
+    {
+      "m": 3,
+      "theta": "pi/3",
+      "detected": 1,
+      "intervals": [
+        {
+          "nu_min": 0.9577161072567035,
+          "nu_max": 0.990823176448528,
+          "width": 0.03310706919182449
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "theta": "pi/12",
+      "detected": 2,
+      "intervals": [
+        {
+          "nu_min": 0.995016063503969,
+          "nu_max": 0.9985537846115382,
+          "width": 0.003537721107569225
+        },
+        {
+          "nu_min": 0.9991343208950559,
+          "nu_max": 0.9993918369898118,
+          "width": 0.000257516094755883
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "theta": "pi/3",
+      "detected": 2,
+      "intervals": [
+        {
+          "nu_min": 0.9582611413213326,
+          "nu_max": 0.985047815488468,
+          "width": 0.026786674167135427
+        },
+        {
+          "nu_min": 0.9908681792612039,
+          "nu_max": 0.9933983373960873,
+          "width": 0.0025301581348834423
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "pdf": "/home/emanuel/Projects/analisis_numerico/figures/figure_04/output/figure_04.pdf",
+    "png": "/home/emanuel/Projects/analisis_numerico/figures/figure_04/output/figure_04.png",
+    "svg": "/home/emanuel/Projects/analisis_numerico/figures/figure_04/output/figure_04.svg"
+  }
+}

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fibonacci-tmm"
+version = "0.1.0"
+description = "Reimplementación TMM de plasmon-polaritones en superredes Fibonacci (Reyes-Gómez et al., PRB 81, 153101, 2010)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Emanuel Orozco Gallego" }]
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "matplotlib>=3.7",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Paper = "https://doi.org/10.1103/PhysRevB.81.153101"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100

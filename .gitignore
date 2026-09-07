@@ -1,0 +1,50 @@
+# Entorno y cachés
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.DS_Store
+
+# Artefactos LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# PDFs compilados (se regeneran con `make paper|docs|guides`)
+/*.pdf
+docs/**/*.pdf
+
+# Copias sueltas en la raíz (las fuentes canónicas están en docs/)
+/paper_reimplementation.tex
+/software_documentation.tex
+
+# Datos numéricos regenerables (los scripts los vuelven a escribir)
+figures/**/data/*.npz
+figures/**/data/metadata.json
+figures/reproduced/
+
+# Material del artículo APS (copyright; no publicar)
+Plasmon_polaritons*.pdf
+_paper_pages/
+figures/paper_reference/
+docs/paper_source/
+
+# Datos locales vacíos / opcionales
+data/raw/
+data/reference/

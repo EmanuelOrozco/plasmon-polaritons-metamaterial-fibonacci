@@ -1,0 +1,8 @@
+{
+  "config": "/home/emanuel/Projects/analisis_numerico/configs/figure_03.yaml",
+  "outputs": {
+    "pdf": "/home/emanuel/Projects/analisis_numerico/figures/figure_03/output/figure_03.pdf",
+    "png": "/home/emanuel/Projects/analisis_numerico/figures/figure_03/output/figure_03.png",
+    "svg": "/home/emanuel/Projects/analisis_numerico/figures/figure_03/output/figure_03.svg"
+  }
+}

@@ -1,0 +1,139 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,booktabs,hyperref,listings,geometry}
+\geometry{margin=2.4cm}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
+
+\title{Documentación del software \texttt{fibonacci\_tmm}}
+\author{Emanuel Orozco Gallego}
+\date{31 de agosto de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Manual independiente de la biblioteca Python que reproduce
+Reyes-Gómez \textit{et al.}, Phys.\ Rev.\ B \textbf{81}, 153101 (2010),
+con el método de matriz de transferencia.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Arquitectura}
+
+El paquete vive en \texttt{src/fibonacci\_tmm/}.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Módulo & Responsabilidad \\
+\midrule
+\texttt{fibonacci.py} & $S_m$, $F_m$, $L_m$, inflación \\
+\texttt{materials.py} & Aire y Drude \\
+\texttt{electromagnetics.py} & $n$, $q$, $Q$, TE/TM \\
+\texttt{transfer\_matrix.py} & $M_j$, $T_m$, $R_m$ \\
+\texttt{dispersion.py} & $\cos(kL)=R$, bandas \\
+\texttt{plasmon\_modes.py} & recuento de subbandas \\
+\texttt{bandwidth.py} & intervalos $\nu_{\min}(\theta)$--$\nu_{\max}(\theta)$ \\
+\texttt{params.py} & YAML $\to$ SI \\
+\texttt{plotting.py} & estilo de figuras \\
+\texttt{provenance.py} & metadatos de corrida \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Los parámetros científicos no están en los scripts: están en \texttt{configs/figure\_0N.yaml}.
+
+\section{Instalación}
+
+\begin{lstlisting}
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+\end{lstlisting}
+
+Python $\ge$ 3.10. Dependencias: NumPy, SciPy, Matplotlib, PyYAML, pytest.
+
+\section{Uso}
+
+\begin{lstlisting}
+.venv/bin/pytest
+.venv/bin/python scripts/reproduce_figure_01.py
+.venv/bin/python scripts/reproduce_all.py
+make paper
+\end{lstlisting}
+
+Para un orden nuevo de Fibonacci, cambie \texttt{fibonacci\_orders} en el YAML.
+Para TM, ponga \texttt{polarization: TM}.
+Para otro Drude, edite \texttt{omega\_e\_over\_2pi\_ghz} y \texttt{omega\_m\_over\_2pi\_ghz}.
+
+\section{API principal}
+
+\texttt{sequence(m)}, \texttt{paper\_fibonacci(m)}, \texttt{build\_cell(m,a,b)}.
+
+\texttt{scan\_dispersion(spec, m, theta, nu\_ghz, polarization)}.
+
+\texttt{semitrace\_by\_recurrence} y \texttt{semitrace\_by\_product} deben coincidir.
+
+\texttt{detect\_plasmon\_modes(scan, nu\_min\_ghz=..., nu\_max\_ghz=...)}.
+
+\texttt{load\_spec(path)} lee un YAML.
+
+\section{Modelo físico}
+
+Aire $\varepsilon=\mu=1$. Drude $\varepsilon=1-\omega_e^2/\omega^2$,
+$\mu=1-\omega_m^2/\omega^2$. Frecuencia graficada: $\nu=\omega/2\pi$ en GHz.
+
+\section{TMM}
+
+Matriz de capa unimodular con $\chi=\mu$ (TE) o $\varepsilon$ (TM).
+Producto $T=M_N\cdots M_1$. Recurrencia $R_m=2R_{m-1}R_{m-2}-R_{m-3}$.
+$q=(\omega/c)n_A\sin\theta$ (el paper omite $\omega/c$).
+
+\section{Fibonacci}
+
+$S_0=B$, $S_1=A$, $S_m=S_{m-1}S_{m-2}$, $F_0=F_1=1$,
+$N_B=F_{m-2}$, $L_m=F_{m-1}a+F_{m-2}b$.
+
+\section{Dispersión}
+
+Banda si $\lvert R\rvert\le 1+10^{-12}$. $kL_m/\pi=\arccos(R)/\pi$.
+Los puntos con $\lvert R\rvert>1$ se dejan como NaN, no se recortan en silencio.
+
+\section{Tests}
+
+\begin{itemize}
+\item \texttt{test\_fibonacci.py}: secuencias, inflación, $N_B$, $L_m$.
+\item \texttt{test\_materials.py}: ceros de Drude, $\nu_e,\nu_m$.
+\item \texttt{test\_transfer\_matrix.py}: $\det T=1$, (7)--(9), recurrencia vs producto, TE$=$TM a $\theta=0$.
+\item \texttt{test\_dispersion.py}: máscara de banda, gap $\langle n\rangle=0$.
+\item \texttt{test\_validation.py}: $N_{\mathrm{modos}}=F_{m-2}$.
+\item \texttt{test\_params.py}: YAML de las figuras.
+\end{itemize}
+
+\section{Reproducción de figuras}
+
+Cada \texttt{figures/figure\_0N/} contiene \texttt{generate.py}, \texttt{data/}, \texttt{output/} y \texttt{README.md}.
+Las imágenes finales son PDF, PNG (300 dpi) y SVG.
+
+\section{Solución de problemas}
+
+\begin{itemize}
+\item \texttt{ZeroDivisionError} en $\omega=0$: el Drude diverge; no incluya el origen en el barrido.
+\item $\mu_B=0$ o $\varepsilon_B=0$: polo; el escáner enmascara una vecindad relativa $10^{-6}$.
+\item $\lvert R\rvert$ siempre $\le 1$ a $\theta=0$ si $\omega_e=\omega_m$: no es un bug, es adaptación de impedancia.
+\item Fig.~6: el original grafica $\nu(\theta)$ relleno, no $\Delta\nu$;
+el caption del PRB está incompleto (parámetros inferidos de las Figs.~3--5).
+\item ImportError: añada \texttt{src} al \texttt{PYTHONPATH} o use los scripts de \texttt{scripts/}.
+\end{itemize}
+
+\section{Extensiones}
+
+Nuevo orden: YAML. Nueva polarización: \texttt{Polarization.TM}. Nuevo material: implemente \texttt{epsilon\_mu(omega)} con la misma interfaz que \texttt{DrudeMetamaterial}.
+
+\end{document}

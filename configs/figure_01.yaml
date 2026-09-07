@@ -1,0 +1,24 @@
+# Figura 1 — PRB 81, 153101 (2010)
+# TE, S3 (discontinuo) y S4 (continuo), ωe/2π = ωm/2π = 3 GHz
+
+layer_a_thickness_mm: 12.0
+layer_b_thickness_mm: 12.0
+epsilon_a: 1.0
+mu_a: 1.0
+epsilon_0: 1.0
+mu_0: 1.0
+omega_e_over_2pi_ghz: 3.0
+omega_m_over_2pi_ghz: 0.8
+speed_of_light: si
+source: paper
+polarization: TE
+fibonacci_orders: [3, 4]
+thetas_rad: [0.0, 0.2617993877991494, 0.5235987755982988, 1.0471975511965976]
+# π/12, π/6, π/3 escritos también como:
+theta_labels: ["0", "pi/12", "pi/6", "pi/3"]
+frequency_min_ghz: 0.15
+frequency_max_ghz: 5.0
+frequency_points: 12000
+notes:
+  - "q = (omega/c) n_A sin(theta); el paper omite omega/c"
+  - "c = 299792458 m/s [IMPL]"

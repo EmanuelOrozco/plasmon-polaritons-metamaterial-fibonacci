@@ -1,0 +1,24 @@
+# Figura 6 — anchos de banda vs ángulo
+# [AMB] el paper no reitera parámetros; se infieren de Figs. 3–5.
+# [AMB] m = 2..7 inferido del layout de 6 paneles.
+layer_a_thickness_mm: 12.0
+layer_b_thickness_mm: 12.0
+epsilon_a: 1.0
+mu_a: 1.0
+epsilon_0: 1.0
+mu_0: 1.0
+omega_e_over_2pi_ghz: 3.0
+omega_m_over_2pi_ghz: 1.0
+speed_of_light: si
+source: inferred_from_figures_3_to_5
+polarization: TE
+fibonacci_orders: [2, 3, 4, 5, 6, 7]
+theta_min_rad: 0.0
+theta_max_rad: 1.0471975511965976
+theta_points: 41
+plasmon_window_ghz: [0.90, 1.02]
+frequency_points: 16000
+notes:
+  - "IMPL: mismos a, b, omega_e, omega_m que Figs. 3-5"
+  - "IMPL: m = 2..7; el caption de Fig. 6 está truncado"
+  - "bandwidth = nu_max - nu_min de cada subbanda conexa"

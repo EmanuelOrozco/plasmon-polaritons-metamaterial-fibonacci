@@ -1,0 +1,543 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath,amssymb,bm}
+\usepackage{graphicx,booktabs,hyperref,listings,geometry,enumitem}
+\usepackage{siunitx}
+\geometry{margin=2.4cm}
+\graphicspath{{../../figures/}{figures/}{../figures/}}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue}
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  framesep=3pt,
+  showstringspaces=false,
+  commentstyle=\itshape,
+  keepspaces=true,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {ñ}{{\~n}}1 {Á}{{\'A}}1 {ó}{{\'o}}1 {μ}{{$\mu$}}1,
+}
+\lstdefinestyle{tiny}{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible}
+
+\title{Solución numérica e implementación:\\
+de las ecuaciones del PRB 2010 a las seis figuras}
+\author{Emanuel Orozco Gallego}
+\date{31 de agosto de 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Este documento describe, con el código real del paquete \texttt{fibonacci\_tmm},
+cómo se resuelve numéricamente el modelo de Reyes-Gómez \textit{et al.},
+Phys.\ Rev.\ B \textbf{81}, 153101 (2010), y cómo se generan las Figs.~1--6.
+La física de fondo está en la \textit{Guía conceptual} hermana; aquí el hilo
+es el algoritmo: unidades, matriz de transferencia, barrido en frecuencia,
+detección de subbandas y trazado.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Flujo global}
+
+El cálculo no integra Maxwell en el tiempo. Para cada terna
+\((m,\theta,\nu)\) evalúa la semitraza \(R_m(\omega,\theta)\) y decide si
+esa frecuencia es banda o gap.
+
+\begin{enumerate}
+\item Un YAML en \texttt{configs/figure\_0N.yaml} fija \(a\), \(b\),
+\(\omega_e/2\pi\), \(\omega_m/2\pi\), polarización y el barrido.
+\item \texttt{params.spec\_from\_mapping} convierte milímetros y GHz a SI.
+\item \texttt{scan\_dispersion} recorre \(\nu\), calcula \(R_m\) y
+\(k L_m/\pi\).
+\item Los scripts \texttt{scripts/reproduce\_figure\_0N.py} dibujan y
+guardan PDF/PNG/SVG más los datos \texttt{.npz} y un \texttt{summary.json}.
+\end{enumerate}
+
+Dos caminos independientes para \(R_m\), que deben coincidir:
+
+\begin{itemize}
+\item Producto de matrices de capa: \(T_m=M_N\cdots M_1\),
+\(R_m=\frac12\mathrm{Tr}(T_m)\).
+\item Recurrencia de Kohmoto: \(R_0\), \(R_1\), \(R_2\) analíticos y
+\(R_m=2R_{m-1}R_{m-2}-R_{m-3}\).
+\end{itemize}
+
+Por defecto las figuras usan \texttt{method="recurrence"} (más barato en \(m\)
+alto). El producto sirve de test.
+
+\section{Arquitectura del código}
+
+El paquete vive en \texttt{src/fibonacci\_tmm/}.
+
+{\small
+\begin{center}
+\begin{tabular}{llp{6.8cm}}
+\toprule
+Módulo & Rol numérico & Qué calcula \\
+\midrule
+\texttt{constants.py} & \(c\), GHz, mm, tolerancias & SI y umbrales \\
+\texttt{fibonacci.py} & \(S_m\), \(F_m\), \(L_m\) & palabras y conteos \\
+\texttt{materials.py} & Drude y aire & \(\varepsilon(\omega)\), \(\mu(\omega)\) \\
+\texttt{params.py} & YAML \(\to\) SI & \texttt{SuperlatticeSpec} \\
+\texttt{electromagnetics.py} & \(n\), \(q\), \(Q\), \(\chi\) & cinemática de la onda \\
+\texttt{transfer\_matrix.py} & \(M\), \(T_m\), \(R_m\) & TMM \\
+\texttt{dispersion.py} & \(\cos(kL)=R\), intervalos & barrido y bandas \\
+\texttt{plasmon\_modes.py} & recuento & subbandas en una ventana \\
+\texttt{bandwidth.py} & \(\nu_{\min}(\theta),\nu_{\max}(\theta)\) & Fig.~6 \\
+\texttt{plotting.py} & estilo PRB & cortes de curva y relleno \\
+\texttt{provenance.py} & metadatos & reproducibilidad \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+Los parámetros científicos no están quemados en los scripts: están en YAML.
+
+\section{Unidades}
+
+El núcleo trabaja en SI. Las figuras hablan GHz y mm.
+
+\begin{lstlisting}[style=tiny]
+# constants.py
+SPEED_OF_LIGHT = 299_792_458.0  # m/s   [IMPL; el paper no da c]
+GHZ = 1.0e9
+MM  = 1.0e-3
+BAND_ABS_R_TOLERANCE = 1.0e-12
+SMALL_Q_ABS = 1.0e-14
+\end{lstlisting}
+
+Conversiones en \texttt{params.py}:
+
+\begin{equation}
+\omega=2\pi\nu_{\mathrm{GHz}}\times 10^9,\qquad
+a_{\mathrm{SI}}=a_{\mathrm{mm}}\times 10^{-3}.
+\end{equation}
+
+Ejemplo: \(\omega_e/2\pi=3\,\mathrm{GHz}\) \(\Rightarrow\)
+\(\omega_e=1.884955592\times 10^{10}\,\mathrm{rad/s}\).
+Usar \(\omega_e=3\times 10^9\) sin el \(2\pi\) desplazaría todas las figuras.
+
+\texttt{dispersion.omega\_from\_nu\_ghz} es la única puerta de \(\nu\) a
+\(\omega\) en el barrido.
+
+\section{De YAML a \texttt{SuperlatticeSpec}}
+
+Cada figura tiene su YAML. El de la Fig.~2, abreviado:
+
+\begin{lstlisting}[style=tiny]
+layer_a_thickness_mm: 12.0
+layer_b_thickness_mm: 12.0
+omega_e_over_2pi_ghz: 3.0
+omega_m_over_2pi_ghz: 3.0
+polarization: TE
+fibonacci_orders: [3, 4, 5, 6]
+thetas_rad: [1.0471975511965976]   # pi/3
+frequency_min_ghz: 2.0
+frequency_max_ghz: 4.0
+frequency_points: 12000
+plasmon_window_ghz: [2.0, 2.999]
+\end{lstlisting}
+
+\texttt{spec\_from\_mapping} construye aire (\(\varepsilon=\mu=1\)) y el Drude
+con \(\omega_e\), \(\omega_m\) ya en rad/s.
+La función \texttt{load\_figure\_config} de \texttt{scripts/\_common.py}
+devuelve \((\mathrm{spec},\,\mathrm{dict},\,\mathrm{ruta})\): el diccionario
+conserva ángulos, ventanas y número de puntos que el \texttt{spec} no necesita.
+
+\section{Fibonacci en código}
+
+\texttt{paper\_fibonacci(m)} implementa \(F_0=F_1=1\), no \(F_0=0\).
+\texttt{sequence(m)} concatena \(S_m=S_{m-1}S_{m-2}\) con memoización
+(\texttt{lru\_cache}).
+Una segunda rutina, \texttt{sequence\_by\_inflation}, aplica \(B\to A\),
+\(A\to AB\); los tests exigen que ambas den la misma palabra.
+
+Conteos:
+
+\begin{lstlisting}[style=tiny]
+n_layers_a(m) = paper_fibonacci(m - 1)   # F(m-1)
+n_layers_b(m) = paper_fibonacci(m - 2)   # F(m-2) = N_modos
+cell_length   = n_a * a + n_b * b
+\end{lstlisting}
+
+Para \(m=0,1\) se usa \(F_{-1}=0\), \(F_{-2}=1\).
+\texttt{substitution\_identity} comprueba
+\(S_m(A,B)=S_{m-k}[S_{k+1},S_k]\).
+
+El producto de matrices recorre \texttt{sequence(m)} de izquierda a derecha
+y premultiplica: si \(S_2=AB\), el bucle hace \(T\leftarrow M_A I\) y luego
+\(T\leftarrow M_B T\), es decir \(T=M_B M_A=T_0 T_1\), como el paper.
+
+\section{Materiales}
+
+Aire: \(\varepsilon\) y \(\mu\) constantes.
+Drude: se rechaza \(\omega=0\) (polo). No hay \(\gamma\).
+
+\begin{lstlisting}[style=tiny]
+eps = epsilon_0 - omega_e**2 / omega**2
+mu  = mu_0     - omega_m**2 / omega**2
+\end{lstlisting}
+
+\(\nu_e=\omega_e/(2\pi\sqrt{\varepsilon_0})\) y análogo para \(\nu_m\).
+Con \(\varepsilon_0=\mu_0=1\) coinciden con \(\omega_{e,m}/2\pi\) en GHz.
+
+\section{Cinemática: \(n\), \(q\), \(Q\), \(\chi\)}
+
+Índice: \(n=\sqrt{\mu}\sqrt{\varepsilon}\) (dos raíces principales de NumPy).
+Para \(Q\) se usa \(n^2=\mu\varepsilon\), que no necesita el signo de \(n\).
+
+\begin{lstlisting}[style=tiny]
+q = (omega / c) * n_A * sin(theta)          # omega/c restaurado
+Q = sqrt( (omega/c)**2 * n**2 - q**2 )      # complejo
+chi = mu   si TE;   chi = epsilon si TM
+\end{lstlisting}
+
+\texttt{sqrt} complejo cubre ondas propagantes (\(Q\) casi real) y evanescentes
+(\(Q\) casi imaginario). \(\cos(Qd)\) y \(\sin(Qd)\) de NumPy aceptan argumento
+complejo y reproducen \(\cosh/\sinh\) sin un \texttt{if}.
+
+\section{Matriz de una capa}
+
+En un medio homogéneo, \(E=A\cos(Qz)+B\sin(Qz)\). Exigir
+\(\Psi(z+d)=M\Psi(z)\) con \(\Psi=(E,\,\chi^{-1}E')\) da
+
+\begin{equation}
+M=\begin{pmatrix}
+\cos(Qd) & (\chi/Q)\sin(Qd)\\
+-(Q/\chi)\sin(Qd) & \cos(Qd)
+\end{pmatrix}.
+\end{equation}
+
+Cuando \(\lvert Q\rvert<\texttt{SMALL\_Q\_ABS}\), \(\sin(Qd)/Q\to d\) se
+reemplaza por el desarrollo \(d(1-\delta^2/6)\) para no dividir por cero
+(\(Q=0\) es el umbral de corte).
+
+\texttt{layer\_matrix} vectoriza sobre el barrido de \(\omega\): el array
+tiene forma \((2,2,N_\omega)\). El producto es
+\texttt{einsum("ij...,jk...->ik...")}.
+
+Comprobaciones analíticas (tests):
+
+\begin{itemize}
+\item \(\det M=1\).
+\item \(\frac12\mathrm{Tr}(M_B)=R_0=\cos(Q_B b)\).
+\item \(\frac12\mathrm{Tr}(M_A)=R_1=\cos(Q_A a)\).
+\item \(\frac12\mathrm{Tr}(M_B M_A)=R_2\) (ecuación 9 del paper).
+\end{itemize}
+
+\section{Semitraza: producto y recurrencia}
+
+\texttt{analytic\_r0\_r1\_r2} escribe (7)--(9) con \(\chi\) en lugar de \(\mu\),
+para que TM sea el mismo código.
+
+\texttt{semitrace\_by\_recurrence} itera
+\begin{equation}
+R \leftarrow 2 R_{m-1} R_{m-2}-R_{m-3}
+\end{equation}
+desde \(m=3\) hasta el orden pedido.
+
+\texttt{semitrace\_by\_product} hace \(\frac12\mathrm{Tr}(T_m)\) con el
+producto de capas. Los tests piden acuerdo relativo \(\sim 10^{-8}\) hasta
+\(m=7\).
+
+También existe \texttt{cell\_matrix\_by\_recurrence\_blocks}:
+\(T_m=T_{m-2}T_{m-1}\) con \(T_0=M_B\), \(T_1=M_A\), para contrastar el
+orden de multiplicación.
+
+\section{Barrido de dispersión}
+\label{sec:scan}
+
+Función central: \texttt{dispersion.scan\_dispersion}.
+
+\begin{enumerate}
+\item \(\omega_i=2\pi\nu_i\times 10^9\) en una malla uniforme de \(\nu\).
+\item Se marcan polos de Drude
+\(\lvert\omega-\omega_e\rvert<10^{-6}\omega_e\) o igual con \(\omega_m\);
+esos puntos se excluyen de las bandas (\(\Psi\) no está definido si
+\(\mu=0\) o \(\varepsilon=0\)).
+\item Se evalúa \(R_m(\omega_i)\) por recurrencia o producto.
+\item Máscara de banda: \(\lvert R\rvert\le 1+10^{-12}\). El entero
+\texttt{clipped\_near\_unit} cuenta cuántos puntos cayeron en
+\((1,1+10^{-12}]\) (redondeo, no recorte silencioso del gap).
+\item Donde hay banda,
+\(k L_m/\pi=\arccos(\mathrm{Re}\,R)/\pi\in[0,1]\).
+En gaps se deja \texttt{NaN}, no se inventa un \(k\).
+\end{enumerate}
+
+El objeto \texttt{DispersionScan} guarda \(\nu\), \(\omega\), \(R\),
+\(\lvert R\rvert\), la máscara, \(k L_m/\pi\), el método y cuántos puntos se
+cliparon.
+
+\texttt{allowed\_intervals} recorre la máscara y agrupa componentes conexas:
+cada racha de \texttt{True} es un \texttt{FrequencyInterval}
+\((\nu_{\min},\nu_{\max},n_{\mathrm{puntos}})\), con
+\(\Delta\nu=\nu_{\max}-\nu_{\min}\).
+
+\section{Detección de modos plasmon-polaritón}
+
+\texttt{detect\_plasmon\_modes} filtra los intervalos que intersectan una
+ventana \([\nu_a,\nu_b]\) y tienen al menos \texttt{min\_points} muestras
+(para no contar un punto aislado de malla como modo).
+El número esperado es \(n\_layers\_b(m)=F_{m-2}\).
+
+\texttt{merge\_touching\_intervals} une dos intervalos si el hueco entre ellos
+es menor que \texttt{gap\_ghz} (artefacto de un punto prohibido en medio de
+una banda).
+
+En la Fig.~2 la ventana es \([2.0,\,2.999]\,\mathrm{GHz}\): se corta justo
+debajo del polo \(\nu_m=3\,\mathrm{GHz}\).
+
+\section{Cómo se dibuja \(k(\nu)\) sin manchas}
+
+Un \texttt{plot(k, nu)} ingenuo une puntos consecutivos en \(\omega\).
+Cuando \(k\) salta de \(\sim 0\) a \(\sim 1\) al cruzar un gap, Matplotlib
+traza una recta horizontal que rellena el panel (el artefacto de la primera
+Fig.~1).
+
+\texttt{plot\_dispersion\_branches} hace tres cosas:
+
+\begin{enumerate}
+\item Pone \texttt{NaN} donde no hay banda.
+\item Cierra huecos de \emph{un} solo punto si los vecinos en \(k\) están
+cerca (\texttt{\_fill\_isolated\_nans}): quita un poro numérico en \(k=0\).
+\item Inserta \texttt{NaN} si \(\lvert\Delta k\rvert>0.12\)
+(\texttt{\_polyline\_with\_breaks}): corta saltos de zona de Brillouin.
+\item Dibuja \(+k\) y \(-k\) para llenar \([-1,1]\).
+\end{enumerate}
+
+Estilos: \(S_3\) rojo discontinuo, \(S_4\) azul continuo, ticks hacia dentro.
+
+\section{Pipeline de cada figura}
+
+\subsection{Figura 1}
+
+Script: \texttt{scripts/reproduce\_figure\_01.py}.
+Config: \(\nu_e=\nu_m=3\,\mathrm{GHz}\), \(m\in\{3,4\}\),
+\(\theta\in\{0,\pi/12,\pi/6,\pi/3\}\),
+\(12000\) puntos en \([0.15,5]\,\mathrm{GHz}\) (se evita \(\nu=0\), polo de
+Drude).
+
+Para cada panel: \texttt{scan\_dispersion} con \texttt{method="recurrence"},
+\texttt{plot\_dispersion\_branches} con \texttt{S3\_STYLE}/\texttt{S4\_STYLE},
+ejes \(k L_m/\pi\in[-1,1]\), \(\nu\in[0,5]\).
+Se guarda también la frecuencia donde se cierra el gap \(\langle n\rangle=0\):
+\texttt{zero\_average\_index\_frequency\_ghz}.
+
+\subsection{Figura 2}
+
+\(\theta=\pi/3\), \(\nu\in[2,4]\,\mathrm{GHz}\), \(m=3,4,5,6\).
+Después de dibujar se llama a \texttt{detect\_plasmon\_modes} en
+\([2,2.999]\,\mathrm{GHz}\).
+El \texttt{summary.json} debe leer \texttt{detected = expected = 1,2,3,5}.
+Línea horizontal a \(\nu_m=3\,\mathrm{GHz}\).
+
+\subsection{Figura 3}
+
+Igual que la Fig.~1 en geometría y ángulos, pero
+\(\omega_m/2\pi=1\,\mathrm{GHz}\).
+No se dibuja línea de referencia (el original no la tiene).
+La banda plana a \(1\,\mathrm{GHz}\) aparece sola, como un segmento casi
+horizontal, cuando \(\theta\neq 0\).
+
+\subsection{Figura 4}
+
+Cuatro ventanas densas (\(16000\) puntos cada una):
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Panel & \(m\) & \(\theta\) & \(\nu\) (GHz) \\
+\midrule
+(a) & 3 & \(\pi/12\) & \(0.994\)--\(1.002\) \\
+(b) & 3 & \(\pi/3\) & \(0.94\)--\(1.02\) \\
+(c) & 4 & \(\pi/12\) & \(0.994\)--\(1.002\) \\
+(d) & 4 & \(\pi/3\) & \(0.94\)--\(1.02\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Se detectan intervalos y se informa \(\Delta\nu\).
+Valores de esta implementación: \(4.51\,\mathrm{MHz}\) (\(m=3\), \(\pi/12\))
+y \(33.1\,\mathrm{MHz}\) (\(m=3\), \(\pi/3\)).
+Convergencia (\texttt{scripts/analyze\_convergence.py}): el ancho a
+\(\pi/3\), \(m=3\), pasa de \(0.03299\,\mathrm{GHz}\) (500 puntos) a
+\(0.03310\,\mathrm{GHz}\) (16000); estable desde 2000 puntos (\(<0.2\%\)).
+
+\subsection{Figura 5}
+
+Para \(\theta=\pi/12\) y \(\pi/3\), y cada \(m=2,\ldots,8\):
+escanear, extraer intervalos en la ventana, dibujar un palo vertical
+\([m,m]\times[\nu_{\min},\nu_{\max}]\) con
+\texttt{BRANCH\_COLORS[índice]} (negro, rojo, verde, azul, \ldots de menor a
+mayor \(\nu\)).
+Eje \(x\): ``Fibonacci order''. Eje \(y\): ``bandwidth (GHz)'', rotulado como
+el impreso; los valores son frecuencias.
+
+\subsection{Figura 6}
+
+No es un \(\Delta\nu(\theta)\) en líneas. Algoritmo:
+
+\begin{enumerate}
+\item Malla de \(\theta\in[0,\pi/3]\) (41 puntos) y de \(\nu\) en
+\([0.90,1.02]\,\mathrm{GHz}\) (\(16000\) puntos), recortada por debajo de
+\(\nu_m\).
+\item \texttt{bandwidth\_versus\_angle}: en cada \(\theta\), intervalos
+conexos en la ventana.
+\item \texttt{\_track\_edges}: sigue cada subbanda por \emph{solapamiento} en
+frecuencia (no por el centro), para que al partirse una banda el trozo ancho
+conserve el color y el nuevo aparezca encima.
+\item A \(\theta=0\), si no hay modos (el plasmón está en el gap), se clava
+cada rama que existe a \(\theta>0\) en el punto \((\theta,\nu_m)=(0,1)\),
+como en el original.
+\item \texttt{fill\_between} por tramos contiguos (no se unen huecos con una
+diagonal).
+\end{enumerate}
+
+Colores, de menor a mayor \(\nu\): negro, rojo, verde, azul, magenta, cian.
+Número de regiones a \(\theta=\pi/3\): \(1,1,2,3,5,8=F_{m-2}\) para
+\(m=2,\ldots,7\).
+
+\section{Regularizaciones numéricas}
+
+{\small
+\begin{center}
+\begin{tabular}{llp{5.8cm}}
+\toprule
+Situación & Qué hace el código & Por qué \\
+\midrule
+\(\omega=0\) & \texttt{ZeroDivisionError} & Drude diverge \\
+\(\omega=\omega_e\) o \(\omega_m\) & vecindad relativa \(10^{-6}\) excluida & polo de \(\varepsilon\) o \(\mu\) \\
+\(Q\to 0\) & \(\sin(Qd)/Q\to d(1-\delta^2/6)\) & corte geométrico \\
+\(\lvert R\rvert=1+\varepsilon_{\mathrm{maq}}\) & banda si \(\varepsilon\le 10^{-12}\) & redondeo, documentado \\
+\(\mathrm{Im}\,R\neq 0\) & se usa \(\mathrm{Re}\,R\) en \(\arccos\) & modelo sin pérdidas \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+A \(\theta=0\) con \(\omega_e=\omega_m\), \(\lvert R_m\rvert\le 1\) en todo el
+barrido: no es un bug, es adaptación de impedancia con el aire.
+
+\section{Tests automáticos}
+
+\texttt{pytest tests} cubre:
+
+\begin{itemize}
+\item \texttt{test\_fibonacci.py}: palabras, inflación, \(N_B\), \(L_m\),
+identidad de substitución.
+\item \texttt{test\_materials.py}: ceros de Drude, \(\nu_e\) y \(\nu_m\).
+\item \texttt{test\_transfer\_matrix.py}: \(\det T=1\), (7)--(9), recurrencia
+vs producto, y que TE coincide con TM a \(\theta=0\).
+\item \texttt{test\_dispersion.py}: máscara de banda, frecuencia
+\(\langle n\rangle=0\).
+\item \texttt{test\_validation.py}: \(N_{\mathrm{modos}}=F_{m-2}\) en las
+ventanas de las Figs.~2 y 4.
+\item \texttt{test\_params.py}: YAML de cada figura.
+\end{itemize}
+
+Tres casos se omiten (\texttt{skip}) cuando \(k>m\) en una identidad de
+Fibonacci que no aplica.
+
+\section{Cómo reproducir las gráficas}
+
+\begin{lstlisting}
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+pytest
+python scripts/reproduce_all.py
+# o una sola: python scripts/reproduce_figure_04.py
+\end{lstlisting}
+
+Salida de cada figura:
+
+\begin{itemize}
+\item \texttt{figures/figure\_0N/output/figure\_0N.pdf} (y PNG, SVG).
+\item \texttt{figures/figure\_0N/data/*.npz}: \(\nu\), \(\lvert R\rvert\),
+máscara, \(k L_m/\pi\).
+\item \texttt{figures/figure\_0N/data/summary.json}: recuentos y anchos.
+\item Copia en \texttt{figures/reproduced/figure\_0N/}.
+\end{itemize}
+
+\texttt{make figures} lanza además \texttt{analyze\_convergence.py}.
+
+Para TM: \texttt{polarization: TM} en el YAML (no hay figuras TM en el
+original; el código está listo).
+Para otro plasma: editar \texttt{omega\_e\_over\_2pi\_ghz} y
+\texttt{omega\_m\_over\_2pi\_ghz}.
+Para otro orden: \texttt{fibonacci\_orders}.
+
+\section{Decisiones que no están en el paper}
+
+Todas etiquetadas en comentarios como implementación, no como dato original:
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Decisión & Valor \\
+\midrule
+\(q\) & \((\omega/c)n_A\sin\theta\) \\
+\(c\) & \(299792458\,\mathrm{m/s}\) \\
+matriz de capa & \(M(Q,d,\chi)\) unimodular \\
+rama de \(Q\) & \texttt{sqrt} complejo principal \\
+banda & \(\lvert R\rvert\le 1+10^{-12}\) \\
+ancho & \(\nu_{\max}-\nu_{\min}\) de cada componente conexa \\
+Fig.~6 & parámetros de Figs.~3--5, \(m=2\ldots 7\) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+No se calibró nada contra el dibujo impreso.
+
+\section{Mapa de scripts a funciones}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Figura & Script & Núcleo \\
+\midrule
+1 & \texttt{reproduce\_figure\_01.py} & \texttt{scan\_dispersion} + \texttt{plot\_dispersion\_branches} \\
+2 & \texttt{reproduce\_figure\_02.py} & idem + \texttt{detect\_plasmon\_modes} \\
+3 & \texttt{reproduce\_figure\_03.py} & igual que 1, otro YAML \\
+4 & \texttt{reproduce\_figure\_04.py} & ventanas densas + anchos \\
+5 & \texttt{reproduce\_figure\_05.py} & \texttt{allowed\_intervals} por \(m\) \\
+6 & \texttt{reproduce\_figure\_06.py} & \texttt{bandwidth\_versus\_angle} + \texttt{fill\_between} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+El camino mínimo, para una sola curva, es:
+
+\begin{lstlisting}[style=tiny]
+from fibonacci_tmm.params import load_spec
+from fibonacci_tmm.dispersion import scan_dispersion
+from fibonacci_tmm.electromagnetics import Polarization
+import numpy as np
+
+spec = load_spec("configs/figure_02.yaml")
+nu = np.linspace(2.0, 4.0, 4000)
+scan = scan_dispersion(spec, m=3, theta=np.pi/3, nu_ghz=nu,
+                       polarization=Polarization.TE)
+# scan.allowed, scan.k_lm_over_pi, scan.nu_ghz
+\end{lstlisting}
+
+Eso es, en código, toda la física de \(\cos(k L_m)=R_m\).
+
+\begin{thebibliography}{9}
+\bibitem{Reyes2010}
+E.~Reyes-Gómez \textit{et al.}, Phys.\ Rev.\ B \textbf{81}, 153101 (2010).
+\bibitem{Reyes2009EPL}
+E.~Reyes-Gómez \textit{et al.}, EPL \textbf{88}, 24002 (2009).
+\bibitem{Kohmoto1983}
+M.~Kohmoto, L.~P.~Kadanoff y C.~Tang, Phys.\ Rev.\ Lett.\ \textbf{50}, 1870 (1983).
+\end{thebibliography}
+
+\end{document}
