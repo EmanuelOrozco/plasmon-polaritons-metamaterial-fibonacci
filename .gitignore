@@ -15,7 +15,7 @@ build/
 .ipynb_checkpoints/
 .DS_Store
 
-# Artefactos LaTeX
+# Artefactos LaTeX (no los PDF finales)
 *.aux
 *.log
 *.out
@@ -26,15 +26,12 @@ build/
 *.fls
 *.fdb_latexmk
 
-# PDFs compilados (se regeneran con `make paper|docs|guides`)
+# Copias duplicadas en la raíz (las canónicas viven en docs/ y figures/)
 /*.pdf
-docs/**/*.pdf
-
-# Copias sueltas en la raíz (las fuentes canónicas están en docs/)
 /paper_reimplementation.tex
 /software_documentation.tex
 
-# Datos numéricos regenerables (los scripts los vuelven a escribir)
+# Datos numéricos regenerables
 figures/**/data/*.npz
 figures/**/data/metadata.json
 figures/reproduced/

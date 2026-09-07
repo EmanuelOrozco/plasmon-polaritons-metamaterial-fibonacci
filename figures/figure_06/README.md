@@ -1,6 +1,8 @@
 # Figura 6
 
-Bandas plasmon-polaritón vs ángulo: ν_min(θ)–ν_max(θ) relleno por subbanda.
-A θ=0 las bandas colapsan hacia ν_m = 1 GHz; al aumentar θ se abren hacia abajo.
+Bandas plasmon-polaritón vs ángulo: $\nu_{\min}(\theta)$–$\nu_{\max}(\theta)$ relleno por subbanda.  
+A $\theta=0$ las bandas colapsan hacia $\nu_m = 1$ GHz; al aumentar $\theta$ se abren hacia abajo.
 
-Script: `python scripts/reproduce_figure_06.py`
+**Script:** `python scripts/reproduce_figure_06.py`
+
+**Salidas:** [PNG](output/figure_06.png) · [PDF](output/figure_06.pdf) · [SVG](output/figure_06.svg)
