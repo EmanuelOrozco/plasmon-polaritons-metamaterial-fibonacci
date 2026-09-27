@@ -1,4 +1,4 @@
-.PHONY: all tests figures paper docs guides clean
+.PHONY: all tests figures paper docs guides presentation clean
 
 PYTHON := .venv/bin/python
 PYTEST := .venv/bin/pytest
@@ -43,7 +43,13 @@ docs/arquitectura/arquitectura.pdf: docs/arquitectura/arquitectura.tex
 	cd docs/arquitectura && pdflatex -interaction=nonstopmode arquitectura.tex
 	cd docs/arquitectura && pdflatex -interaction=nonstopmode arquitectura.tex
 
+presentation:
+	MPLCONFIGDIR=/tmp/mpl $(PYTHON) presentacion/scripts/generar_imagenes.py
+	cd presentacion && pdflatex -interaction=nonstopmode presentacion.tex
+	cd presentacion && pdflatex -interaction=nonstopmode presentacion.tex
+
 clean:
+	rm -f presentacion/*.aux presentacion/*.log presentacion/*.out presentacion/*.toc presentacion/*.nav presentacion/*.snm presentacion/*.vrb
 	rm -f docs/scientific_paper/*.aux docs/scientific_paper/*.log docs/scientific_paper/*.out docs/scientific_paper/*.toc
 	rm -f docs/software_documentation/*.aux docs/software_documentation/*.log docs/software_documentation/*.out docs/software_documentation/*.toc
 	rm -f docs/guia_conceptual/*.aux docs/guia_conceptual/*.log docs/guia_conceptual/*.out docs/guia_conceptual/*.toc

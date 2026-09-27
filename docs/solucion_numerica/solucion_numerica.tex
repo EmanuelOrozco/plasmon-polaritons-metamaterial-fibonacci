@@ -380,29 +380,43 @@ escanear, extraer intervalos en la ventana, dibujar un palo vertical
 mayor \(\nu\)).
 Eje \(x\): ``Fibonacci order''. Eje \(y\): ``bandwidth (GHz)'', rotulado como
 el impreso; los valores son frecuencias.
+Aquí no se usa \texttt{merge\_touching\_intervals}: a \(\theta=\pi/12\) y
+\(m=7\) hay gaps físicos (\(|R_m|>1\)) de apenas \(0.4\,\mathrm{kHz}\), y
+fusionarlos reduciría el conteo por debajo de \(F_{m-2}\).
+Con la detección directa se obtienen \(1,1,2,3,5,8,13\) subbandas para
+\(m=2,\ldots,8\) en ambos ángulos, estable con 20\,000, 80\,000 y 320\,000
+puntos.
 
 \subsection{Figura 6}
 
 No es un \(\Delta\nu(\theta)\) en líneas. Algoritmo:
 
 \begin{enumerate}
-\item Malla de \(\theta\in[0,\pi/3]\) (41 puntos) y de \(\nu\) en
-\([0.90,1.02]\,\mathrm{GHz}\) (\(16000\) puntos), recortada por debajo de
-\(\nu_m\).
-\item \texttt{bandwidth\_versus\_angle}: en cada \(\theta\), intervalos
-conexos en la ventana.
-\item \texttt{\_track\_edges}: sigue cada subbanda por \emph{solapamiento} en
-frecuencia (no por el centro), para que al partirse una banda el trozo ancho
-conserve el color y el nuevo aparezca encima.
-\item A \(\theta=0\), si no hay modos (el plasmón está en el gap), se clava
-cada rama que existe a \(\theta>0\) en el punto \((\theta,\nu_m)=(0,1)\),
-como en el original.
+\item Malla de \(\theta\in[0,\pi/3]\) (41 puntos). La malla en \(\nu\) une
+60\,000 puntos logarítmicos en \(\nu_m-\nu\in[10^{-10},\,0.1]\,\mathrm{GHz}\)
+y 250\,000 puntos uniformes en \([0.95,\,\nu_m)\) (paso de
+\(0.2\,\mathrm{kHz}\)).
+Hace falta porque cerca de \(\theta=0\) las subbandas quedan a
+\(\sim10^{-5}\,\mathrm{GHz}\) de \(\nu_m\) con anchos de apenas
+\(\sim5\times10^{-8}\,\mathrm{GHz}\), y hacia \(\theta\approx\pi/12\) hay gaps físicos
+de \(0.4\,\mathrm{kHz}\).
+Una malla uniforme de 16\,000 puntos cortada en \(\nu_m-10^{-4}\) perdía todas
+las subbandas por debajo de \(\sim3^\circ\) y parte de ellas hasta
+\(\sim20^\circ\).
+\item \texttt{bandwidth\_versus\_angle} sin fusionar intervalos: en cada
+\(\theta>0\) se obtienen exactamente \(F_{m-2}\) subbandas conexas (el
+script avisa si algún ángulo no las tiene).
+\item Como el número de subbandas no cambia con \(\theta\), la subbanda
+\(i\)-ésima contada desde abajo es la misma rama física en todos los ángulos
+y conserva su color.
+\item A \(\theta=0\) el plasmón está en el gap: todas las ramas se clavan en
+\((\theta,\nu)=(0,\nu_m)\), como en el original.
 \item \texttt{fill\_between} por tramos contiguos (no se unen huecos con una
 diagonal).
 \end{enumerate}
 
 Colores, de menor a mayor \(\nu\): negro, rojo, verde, azul, magenta, cian.
-Número de regiones a \(\theta=\pi/3\): \(1,1,2,3,5,8=F_{m-2}\) para
+Número de regiones para todo \(\theta>0\): \(1,1,2,3,5,8=F_{m-2}\) para
 \(m=2,\ldots,7\).
 
 \section{Regularizaciones numéricas}

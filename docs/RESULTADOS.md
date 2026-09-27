@@ -150,6 +150,11 @@ $m=2..7$; $\theta$ de $0$ a $\pi/3$.
 - Se rellena la región entre $\nu_{\min}(\theta)$ y $\nu_{\max}(\theta)$ de cada subbanda.
 - A $\theta=0$ las ramas colapsan hacia $\nu_m=1\,\mathrm{GHz}$; al aumentar $\theta$
   se abren hacia abajo y se fragmentan según $F_{m-2}$.
+- Para todo $\theta>0$ hay exactamente $F_{m-2}$ subbandas ($1,1,2,3,5,8$), cada una
+  con un color fijo de abajo hacia arriba: negro, rojo, verde, azul, magenta, cian.
+- La malla en $\nu$ combina puntos logarítmicos junto a $\nu_m$ y una malla uniforme
+  de $0.2\,\mathrm{kHz}$: a ángulos pequeños hay subbandas de apenas
+  $\sim 50\,\mathrm{Hz}$ de ancho y, cerca de $\pi/12$, gaps físicos de $0.4\,\mathrm{kHz}$.
 
 **Archivos:** [PNG](../figures/figure_06/output/figure_06.png) ·
 [PDF](../figures/figure_06/output/figure_06.pdf) ·

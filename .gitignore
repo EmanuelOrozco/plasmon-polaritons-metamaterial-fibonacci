@@ -25,6 +25,9 @@ build/
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+*.nav
+*.snm
+*.vrb
 
 # Copias duplicadas en la raíz (las canónicas viven en docs/ y figures/)
 /*.pdf

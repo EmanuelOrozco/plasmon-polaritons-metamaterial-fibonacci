@@ -35,16 +35,18 @@ def bandwidth_versus_angle(
     *,
     window: tuple[float, float],
     min_points: int = 3,
-    merge_gap_ghz: float = 1.0e-5,
+    merge_gap_ghz: float | None = 1.0e-5,
 ) -> list[BandwidthPoint]:
+    """Subbandas por ángulo; ``merge_gap_ghz=None`` desactiva la fusión de intervalos."""
     points: list[BandwidthPoint] = []
     nu_min, nu_max = window
     for theta in thetas:
         scan = scan_dispersion(spec, m, float(theta), nu_ghz, polarization)
-        intervals = merge_touching_intervals(
-            intervals_in_window(allowed_intervals(scan), nu_min, nu_max, min_points=min_points),
-            gap_ghz=merge_gap_ghz,
+        intervals = intervals_in_window(
+            allowed_intervals(scan), nu_min, nu_max, min_points=min_points
         )
+        if merge_gap_ghz is not None:
+            intervals = merge_touching_intervals(intervals, gap_ghz=merge_gap_ghz)
         points.append(
             BandwidthPoint(
                 theta=float(theta),

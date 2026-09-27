@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from _common import dump_json, figure_dirs, load_figure_config, write_figure_readme, write_run_sidecar
 from fibonacci_tmm.dispersion import allowed_intervals, scan_dispersion
 from fibonacci_tmm.electromagnetics import Polarization
-from fibonacci_tmm.plasmon_modes import intervals_in_window, merge_touching_intervals
+from fibonacci_tmm.plasmon_modes import intervals_in_window
 from fibonacci_tmm.plotting import BRANCH_COLORS, apply_prb_style, latex_theta, save_figure
 
 
@@ -39,10 +39,8 @@ def main() -> None:
         stored = []
         for m in orders:
             scan = scan_dispersion(spec, m, theta, nu, polarization)
-            intervals = merge_touching_intervals(
-                intervals_in_window(allowed_intervals(scan), window[0], window[1], min_points=3),
-                gap_ghz=2e-5,
-            )
+            # Sin fusionar: a θ = π/12 hay gaps físicos de apenas ~0.4 kHz (m = 7).
+            intervals = intervals_in_window(allowed_intervals(scan), window[0], window[1], min_points=3)
             stored.append({"m": m, "n": len(intervals),
                            "bands": [{"min": i.nu_min_ghz, "max": i.nu_max_ghz} for i in intervals]})
             for idx, interval in enumerate(intervals):

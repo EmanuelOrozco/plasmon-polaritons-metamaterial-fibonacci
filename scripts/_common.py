@@ -54,4 +54,6 @@ def write_run_sidecar(path: Path, spec: SuperlatticeSpec, extra: dict[str, Any])
 
 
 def write_figure_readme(path: Path, title: str, body: str) -> None:
+    if path.exists():
+        return
     path.write_text(f"# {title}\n\n{body.strip()}\n", encoding="utf-8")

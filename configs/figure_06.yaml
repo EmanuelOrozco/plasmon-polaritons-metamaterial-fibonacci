@@ -17,7 +17,13 @@ theta_min_rad: 0.0
 theta_max_rad: 1.0471975511965976
 theta_points: 41
 plasmon_window_ghz: [0.90, 1.02]
-frequency_points: 16000
+# Malla = logarítmica en (nu_m - nu) + uniforme fina. Cerca de theta = 0 las
+# subbandas quedan a ~1e-5 GHz de nu_m con anchos de ~5e-8 GHz, y a theta ~ pi/12
+# hay gaps físicos de ~4e-7 GHz; una malla uniforme gruesa no los resuelve.
+frequency_points_log: 60000
+frequency_points_uniform: 250000
+frequency_uniform_min_ghz: 0.95
+nu_m_min_offset_ghz: 1.0e-10
 notes:
   - "IMPL: mismos a, b, omega_e, omega_m que Figs. 3-5"
   - "IMPL: m = 2..7; el caption de Fig. 6 está truncado"

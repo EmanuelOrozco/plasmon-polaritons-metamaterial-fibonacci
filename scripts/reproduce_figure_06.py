@@ -21,98 +21,46 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from _common import dump_json, figure_dirs, load_figure_config, write_figure_readme, write_run_sidecar
 from fibonacci_tmm.bandwidth import bandwidth_versus_angle
 from fibonacci_tmm.electromagnetics import Polarization
+from fibonacci_tmm.fibonacci import n_layers_b
 from fibonacci_tmm.plotting import BRANCH_COLORS, apply_prb_style, save_figure
 
 
-def _pairs_at_point(point) -> list[tuple[float, float]]:
-    pairs = [
-        (center - 0.5 * width, center + 0.5 * width)
-        for center, width in zip(point.centers_ghz, point.bandwidths_ghz, strict=True)
-    ]
-    pairs.sort(key=lambda item: item[0])
-    return pairs
+def _stack_by_order(points, n_expected: int, nu_m_ghz: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Bordes de cada subbanda, numeradas de menor a mayor frecuencia.
 
-
-def _track_edges(points, nu_m_ghz: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Sigue subbandas por solapamiento en ν (no por el centro).
-
-    Así, al fragmentarse una banda, el trozo más ancho conserva el color y el
-    nuevo aparece encima, como en el PRB: negro abajo, luego rojo, verde, …
-    En θ = 0 las ramas que existen a θ > 0 colapsan a ν_m.
+    Para θ > 0 hay exactamente F_{m-2} subbandas, así que la subbanda i (negro abajo,
+    luego rojo, verde, …) es la misma rama física en todos los ángulos. Un ángulo con
+    otro número de intervalos se deja vacío. En θ = 0 todas colapsan a ν_m.
     """
     thetas = np.array([p.theta for p in points], dtype=float)
-    all_pairs = [_pairs_at_point(p) for p in points]
-    n_theta = thetas.size
-    n_tracks = max((len(pairs) for pairs in all_pairs), default=0)
-    if n_tracks == 0:
-        return thetas, np.empty((0, n_theta)), np.empty((0, n_theta))
-
-    lo = np.full((n_tracks, n_theta), np.nan)
-    hi = np.full((n_tracks, n_theta), np.nan)
-    last_lo = np.full(n_tracks, np.nan)
-    last_hi = np.full(n_tracks, np.nan)
-
-    start = next((j for j, pairs in enumerate(all_pairs) if pairs), 0)
-    for i, (a, b) in enumerate(all_pairs[start]):
-        lo[i, start] = a
-        hi[i, start] = b
-        last_lo[i] = a
-        last_hi[i] = b
-
-    for j in range(start + 1, n_theta):
-        pairs = all_pairs[j]
-        if not pairs:
+    lo = np.full((n_expected, thetas.size), np.nan)
+    hi = np.full((n_expected, thetas.size), np.nan)
+    for j, point in enumerate(points):
+        if point.n_modes != n_expected:
             continue
-        used_tracks: set[int] = set()
-        used_new: set[int] = set()
-        candidates: list[tuple[float, int, int]] = []
-        for ni, (a, b) in enumerate(pairs):
-            for ti in range(n_tracks):
-                if not np.isfinite(last_lo[ti]):
-                    continue
-                overlap = min(b, last_hi[ti]) - max(a, last_lo[ti])
-                if overlap > 0.0:
-                    candidates.append((-overlap, ni, ti))
-        candidates.sort()
-        assignment: dict[int, int] = {}
-        for _, ni, ti in candidates:
-            if ni in used_new or ti in used_tracks:
-                continue
-            assignment[ni] = ti
-            used_new.add(ni)
-            used_tracks.add(ti)
-        for ni, (a, b) in enumerate(pairs):
-            if ni in assignment:
-                ti = assignment[ni]
-            else:
-                empty = [
-                    t
-                    for t in range(n_tracks)
-                    if t not in used_tracks and not np.isfinite(last_lo[t])
-                ]
-                if not empty:
-                    empty = [t for t in range(n_tracks) if t not in used_tracks]
-                if not empty:
-                    continue
-                ti = empty[0]
-                used_tracks.add(ti)
-            lo[ti, j] = a
-            hi[ti, j] = b
-        last_lo = lo[:, j].copy()
-        last_hi = hi[:, j].copy()
-        # Conserva el último estado de tracks no vistos en este θ (bandas muy finas).
-        for ti in range(n_tracks):
-            if not np.isfinite(last_lo[ti]) and np.isfinite(lo[ti, j - 1]):
-                last_lo[ti] = lo[ti, j - 1]
-                last_hi[ti] = hi[ti, j - 1]
-
-    if n_theta and thetas[0] == 0.0:
-        for ti in range(n_tracks):
-            if np.any(np.isfinite(lo[ti])):
-                lo[ti, 0] = nu_m_ghz
-                hi[ti, 0] = nu_m_ghz
-
+        pairs = sorted(
+            (center - 0.5 * width, center + 0.5 * width)
+            for center, width in zip(point.centers_ghz, point.bandwidths_ghz, strict=True)
+        )
+        for i, (a, b) in enumerate(pairs):
+            lo[i, j] = a
+            hi[i, j] = b
+    if thetas.size and thetas[0] == 0.0:
+        lo[:, 0] = nu_m_ghz
+        hi[:, 0] = nu_m_ghz
     return thetas, lo, hi
+
+
+def _frequency_grid(cfg: dict, nu_m_ghz: float) -> np.ndarray:
+    window_min = cfg["plasmon_window_ghz"][0]
+    offset = cfg["nu_m_min_offset_ghz"]
+    log_part = nu_m_ghz - np.logspace(
+        np.log10(offset), np.log10(nu_m_ghz - window_min), cfg["frequency_points_log"]
+    )
+    uniform_part = np.linspace(
+        cfg["frequency_uniform_min_ghz"], nu_m_ghz - offset, cfg["frequency_points_uniform"]
+    )
+    return np.unique(np.concatenate([log_part, uniform_part]))
 
 
 def _fill_tracked(ax, theta: np.ndarray, lo: np.ndarray, hi: np.ndarray, color: str) -> None:
@@ -134,8 +82,8 @@ def main() -> None:
     orders = list(cfg["fibonacci_orders"])
     thetas = np.linspace(cfg["theta_min_rad"], cfg["theta_max_rad"], cfg["theta_points"])
     window = tuple(cfg["plasmon_window_ghz"])
-    nu = np.linspace(window[0], min(window[1], spec.nu_m_ghz() - 1e-4), cfg["frequency_points"])
     nu_m = spec.nu_m_ghz()
+    nu = _frequency_grid(cfg, nu_m)
 
     apply_prb_style()
     fig, axes = plt.subplots(3, 2, figsize=(7.0, 7.6), sharex=True, sharey=True)
@@ -143,9 +91,13 @@ def main() -> None:
     panel_ids = ["a", "b", "c", "d", "e", "f"]
     for ax, m, panel in zip(axes.ravel(), orders, panel_ids, strict=True):
         points = bandwidth_versus_angle(
-            spec, m, thetas, nu, polarization, window=window, min_points=2, merge_gap_ghz=4e-5
+            spec, m, thetas, nu, polarization, window=window, min_points=2, merge_gap_ghz=None
         )
-        th, lo, hi = _track_edges(points, nu_m)
+        expected = n_layers_b(m)
+        incomplete = [round(float(np.degrees(p.theta)), 2) for p in points if p.theta > 0 and p.n_modes != expected]
+        if incomplete:
+            print(f"Aviso m={m}: sin F_(m-2)={expected} subbandas en θ(°) = {incomplete}")
+        th, lo, hi = _stack_by_order(points, expected, nu_m)
         payload[str(m)] = [
             {
                 "theta": p.theta,
