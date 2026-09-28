@@ -604,7 +604,7 @@
     \node[mod,below=0.9cm of scan] (edges) {\texttt{analysis/}\\bordes, Brent, validación};
     \node[mod,right=of edges] (repro) {\texttt{reproduction/}\\Figs.~1--6};
     \node[io,right=of repro] (out) {\texttt{results/pwe/}\\PDF, PNG, JSON};
-    \node[mod,right=of out] (cmp) {\texttt{benchmark/}\\TMM vs PWE};
+    \node[mod,right=of out] (cmp) {\texttt{comparison/}\\TMM vs PWE};
     \draw[fl] (yaml) -- (cfg);
     \draw[fl] (cfg) -- (solver);
     \draw[fl] (solver) -- (bloch);
@@ -726,7 +726,7 @@ r = np.cos(k_phys).real                      # R_PWE
         \end{tabular}
       \end{block}
       \small La física (espesores, $\nue$, $\num$, ángulos) se lee de los mismos
-      \texttt{configs/figure\_0N.yaml} que usa la TMM; todos se validan con Pydantic.
+      \texttt{configs/physics/figure\_0N.yaml} que usa la TMM; todos se validan con Pydantic.
     \end{column}
   \end{columns}
 \end{frame}
@@ -792,7 +792,7 @@ r = np.cos(k_phys).real                      # R_PWE
       \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{comparison/figure_03/output/figure_03_overlay.pdf}
     \end{column}
   \end{columns}
-  \small Líneas: TMM; puntos: PWE. Error máximo en $R$ dentro de las bandas: $2\times10^{-2}$ (Fig.~1),
+  \small Trazo ancho: TMM; trazo fino: PWE. Error máximo en $R$ dentro de las bandas: $2\times10^{-2}$ (Fig.~1),
   $4.5\times10^{-4}$ (Fig.~3).
 \end{frame}
 

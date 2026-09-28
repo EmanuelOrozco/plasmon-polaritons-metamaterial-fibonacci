@@ -14,17 +14,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from fibonacci_photonics.analysis.band_edges import locate_bands, plasmon_grid
-from fibonacci_photonics.benchmark.compare import edge_errors
+from fibonacci_photonics.comparison.compare import edge_errors
 from fibonacci_photonics.config import load_figure, load_pwe_numerics
 from fibonacci_photonics.io.paths import relative, result_dirs, results_dir
 from fibonacci_photonics.io.results import dump_json, load_json
 from fibonacci_photonics.physics.electromagnetics import Polarization
 from fibonacci_photonics.physics.fibonacci import n_layers_b
 from fibonacci_photonics.physics.superlattice import SuperlatticeSpec
+from fibonacci_photonics.reproduction.plasmon import fill_subbands, format_angle_panel, format_order_panel, order_bars
 from fibonacci_photonics.solvers.tmm import TMMSolver
-from fibonacci_photonics.viz.style import BRANCH_COLORS, PWE_FORMATS, apply_prb_style, latex_theta, save_figure
+from fibonacci_photonics.viz.style import BRANCH_COLORS, PWE_BAR_STYLE, PWE_FORMATS, apply_prb_style, save_figure
 
-ANGLE_TICKS = ([0.0, np.pi / 12, np.pi / 6, np.pi / 3], [r"$0$", r"$\pi/12$", r"$\pi/6$", r"$\pi/3$"])
+PWE_BAR_OFFSET = 0.22
+"""Desplazamiento en m de los trazos PWE de la Fig. 5, junto a las barras TMM."""
+
+
+def pwe_bars(ax: plt.Axes, x: float, bands: list[dict[str, float]]) -> None:
+    """Un trazo fino con topes por subbanda PWE en la abscisa ``x`` (orden m o ángulo θ)."""
+    for band in bands:
+        ax.plot([x, x], [band["min"], band["max"]], **PWE_BAR_STYLE)
+        ax.plot([x, x], [band["min"], band["max"]], "_", color="black", markersize=4)
 
 
 def tmm_bands(
@@ -80,21 +89,12 @@ def figure_05() -> dict[str, Any]:
     fig, axes = plt.subplots(2, 2, figsize=(7.2, 6.4), gridspec_kw={"height_ratios": [1.6, 1]})
     for col, (label, _) in enumerate(cfg.angles()):
         ax = axes[0, col]
-        for row in tmm_fig[label]:
-            for idx, band in enumerate(row["bands"]):
-                ax.plot([row["m"] - 0.14] * 2, [band["min"], band["max"]], color=BRANCH_COLORS[idx % 8],
-                        linewidth=3.2, solid_capstyle="butt")
+        order_bars(ax, tmm_fig[label])
         for case in cases[label]:
-            for idx, band in enumerate(sorted(case["pwe_bands"], key=lambda b: b["min"])):
-                ax.plot([case["m"] + 0.14] * 2, [band["min"], band["max"]], color=BRANCH_COLORS[idx % 8],
-                        linewidth=3.2, solid_capstyle="butt", alpha=0.55)
-        ax.set_xlim(1.5, 8.5)
-        ax.set_ylim(*windows[label])
-        ax.set_xticks(range(2, 9))
-        ax.set_xlabel("Fibonacci order m")
-        ax.set_ylabel("frequency (GHz)")
-        ax.text(0.04, 0.95, "izq.: TMM   der.: PWE", transform=ax.transAxes, va="top", fontsize=7)
-        ax.text(0.96, 0.95, rf"$\theta={latex_theta(label)}$", transform=ax.transAxes, va="top", ha="right")
+            pwe_bars(ax, case["m"] + PWE_BAR_OFFSET, case["pwe_bands"])
+        format_order_panel(ax, "ab"[col], label, windows[label], cfg.fibonacci_orders)
+        ax.text(0.96, 0.05, "barras: TMM   trazos: PWE", transform=ax.transAxes, ha="right", fontsize=7,
+                color="#555555")
         ax = axes[1, col]
         for case in cases[label]:
             errs = [abs(e["relative_width_error"]) for e in case["edges"]]
@@ -102,8 +102,9 @@ def figure_05() -> dict[str, Any]:
                         np.maximum(errs, 1e-14), "o", markersize=3, color="#c23b22")
         ax.set_xlim(1.5, 6.5)
         ax.set_xticks(range(2, 7))
-        ax.set_xlabel("Fibonacci order m")
+        ax.set_xlabel("Fibonacci order")
         ax.set_ylabel(r"$|\Delta w|/w$ por subbanda")
+        ax.text(0.04, 0.92, f"({'cd'[col]})", transform=ax.transAxes, va="top")
     fig.tight_layout()
     paths = save_figure(fig, dirs["output"], "figure_05_comparison", formats=PWE_FORMATS)
     summary = {"figure": "figure_05", "cases": cases, "outputs": {k: relative(v) for k, v in paths.items()}}
@@ -127,33 +128,17 @@ def figure_06() -> dict[str, Any]:
 
     apply_prb_style()
     orders = sorted(int(m) for m in pwe)
+    nu_m = spec.nu_m_ghz()
     fig, axes = plt.subplots(3, 2, figsize=(7.0, 7.6), sharex=True, sharey=True)
     for ax, m, letter in zip(axes.ravel(), orders, "abcdef", strict=False):
-        rows = tmm_fig[str(m)]
-        thetas = np.array([r["theta"] for r in rows])
-        n = n_layers_b(m)
-        lo = np.full((n, thetas.size), np.nan)
-        hi = np.full((n, thetas.size), np.nan)
-        for j, r in enumerate(rows):
-            if len(r["bands"]) != n:
-                continue
-            for i, band in enumerate(sorted(r["bands"], key=lambda b: b["min"])):
-                lo[i, j], hi[i, j] = band["min"], band["max"]
-        for i in range(n):
-            ok = np.isfinite(lo[i])
-            ax.fill_between(thetas[ok], lo[i, ok], hi[i, ok], color=BRANCH_COLORS[i % 8], alpha=0.35, linewidth=0)
+        fill_subbands(ax, tmm_fig[str(m)], m, nu_m)
         for case in cases[str(m)]:
-            for i, band in enumerate(sorted(case["pwe_bands"], key=lambda b: b["min"])):
-                ax.plot([case["theta"]] * 2, [band["min"], band["max"]], color=BRANCH_COLORS[i % 8], linewidth=1.6)
-                ax.plot([case["theta"]] * 2, [band["min"], band["max"]], "_", color="black", markersize=4)
-        ax.set_ylim(0.95, 1.002)
-        ax.set_xticks(ANGLE_TICKS[0])
-        ax.set_xticklabels(ANGLE_TICKS[1])
-        ax.text(0.04, 0.92, f"({letter})", transform=ax.transAxes, va="top")
-        ax.text(0.96, 0.92, rf"$m={m}$", transform=ax.transAxes, va="top", ha="right")
+            pwe_bars(ax, case["theta"], case["pwe_bands"])
+        ax.set_xlim(float(cfg.theta_min_rad), float(cfg.theta_max_rad))
+        format_angle_panel(ax, letter, m)
     last = axes.ravel()[len(orders)]
     last.axis("off")
-    last.text(0.5, 0.5, f"Relleno: TMM ({cfg.theta_points} ángulos)\nBarras: PWE (bordes refinados)",
+    last.text(0.5, 0.5, f"Relleno: TMM ({cfg.theta_points} ángulos, Fig. 6)\nTrazos: PWE (bordes refinados)",
               transform=last.transAxes, ha="center", va="center", fontsize=8)
     for ax in axes[:, 0]:
         ax.set_ylabel("frequency (GHz)")

@@ -16,6 +16,5 @@ theta_labels: ["pi/12", "pi/3"]
 frequency_windows_ghz:
   pi/12: [0.994, 1.002]
   pi/3: [0.94, 1.02]
-frequency_points: 16000
 notes:
   - "m=3: una subbanda; m=4: dos subbandas"

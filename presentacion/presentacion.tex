@@ -318,7 +318,7 @@ Phys.\ Rev.\ B \textbf{81}, 153101 (2010)}
   \end{tikzpicture}
   \vspace{0.6em}
 
-  {\small Resultado: paquete \texttt{src/fibonacci\_photonics/}, un YAML por figura en \texttt{configs/}, un único runner \texttt{scripts/run\_figure.py}.}
+  {\small Resultado: paquete \texttt{src/fibonacci\_photonics/}, física en \texttt{configs/physics/}, mallas en \texttt{configs/tmm/} y un runner \texttt{scripts/run\_figure.py}.}
 \end{frame}
 
 \begin{frame}{Auditoría: lo que el paper dice y lo que no}
@@ -461,7 +461,7 @@ Phys.\ Rev.\ B \textbf{81}, 153101 (2010)}
       io/.style={mod,fill=naranja!45},
       fl/.style={-{Stealth[length=2.5mm]},line width=1pt,fondo},
       node distance=0.55cm and 0.7cm]
-    \node[io] (yaml) {\texttt{configs/*.yaml}\\parámetros};
+    \node[io] (yaml) {\texttt{configs/physics/}\\\texttt{configs/tmm/}};
     \node[mod,right=of yaml] (params) {\texttt{config/} (Pydantic)\\\texttt{SuperlatticeSpec}};
     \node[mod,right=1.0cm of params,yshift=1.15cm] (mat) {\texttt{materials.py}\\Drude $\varepsilon_B,\mu_B$};
     \node[mod,right=1.0cm of params] (fib) {\texttt{fibonacci.py}\\palabras $S_m$, $F_m$};
@@ -784,7 +784,7 @@ python scripts/run_figure.py all        # las 6 figuras (TMM)
 python scripts/run_figure.py 3          # una figura
 \end{verbatim}
   \vspace{0.3em}
-  \small Para experimentar: editar \texttt{configs/figure\_0N.yaml} (por ejemplo \texttt{omega\_m\_over\_2pi\_ghz}, \texttt{fibonacci\_orders}, \texttt{thetas\_rad}) y volver a ejecutar el script.
+  \small Para experimentar: editar \texttt{configs/physics/figure\_0N.yaml} (por ejemplo \texttt{omega\_m\_over\_2pi\_ghz}, \texttt{fibonacci\_orders}, \texttt{thetas\_rad}) y volver a ejecutar el script.
 \end{frame}
 
 \begin{frame}{Referencias}

@@ -73,8 +73,10 @@ refinamiento de Brent); se comparan los bordes y el ancho $w$ de cada subbanda.
 (Sec.~\ref{sec:tiempo}), y a partir de él, cuál método conviene y por qué.
 \end{enumerate}
 
-\paragraph{Parámetros.} Física en \code{configs/figure\_0N.yaml} (idéntica para
-los dos métodos) y numérica del PWE en \code{configs/pwe/figure\_0N.yaml}:
+\paragraph{Parámetros.} Física en \code{configs/physics/figure\_0N.yaml}
+(idéntica para los dos métodos), mallas de la TMM en
+\code{configs/tmm/figure\_0N.yaml} y numérica del PWE en
+\code{configs/pwe/figure\_0N.yaml}:
 $h=8$ armónicos por capa en las Figs.~1--3, $h=16$ en la Fig.~4, $h=16$ para
 $m\le4$ y $h=8$ para $m=5,6$ en las Figs.~5--6.
 
@@ -114,10 +116,22 @@ $1.5N$ ondas planas descarta de forma automática.
 \section{Figuras 1--4: relación de dispersión}
 %=====================================================================
 
-En las superposiciones, la línea es la TMM y los círculos huecos negros el PWE
-(una muestra de cada varias para no tapar la línea). Las figuras de error muestran
+Las superposiciones dibujan las mismas curvas que las figuras de cada método
+(\code{results/tmm} y \code{results/pwe}), con sus colores y estilos: la TMM
+como trazo ancho y claro, y encima el PWE como trazo fino. En ambos métodos cada
+banda se cierra en sus bordes $|R|=1$ y en sus puntas, refinados con Brent sobre
+la $R(\nu)$ del propio método. Las figuras de error muestran
 $|R_{\rm PWE}-R_{\rm TMM}|/\max(1,|R_{\rm TMM}|)$; las franjas grises son los gaps
 de la TMM.
+
+Los bordes también se comparan directamente: en la malla de cada barrido PWE se
+refinan los bordes de la TMM y se mide la distancia de cada borde del PWE al más
+cercano de la TMM. El desvío máximo es de $\sim\!8\times10^{-5}$~GHz en la Fig.~1,
+$3\times10^{-6}$~GHz en la Fig.~2, $10^{-5}$~GHz en la Fig.~3 y
+$10^{-8}$~GHz en la Fig.~4. Todos los barridos tienen el mismo número de bordes
+salvo uno (Fig.~1, $m=4$, $\theta=\pi/12$): a 0.159~GHz, donde
+$\varepsilon_B=\mu_B\approx-350$, la TMM resuelve un gap de
+$1.5\times10^{-5}$~GHz que el PWE ve como una punta que toca $|R|=1$.
 
 \begin{table}[H]
 \centering
@@ -133,8 +147,8 @@ procesos en paralelo (el costo en un núcleo está en la Tabla~\ref{tab:tiempo-f
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\linewidth]{comparison/figure_01/output/figure_01_overlay.pdf}
-\caption{Fig.~1: relación de dispersión TMM (líneas) y PWE (círculos) para $m=3,4$
-y cuatro ángulos.}
+\caption{Fig.~1: relación de dispersión TMM (trazo ancho) y PWE (trazo fino) para
+$m=3$ (rojo, discontinuo) y $m=4$ (azul) en cuatro ángulos.}
 \end{figure}
 
 \begin{figure}[H]
@@ -210,7 +224,8 @@ registran como rechazadas en \code{results/pwe/figure\_0N/data/summary.json}.
 \centering
 \includegraphics[width=\linewidth]{comparison/figure_05/output/figure_05_comparison.pdf}
 \caption{Fig.~5. Arriba: intervalos permitidos debajo de $\nu_m$ para cada orden
-$m$; en cada orden, la barra izquierda es la TMM y la derecha (más clara) el PWE.
+$m$; las barras de colores son las de la Fig.~5 de la TMM y el trazo blanco con
+topes a su derecha es la subbanda del PWE.
 Los órdenes $m=7,8$ solo se calculan con la TMM. Abajo: error relativo del ancho
 de cada subbanda del PWE respecto a la TMM.}
 \end{figure}
@@ -225,8 +240,8 @@ de cada subbanda del PWE respecto a la TMM.}
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{comparison/figure_06/output/figure_06_overlay.pdf}
-\caption{Fig.~6: subbandas frente al ángulo de incidencia. Relleno: TMM
-(41 ángulos); barras: subbandas del PWE con bordes refinados (12 ángulos,
+\caption{Fig.~6: subbandas frente al ángulo de incidencia. Relleno: la Fig.~6 de la
+TMM (41 ángulos); trazos blancos con topes: subbandas del PWE con bordes refinados (12 ángulos,
 $\theta=5^\circ\dots60^\circ$). Cada color es una subbanda.}
 \end{figure}
 

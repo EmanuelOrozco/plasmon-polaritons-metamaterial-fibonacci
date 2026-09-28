@@ -1,6 +1,8 @@
 """Carga y validación de los YAML de ``configs/``.
 
-- ``configs/figure_0N.yaml``: física de la superred más la definición de la figura.
+- ``configs/physics/figure_0N.yaml``: física de la superred y definición de la
+  figura (órdenes, ángulos, ventanas), común a los dos métodos.
+- ``configs/tmm/figure_0N.yaml``: mallas de frecuencia (y de ángulo) de la TMM.
 - ``configs/pwe/figure_0N.yaml``: parámetros numéricos del PWE para esa figura.
 - ``configs/pwe/<estudio>.yaml`` y ``configs/comparison/efficiency.yaml``: estudios.
 
@@ -56,6 +58,10 @@ PWE_SCHEMAS: dict[str, type[BaseModel]] = {
 
 FIGURE_IDS = tuple(FIGURE_SCHEMAS)
 
+PHYSICS_DIR = Path("physics")
+TMM_DIR = Path("tmm")
+PWE_DIR = Path("pwe")
+
 
 class ConfigError(InvalidParameterError):
     """Archivo de configuración ausente, ilegible o con valores inválidos."""
@@ -71,12 +77,16 @@ class LoadedConfig(Generic[Model]):
 
 @dataclass(frozen=True)
 class FigureSetup(Generic[FigureModel]):
-    """Definición validada de una figura y su especificación física en SI."""
+    """Definición validada de una figura y su especificación física en SI.
+
+    ``config`` une la física (``path``) con las mallas de la TMM (``tmm_path``).
+    """
 
     figure_id: str
     config: FigureModel
     spec: SuperlatticeSpec
     path: Path
+    tmm_path: Path
 
 
 def resolve(path: str | Path) -> Path:
@@ -122,26 +132,43 @@ def spec_from_mapping(data: dict[str, Any]) -> SuperlatticeSpec:
     return validate(SuperlatticeConfig, physics).to_spec()
 
 
+def resolve_physics(path: str | Path) -> Path:
+    """Como ``resolve``, pero un nombre relativo se busca primero en ``configs/physics/``."""
+    path = Path(path)
+    if path.is_absolute():
+        return path
+    candidate = configs_dir() / PHYSICS_DIR / path
+    return candidate if candidate.exists() else resolve(path)
+
+
 def load_spec(path: str | Path = "figure_01.yaml") -> SuperlatticeSpec:
     """Especificación física de un YAML de figura (las claves de figura se ignoran).
 
-    Por defecto, la física del artículo (``configs/figure_01.yaml``: a = b = 12 mm,
-    ω_e/2π = ω_m/2π = 3 GHz), común a todas las figuras.
+    Por defecto, la física del artículo (``configs/physics/figure_01.yaml``:
+    a = b = 12 mm, ω_e/2π = ω_m/2π = 3 GHz), común a todas las figuras.
     """
-    return spec_from_mapping(load_yaml(path))
+    return spec_from_mapping(load_yaml(resolve_physics(path)))
+
+
+def _check_figure_id(figure_id: str) -> None:
+    if figure_id not in FIGURE_SCHEMAS:
+        raise ConfigError(f"figura desconocida {figure_id!r}; opciones: {', '.join(FIGURE_IDS)}")
 
 
 def load_figure(figure_id: str) -> FigureSetup[Any]:
-    """Definición validada de ``configs/<figure_id>.yaml``."""
-    if figure_id not in FIGURE_SCHEMAS:
-        raise ConfigError(f"figura desconocida {figure_id!r}; opciones: {', '.join(FIGURE_IDS)}")
-    loaded = load_model(f"{figure_id}.yaml", FIGURE_SCHEMAS[figure_id])
-    config = loaded.model
-    return FigureSetup(figure_id=figure_id, config=config, spec=config.to_spec(), path=loaded.path)
+    """Física de ``configs/physics/<figure_id>.yaml`` más las mallas de ``configs/tmm/``."""
+    _check_figure_id(figure_id)
+    physics_path = resolve(PHYSICS_DIR / f"{figure_id}.yaml")
+    tmm_path = resolve(TMM_DIR / f"{figure_id}.yaml")
+    physics, grids = load_yaml(physics_path), load_yaml(tmm_path)
+    repeated = sorted(set(physics) & set(grids))
+    if repeated:
+        raise ConfigError(f"{tmm_path} repite claves de {physics_path}: {', '.join(repeated)}")
+    config = validate(FIGURE_SCHEMAS[figure_id], physics | grids, f"{physics_path} + {tmm_path}")
+    return FigureSetup(figure_id=figure_id, config=config, spec=config.to_spec(), path=physics_path, tmm_path=tmm_path)
 
 
 def load_pwe_numerics(figure_id: str) -> LoadedConfig[Any]:
     """Numérica validada de ``configs/pwe/<figure_id>.yaml``."""
-    if figure_id not in PWE_SCHEMAS:
-        raise ConfigError(f"figura desconocida {figure_id!r}; opciones: {', '.join(FIGURE_IDS)}")
-    return load_model(Path("pwe") / f"{figure_id}.yaml", PWE_SCHEMAS[figure_id])
+    _check_figure_id(figure_id)
+    return load_model(PWE_DIR / f"{figure_id}.yaml", PWE_SCHEMAS[figure_id])

@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
+from matplotlib import patheffects
+from matplotlib.colors import to_rgb
 from matplotlib.figure import Figure
 
 # Paleta del original: S3 discontinuo rojo, S4 continuo azul.
@@ -26,6 +28,25 @@ PWE_STYLE: dict[str, Any] = {
     "markeredgewidth": 0.5,
     "linestyle": "none",
 }
+
+# Superposición de las figuras: la curva TMM de la figura como trazo ancho y
+# claro (opaco: las mitades ±k se solapan en k = 0), y encima la curva PWE con
+# el estilo de la figura. Las subbandas PWE de las Figs. 5–6 son trazos blancos
+# con borde negro, visibles sobre cualquier relleno.
+TMM_UNDERLAY: dict[str, Any] = {"linestyle": "-", "linewidth": 3.0}
+TMM_UNDERLAY_LIGHTNESS = 0.7
+PWE_BAR_STYLE: dict[str, Any] = {
+    "color": "white",
+    "linewidth": 1.0,
+    "path_effects": [patheffects.withStroke(linewidth=2.4, foreground="black")],
+}
+
+
+def lighten(color: str, amount: float = TMM_UNDERLAY_LIGHTNESS) -> tuple[float, float, float]:
+    """Mezcla ``color`` con blanco: 0 lo deja igual, 1 da blanco."""
+    r, g, b = to_rgb(color)
+    return (r + (1 - r) * amount, g + (1 - g) * amount, b + (1 - b) * amount)
+
 
 TMM_FORMATS = ("pdf", "png", "svg")
 PWE_FORMATS = ("pdf", "png")

@@ -64,7 +64,8 @@ generadas.
 \end{enumerate}
 
 Los parámetros científicos no viven en el código: viven en
-\texttt{configs/figure\_0N.yaml} y se validan con Pydantic al cargarlos.
+\texttt{configs/} (física común en \texttt{physics/}, mallas de cada método
+en \texttt{tmm/} y \texttt{pwe/}) y se validan con Pydantic al cargarlos.
 Cambiar un plasma o un ángulo no exige editar Python, y una errata en un YAML
 falla al arrancar, no a mitad de una corrida de horas.
 
@@ -82,9 +83,11 @@ analisis_numerico/
     analysis/                raices, bordes de banda, cierre de bandas,
                              subbandas plasmonicas, anchos vs theta
     config/                  esquemas Pydantic v2 y cargador de YAML
-    benchmark/               comparacion TMM vs PWE, tiempos, informes
+    comparison/              comparacion TMM vs PWE, tiempos, informes
     reproduction/            Figs. 1-6 con cualquiera de los dos metodos + CLI
-    studies/                 convergencia TMM, benchmark del libro, estudios PWE
+    studies/tmm/             convergencia de la TMM (Fig. 4)
+    studies/pwe/             benchmark del libro, celda de Fourier,
+                             contaminacion espectral, convergencia del PWE
     io/                      rutas, JSON/npz, provenance, tablas LaTeX
     viz/                     estilo PRB y curvas de dispersion
     errors.py                InvalidParameterError, ConvergenceWarning
@@ -92,16 +95,17 @@ analisis_numerico/
   tests/unit/                contrato, validaciones, modulos
   tests/analytic/            soluciones cerradas
   tests/regression/          valores de referencia y conteos del paper
-  configs/figure_0N.yaml     fisica y mallas de cada figura
+  configs/physics/           fisica de cada figura (comun a TMM y PWE)
+  configs/tmm/               mallas de frecuencia de la TMM
   configs/pwe/               numerica del PWE y estudios
   configs/comparison/        estudio de eficiencia
   scripts/run_figure.py      runner unico (--method tmm|pwe|both)
   scripts/{tmm,pwe}/         envoltorios por figura y estudio
-  scripts/comparison/        envoltorios de benchmark/
+  scripts/comparison/        envoltorios de comparison/
   scripts/verify_results.py  verificacion automatica (make verify)
   results/<metodo>/<estudio>/  data/, output/, README.md
-  docs/                      auditoria, papers, guias, este documento
-  presentacion/              presentacion (make presentation)
+  docs/                      PDFs, resultados.md, auditoria_matematica.md
+  presentacion/              presentaciones TMM y PWE (make presentation[-pwe])
   notebooks/                 exploracion
   pyproject.toml             paquete, dependencias, pytest, ruff, mypy
   requirements.txt           -e .[dev]
@@ -123,16 +127,16 @@ physics  ->  solvers.tmm  |  solvers.pwe   (independientes entre si)
                   \           /
              solvers.base (DispersionSolver, DispersionScan)
                        |
-                   analysis   ->   benchmark
+                   analysis   ->   comparison
                        |
       config, io, viz  ->  reproduction, studies  ->  scripts
 \end{lstlisting}
 
 \texttt{solvers.tmm} y \texttt{solvers.pwe} no se importan entre sí. El
-post-proceso (\texttt{analysis}) y la comparación (\texttt{benchmark}) se
+post-proceso (\texttt{analysis}) y la comparación (\texttt{comparison}) se
 escriben contra el contrato \texttt{DispersionSolver}, así que no saben qué
 método produjo los datos. Solo \texttt{viz}, \texttt{reproduction},
-\texttt{studies} y \texttt{benchmark} importan Matplotlib: el núcleo numérico
+\texttt{studies} y \texttt{comparison} importan Matplotlib: el núcleo numérico
 se usa sin pintar nada.
 
 \subsection{El contrato \texttt{DispersionSolver}}
@@ -190,9 +194,10 @@ Módulo & Responsabilidad \\
 \texttt{analysis/plasmon\_modes.py}, \texttt{plasmon\_bands.py} & conteo de subbandas \(F_{m-2}\); estrategia densa (TMM) y adaptativa validada (PWE) \\
 \texttt{analysis/bandwidth.py} & \(\nu_{\min},\nu_{\max}\) frente a \(\theta\) (Fig.~6) \\
 \texttt{config/} & esquemas Pydantic y \texttt{load\_figure}, \texttt{load\_pwe\_numerics}, \texttt{load\_spec} \\
-\texttt{benchmark/} & \texttt{compare\_scans}, emparejamiento de bandas, tiempos, informes de las Figs.~1--6, eficiencia y resumen \\
+\texttt{comparison/} & \texttt{compare\_scans}, emparejamiento de bandas y de bordes, tiempos, informes de las Figs.~1--6, eficiencia y resumen \\
 \texttt{reproduction/} & \texttt{FigureRun}, las seis figuras para ambos métodos, \texttt{run\_figure} y la CLI \\
-\texttt{studies/} & convergencia TMM de la Fig.~4, celda de Fourier, benchmark del libro, contaminación espectral, convergencia y costo del PWE \\
+\texttt{studies/tmm/} & convergencia de la TMM en la Fig.~4 \\
+\texttt{studies/pwe/} & celda de Fourier, benchmark del libro, contaminación espectral, convergencia y costo del PWE \\
 \texttt{io/}, \texttt{viz/} & rutas de \texttt{results/}, JSON, npz, metadatos, tablas LaTeX; estilo PRB, curvas y guardado \\
 \bottomrule
 \end{tabular}
@@ -231,12 +236,13 @@ report = pwe.convergence_report(4, np.pi / 6, nu[::200])
 \toprule
 Archivo & Uso \\
 \midrule
-\texttt{configs/figure\_01.yaml} & \(\nu_e=\nu_m=3\,\mathrm{GHz}\), \(m=3,4\), cuatro \(\theta\) \\
-\texttt{configs/figure\_02.yaml} & zoom \(2\)--\(4\,\mathrm{GHz}\), \(m=3\ldots 6\) \\
-\texttt{configs/figure\_03.yaml} & como Fig.~1 con \(\nu_m=1\,\mathrm{GHz}\) \\
-\texttt{configs/figure\_04.yaml} & ventanas densas cerca de \(1\,\mathrm{GHz}\) \\
-\texttt{configs/figure\_05.yaml} & palos vs \(m=2\ldots 8\) \\
-\texttt{configs/figure\_06.yaml} & \(\nu(\theta)\) relleno, \(m=2\ldots 7\) (inferida) \\
+\texttt{configs/physics/figure\_01.yaml} & \(\nu_e=\nu_m=3\,\mathrm{GHz}\), \(m=3,4\), cuatro \(\theta\) \\
+\texttt{configs/physics/figure\_02.yaml} & zoom \(2\)--\(4\,\mathrm{GHz}\), \(m=3\ldots 6\) \\
+\texttt{configs/physics/figure\_03.yaml} & como Fig.~1 con \(\nu_m=1\,\mathrm{GHz}\) \\
+\texttt{configs/physics/figure\_04.yaml} & ventanas densas cerca de \(1\,\mathrm{GHz}\) \\
+\texttt{configs/physics/figure\_05.yaml} & palos vs \(m=2\ldots 8\) \\
+\texttt{configs/physics/figure\_06.yaml} & \(\nu(\theta)\) relleno, \(m=2\ldots 7\) (inferida) \\
+\texttt{configs/tmm/figure\_0N.yaml} & mallas de frecuencia (y de \(\theta\) en la Fig.~6) de la TMM \\
 \texttt{configs/pwe/figure\_0N.yaml} & armónicos por capa, mallas y órdenes del PWE \\
 \texttt{configs/pwe/book\_benchmark.yaml} & cristal \(\varepsilon_1=1\), \(\varepsilon_2=9\) del libro \\
 \texttt{configs/pwe/convergence.yaml} & estudios de convergencia y costo \\
@@ -256,9 +262,11 @@ por etiqueta, \(\theta\le\pi/2\), mallas de al menos dos puntos y que los
 armónicos por orden cubran los órdenes pedidos. Un error se informa como
 \texttt{ConfigError} con el archivo y el campo culpables.
 
-La física de cada figura está en un solo sitio (\texttt{configs/figure\_0N.yaml})
-y la leen los dos métodos; \texttt{configs/pwe/} solo añade parámetros
-numéricos del PWE. \texttt{load\_spec()} sin argumentos devuelve la superred
+La física de cada figura está en un solo sitio
+(\texttt{configs/physics/figure\_0N.yaml}) y la leen los dos métodos;
+\texttt{configs/tmm/} y \texttt{configs/pwe/} solo añaden los parámetros
+numéricos de cada método. \texttt{load\_figure} une la física con la malla de
+la TMM y falla con \texttt{ConfigError} si la malla repite una clave física. \texttt{load\_spec()} sin argumentos devuelve la superred
 del artículo. Campo \texttt{source}: \texttt{paper} si el original da los
 números; \texttt{inferred\_from\_figures\_3\_to\_5} en la Fig.~6.
 
@@ -284,8 +292,9 @@ Los scripts por figura (\texttt{scripts/tmm/figure\_0N.py},
 \texttt{scripts/pwe/figure\_0N.py}) son envoltorios de una línea sobre
 \texttt{run\_figure}; los estudios (\texttt{scripts/tmm/convergence.py},
 \texttt{scripts/pwe/\{book\_benchmark,cell\_fourier,spectral\_pollution,convergence\}.py})
-llaman a \texttt{fibonacci\_photonics.studies}; y
-\texttt{scripts/comparison/*.py} llaman a \texttt{fibonacci\_photonics.benchmark}.
+llaman a \texttt{fibonacci\_photonics.studies.tmm} y
+\texttt{fibonacci\_photonics.studies.pwe}; y
+\texttt{scripts/comparison/*.py} llaman a \texttt{fibonacci\_photonics.comparison}.
 \texttt{efficiency.py} fija un hilo de BLAS antes de importar NumPy para que los
 tiempos sean comparables; \texttt{--plot-only} redibuja sin medir.
 
@@ -297,7 +306,7 @@ el mismo intérprete y aborta si uno falla. Para una sola figura se usa
 \section{Flujo de una corrida}
 
 \begin{lstlisting}
-configs/figure_0N.yaml (+ configs/pwe/figure_0N.yaml)
+configs/physics/figure_0N.yaml + configs/{tmm,pwe}/figure_0N.yaml
         |
         v
   load_figure / load_pwe_numerics      (Pydantic: tipos, rangos, relaciones)
@@ -333,7 +342,8 @@ make all
   make verify     -> scripts/verify_results.py
 make lint         -> ruff check + mypy
 make reproduce    -> results + documents + verify (sin tests)
-make presentation -> presentacion/ (objetivo aparte)
+make presentation     -> presentacion/presentacion.pdf (TMM)
+make presentation-pwe -> presentacion/presentacion_pwe.pdf (PWE)
 \end{lstlisting}
 
 Todos los PDF se compilan con una sola regla de patrón (dos pases de
@@ -452,7 +462,8 @@ documentos \(\to\) verificación.
 \subsection{Cambiar un parámetro}
 
 Edite el YAML (por ejemplo \texttt{omega\_m\_over\_2pi\_ghz} en
-\texttt{configs/figure\_03.yaml}) y ejecute solo esa figura. Si el valor no
+\texttt{configs/physics/figure\_03.yaml}, o la malla en
+\texttt{configs/tmm/figure\_03.yaml}) y ejecute solo esa figura. Si el valor no
 es válido, la carga se detiene con un \texttt{ConfigError} que indica el
 campo. Para TM: \texttt{polarization: TM}.
 
@@ -497,8 +508,9 @@ PDF en \texttt{docs/} & Contenido \\
 \end{center}
 
 Fuentes LaTeX en \texttt{docs/}. Auditoría previa al código:
-\texttt{docs/fase\_A\_auditoria\_matematica.md}. Informe de validación:
-\texttt{docs/INFORME\_VALIDACION.md}. El paper original y el material del PWE (capítulo del libro, cuaderno y
+\texttt{docs/auditoria\_matematica.md}. Resultados de las figuras y
+validación: \texttt{docs/resultados.md}. El índice de todos los PDF con
+enlaces directos está en el \texttt{README.md} principal. El paper original y el material del PWE (capítulo del libro, cuaderno y
 \texttt{PWE\_2D.m}) se guardan solo en local, en \texttt{referencias/}.
 
 \section{Resumen operativo}

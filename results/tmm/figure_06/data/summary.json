@@ -1,5 +1,6 @@
 {
-  "config": "configs/figure_06.yaml",
+  "config": "configs/tmm/figure_06.yaml",
+  "physics": "configs/physics/figure_06.yaml",
   "method": "tmm",
   "note": "Eje vertical: frecuencia de las subbandas. El espesor de cada region es el bandwidth.",
   "bands": {

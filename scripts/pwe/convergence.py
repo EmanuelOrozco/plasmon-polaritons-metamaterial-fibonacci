@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from fibonacci_photonics.studies import pwe_convergence
+from fibonacci_photonics.studies.pwe import convergence as pwe_convergence
 
 if __name__ == "__main__":
     pwe_convergence.main(plot_only="--plot-only" in sys.argv)

@@ -15,7 +15,6 @@ thetas_rad: [1.0471975511965976]
 theta_labels: ["pi/3"]
 frequency_min_ghz: 2.0
 frequency_max_ghz: 4.0
-frequency_points: 12000
 plasmon_window_ghz: [2.0, 2.999]
 notes:
   - "Numero de modos esperado: F(m-2) = 1, 2, 3, 5"

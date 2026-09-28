@@ -1,0 +1,9 @@
+# Mallas de la TMM para la Figura 6 (física en configs/physics/figure_06.yaml).
+theta_points: 41
+# Malla = logarítmica en (nu_m - nu) + uniforme fina. Cerca de theta = 0 las
+# subbandas quedan a ~1e-5 GHz de nu_m con anchos de ~5e-8 GHz, y a theta ~ pi/12
+# hay gaps físicos de ~4e-7 GHz; una malla uniforme gruesa no los resuelve.
+frequency_points_log: 60000
+frequency_points_uniform: 250000
+frequency_uniform_min_ghz: 0.95
+nu_m_min_offset_ghz: 1.0e-10

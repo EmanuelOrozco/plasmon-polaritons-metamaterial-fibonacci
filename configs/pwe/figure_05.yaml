@@ -1,4 +1,4 @@
-# Parámetros numéricos del PWE para la Figura 5 (física en configs/figure_05.yaml).
+# Parámetros numéricos del PWE para la Figura 5 (física en configs/physics/figure_05.yaml).
 # Solo m <= 6: el costo del PWE crece como N^3 con N ∝ F_m y con m = 7, 8 la
 # semitraza alcanza |R| ~ 10^2–10^3 dentro de la ventana (ver results/pwe/convergence).
 rule: inverse

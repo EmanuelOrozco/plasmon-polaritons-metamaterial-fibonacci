@@ -12,7 +12,7 @@ from typing import TypeVar
 import numpy as np
 from numpy.typing import ArrayLike
 
-from fibonacci_photonics.benchmark.compare import ScanAgreement, compare_scans
+from fibonacci_photonics.comparison.compare import ScanAgreement, compare_scans
 from fibonacci_photonics.physics.electromagnetics import Polarization
 from fibonacci_photonics.solvers.base import DispersionSolver
 from fibonacci_photonics.solvers.scan import DispersionScan

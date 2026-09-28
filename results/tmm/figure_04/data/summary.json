@@ -1,15 +1,21 @@
 {
-  "config": "configs/figure_04.yaml",
+  "config": "configs/tmm/figure_04.yaml",
+  "physics": "configs/physics/figure_04.yaml",
   "method": "tmm",
   "modes": [
     {
       "m": 3,
       "theta": "pi/12",
       "detected": 1,
-      "seconds": 0.00396168400766328,
+      "seconds": 0.00672109799052123,
       "n_allowed": 9015,
       "clipped_near_unit": 0,
       "max_abs_imag_r": 0.0,
+      "n_edges": 2,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 16,
+      "edge_seconds": 0.0017176169931190088,
       "intervals": [
         {
           "nu_min": 0.9946365397837365,
@@ -22,10 +28,15 @@
       "m": 3,
       "theta": "pi/3",
       "detected": 1,
-      "seconds": 0.004414037000969984,
+      "seconds": 0.00496863599983044,
       "n_allowed": 6622,
       "clipped_near_unit": 0,
       "max_abs_imag_r": 0.0,
+      "n_edges": 2,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 16,
+      "edge_seconds": 0.0014210960071068257,
       "intervals": [
         {
           "nu_min": 0.9577161072567035,
@@ -38,10 +49,15 @@
       "m": 4,
       "theta": "pi/12",
       "detected": 2,
-      "seconds": 0.003866415994707495,
+      "seconds": 0.008906763992854394,
       "n_allowed": 7592,
       "clipped_near_unit": 0,
       "max_abs_imag_r": 0.0,
+      "n_edges": 4,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 31,
+      "edge_seconds": 0.0032340489997295663,
       "intervals": [
         {
           "nu_min": 0.995016063503969,
@@ -59,10 +75,15 @@
       "m": 4,
       "theta": "pi/3",
       "detected": 2,
-      "seconds": 0.004236662993207574,
+      "seconds": 0.005079631999251433,
       "n_allowed": 5865,
       "clipped_near_unit": 0,
       "max_abs_imag_r": 0.0,
+      "n_edges": 4,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 32,
+      "edge_seconds": 0.0026219629944534972,
       "intervals": [
         {
           "nu_min": 0.9582611413213326,

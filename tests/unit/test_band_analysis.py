@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+from fibonacci_photonics.analysis.band_closure import EDGE, BandEdges, close_band_edges
 from fibonacci_photonics.analysis.band_edges import (
     locate_bands,
     plasmon_grid,
@@ -12,8 +13,12 @@ from fibonacci_photonics.analysis.band_edges import (
 )
 from fibonacci_photonics.analysis.plasmon_modes import merge_touching_intervals
 from fibonacci_photonics.analysis.roots import refine_crossing
-from fibonacci_photonics.benchmark.compare import compare_scans, match_intervals
+from fibonacci_photonics.comparison.compare import compare_scans, match_intervals
+from fibonacci_photonics.comparison.dispersion_report import edge_deltas
 from fibonacci_photonics.errors import InvalidParameterError
+from fibonacci_photonics.physics.electromagnetics import Polarization
+from fibonacci_photonics.reproduction.common import FigureRun
+from fibonacci_photonics.reproduction.dispersion import SolvedScan, load_solved, scan_arrays
 from fibonacci_photonics.solvers import FrequencyInterval, TMMSolver, allowed_intervals
 from fibonacci_photonics.solvers.scan import allowed_mask
 
@@ -124,3 +129,33 @@ def test_merge_touching_intervals():
     parts = [FrequencyInterval(1.0, 1.1, 3), FrequencyInterval(1.1005, 1.2, 3), FrequencyInterval(1.5, 1.6, 3)]
     merged = merge_touching_intervals(parts, gap_ghz=1e-3)
     assert [(i.nu_min_ghz, i.nu_max_ghz) for i in merged] == [(1.0, 1.2), (1.5, 1.6)]
+
+
+def test_saved_scan_keeps_band_edges(tmp_path, paper_split_plasma):
+    """La superposición TMM–PWE redibuja los barridos guardados con sus bordes exactos."""
+    solver = TMMSolver(paper_split_plasma)
+    scan = solver.scan(3, np.pi / 12, np.linspace(0.5, 5.0, 400), Polarization.TE)
+    solved = SolvedScan(scan, 0.1, close_band_edges(solver, scan), 0.2)
+    path = tmp_path / "m3.npz"
+    np.savez_compressed(path, **scan_arrays(solved))
+    loaded = load_solved(path, paper_split_plasma, Polarization.TE, scan.method)
+    np.testing.assert_array_equal(loaded.scan.allowed, scan.allowed)
+    np.testing.assert_array_equal(loaded.edges.nu_ghz, solved.edges.nu_ghz)
+    assert loaded.edges.n_edges == solved.edges.n_edges > 0
+    assert (loaded.seconds, loaded.edge_seconds) == (0.1, 0.2)
+
+
+def test_both_methods_close_band_edges():
+    assert FigureRun.open("figure_01", "tmm").close_band_edges
+    assert FigureRun.open("figure_01", "pwe").close_band_edges
+
+
+def test_edge_deltas_use_nearest_tmm_edge():
+    def edges(nu):
+        n = len(nu)
+        return BandEdges(np.array(nu), np.zeros(n), np.zeros(n), np.full(n, EDGE, dtype=np.int8), 0)
+
+    deltas = edge_deltas(edges([1.0, 2.0]), edges([1.0 + 1e-6, 2.0 - 3e-6, 5.0]))
+    assert (deltas["n_edges_pwe"], deltas["n_edges_tmm"]) == (2, 3)
+    assert deltas["max_abs_edge_delta_ghz"] == pytest.approx(3e-6)
+    assert edge_deltas(None, edges([1.0]))["max_abs_edge_delta_ghz"] is None

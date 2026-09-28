@@ -4,14 +4,15 @@
 - Fig. 2: m = 3..6 cerca de ν_m, con el conteo de subbandas F_{m−2}.
 - Fig. 4: zoom de las subbandas de m = 3 y 4 en ventanas por ángulo.
 
-Con el PWE los barridos llevan además el cierre de las curvas en los bordes
-|R| = 1 (``analysis.band_closure``).
+Cada barrido lleva además el cierre de las curvas en los bordes |R| = 1 y en
+las puntas, refinados con el mismo método (``analysis.band_closure``).
 """
 
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -22,10 +23,12 @@ from numpy.typing import NDArray
 from fibonacci_photonics.analysis.band_closure import BandEdges, close_band_edges
 from fibonacci_photonics.analysis.plasmon_modes import detect_plasmon_modes, merge_touching_intervals
 from fibonacci_photonics.physics.effective_medium import zero_average_index_frequency_ghz
+from fibonacci_photonics.physics.electromagnetics import Polarization
 from fibonacci_photonics.physics.fibonacci import n_layers_b
+from fibonacci_photonics.physics.superlattice import SuperlatticeSpec
 from fibonacci_photonics.reproduction.common import FigureRun
 from fibonacci_photonics.solvers.base import DispersionSolver
-from fibonacci_photonics.solvers.scan import DispersionScan, FrequencyInterval
+from fibonacci_photonics.solvers.scan import DispersionScan, FrequencyInterval, scan_from_semitrace
 from fibonacci_photonics.viz.dispersion import format_dispersion_axes, plot_dispersion_branches
 from fibonacci_photonics.viz.style import M_COLORS, ORDER_STYLES, apply_prb_style, latex_theta
 
@@ -53,8 +56,37 @@ def solve_scan(run: FigureRun, solver: DispersionSolver, m: int, theta: float, n
     if not run.close_band_edges:
         return SolvedScan(scan, seconds)
     start = time.perf_counter()
-    edges = close_band_edges(solver, scan, workers=run.workers, xtol_fraction=run.numerics.edge_xtol_fraction)
+    workers = run.workers if run.is_pwe else 1
+    edges = close_band_edges(solver, scan, workers=workers, xtol_fraction=run.edge_xtol_fraction)
     return SolvedScan(scan, seconds, edges, time.perf_counter() - start)
+
+
+def load_solved(path: Path, spec: SuperlatticeSpec, polarization: Polarization, method: str) -> SolvedScan:
+    """Lee un barrido guardado por ``save_scan``, con sus puntos de cierre si los tiene."""
+    with np.load(path) as data:
+        scan = scan_from_semitrace(
+            spec, int(data["m"]), float(data["theta"]), data["nu_ghz"],
+            data["r_real"] + 1j * data["r_imag"], polarization, method,
+        )
+        if "edge_nu_ghz" not in data:
+            return SolvedScan(scan, float(data["seconds"]))
+        edges = BandEdges(
+            nu_ghz=data["edge_nu_ghz"],
+            r=data["edge_r"],
+            k_lm_over_pi=data["edge_k_lm_over_pi"],
+            kind=data["edge_kind"].astype(np.int8),
+            evaluations=int(data["edge_evaluations"]),
+        )
+        return SolvedScan(scan, float(data["seconds"]), edges, float(data["edge_seconds"]))
+
+
+def branch_style(figure_id: str, m: int) -> dict[str, Any]:
+    """Estilo de las curvas de cada figura; lo comparten TMM, PWE y la superposición."""
+    if figure_id in ("figure_01", "figure_03"):
+        return dict(ORDER_STYLES[m])
+    if figure_id == "figure_02":
+        return {"color": "#2c4d8c", "linestyle": "-", "linewidth": 0.9}
+    return {"color": M_COLORS.get(m, "black"), "linestyle": "-", "linewidth": 1.0}
 
 
 def scan_arrays(solved: SolvedScan) -> dict[str, Any]:
@@ -156,7 +188,7 @@ def dispersion_panels(run: FigureRun, *, title: str, description: str) -> dict[s
         for m in cfg.fibonacci_orders:
             solved = solve_scan(run, solver, m, theta, nu)
             save_scan(run, f"m{m}_theta_{label.replace('/', '_')}", solved)
-            plot_solved(ax, solved, **ORDER_STYLES[m])
+            plot_solved(ax, solved, **branch_style(run.figure_id, m))
             runs.append({"m": m, "theta": theta, "theta_label": label, **scan_record(solved)})
             print(f"  m={m} θ={label}: {describe(solved)}")
         format_dispersion_axes(ax, nu_min=0.0, nu_max=5.0, panel=panel, theta_label=label)
@@ -181,7 +213,7 @@ def mode_count_figure(run: FigureRun) -> dict[str, Any]:
     for ax, m, panel in zip(axes.ravel(), cfg.fibonacci_orders, PANEL_LETTERS, strict=False):
         solved = solve_scan(run, solver, m, theta, nu)
         save_scan(run, f"m{m}", solved)
-        plot_solved(ax, solved, color="#2c4d8c", linestyle="-", linewidth=0.9)
+        plot_solved(ax, solved, **branch_style(run.figure_id, m))
         ax.axhline(run.spec.nu_m_ghz(), color="#c23b22", linestyle="--", linewidth=0.8)
         format_dispersion_axes(ax, nu_min=2.0, nu_max=4.0, panel=panel, m_label=str(m))
         intervals = counted_modes(run, solved.scan, window)
@@ -210,7 +242,7 @@ def zoom_figure(run: FigureRun) -> dict[str, Any]:
         nu = np.linspace(window[0], window[1], frequency_points(run))
         solved = solve_scan(run, solver, m, theta, nu)
         save_scan(run, f"m{m}_{label.replace('/', '_')}", solved)
-        plot_solved(ax, solved, color=M_COLORS.get(m, "black"), linestyle="-", linewidth=1.0)
+        plot_solved(ax, solved, **branch_style(run.figure_id, m))
         format_dispersion_axes(
             ax, nu_min=window[0], nu_max=window[1], panel=panel, theta_label=latex_theta(label), m_label=str(m)
         )

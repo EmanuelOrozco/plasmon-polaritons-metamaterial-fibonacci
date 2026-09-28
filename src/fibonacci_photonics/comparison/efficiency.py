@@ -28,7 +28,7 @@ from matplotlib.ticker import MaxNLocator
 from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import brentq
 
-from fibonacci_photonics.benchmark.timing import power_fit, timed
+from fibonacci_photonics.comparison.timing import power_fit, timed
 from fibonacci_photonics.config import load_figure, load_model, load_pwe_numerics, load_spec
 from fibonacci_photonics.config.schema import (
     BookBenchmarkConfig,
@@ -49,7 +49,7 @@ from fibonacci_photonics.solvers.pwe.bloch import n_max_for, solve_bloch
 from fibonacci_photonics.solvers.pwe.eigenfrequency import nondispersive_bands
 from fibonacci_photonics.solvers.pwe.fourier import bilayer_fourier
 from fibonacci_photonics.solvers.tmm.transfer_matrix import semitrace_by_product, semitrace_by_recurrence
-from fibonacci_photonics.studies.book_benchmark import book_spec
+from fibonacci_photonics.studies.pwe.book_benchmark import book_spec
 from fibonacci_photonics.viz.style import PWE_FORMATS, apply_prb_style, save_figure
 
 CONFIG = "comparison/efficiency.yaml"

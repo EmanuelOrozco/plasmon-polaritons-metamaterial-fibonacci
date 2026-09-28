@@ -18,7 +18,7 @@ from matplotlib.axes import Axes
 from numpy.typing import NDArray
 
 from fibonacci_photonics.analysis.band_edges import plasmon_grid
-from fibonacci_photonics.analysis.bandwidth import BandwidthPoint, bandwidth_versus_angle
+from fibonacci_photonics.analysis.bandwidth import bandwidth_versus_angle
 from fibonacci_photonics.analysis.plasmon_bands import adaptive_bands, dense_grid_bands
 from fibonacci_photonics.parallel import parallel_map
 from fibonacci_photonics.physics.fibonacci import n_layers_b
@@ -93,6 +93,25 @@ def _order_bands_tmm(run: FigureRun, label: str, theta: float) -> list[dict[str,
     return rows
 
 
+def order_bars(ax: Axes, rows: Sequence[dict[str, Any]], *, offset: float = 0.0, linewidth: float = 4.0) -> None:
+    """Una barra vertical por subbanda en x = m (+ ``offset``), un color por subbanda."""
+    for row in rows:
+        for idx, band in enumerate(sorted(row["bands"], key=lambda b: b["min"])):
+            ax.plot([row["m"] + offset] * 2, [band["min"], band["max"]],
+                    color=BRANCH_COLORS[idx % len(BRANCH_COLORS)], linewidth=linewidth, solid_capstyle="butt")
+
+
+def format_order_panel(
+    ax: Axes, panel: str, label: str, window: Sequence[float], orders: Sequence[int]
+) -> None:
+    ax.set_xlim(1.5, 8.5)
+    ax.set_ylim(window[0], window[1])
+    ax.set_xticks(list(orders))
+    ax.set_xlabel("Fibonacci order")
+    ax.set_ylabel("bandwidth (GHz)")
+    _label_panel(ax, panel, rf"$\theta = {latex_theta(label)}$", y=0.95)
+
+
 def figure_05(run: FigureRun) -> dict[str, Any]:
     """Fig. 5: segmentos de frecuencia permitida frente al orden de Fibonacci."""
     cfg = run.config
@@ -122,17 +141,8 @@ def figure_05(run: FigureRun) -> dict[str, Any]:
     apply_prb_style()
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 4.4))
     for ax, (label, _), panel in zip(axes, cfg.angles(), "ab", strict=False):
-        window = cfg.frequency_windows_ghz[label]
-        for row in rows_by_label[label]:
-            for idx, band in enumerate(row["bands"]):
-                ax.plot([row["m"], row["m"]], [band["min"], band["max"]],
-                        color=BRANCH_COLORS[idx % len(BRANCH_COLORS)], linewidth=4.0, solid_capstyle="butt")
-        ax.set_xlim(1.5, 8.5)
-        ax.set_ylim(window[0], window[1])
-        ax.set_xticks(cfg.fibonacci_orders)
-        ax.set_xlabel("Fibonacci order")
-        ax.set_ylabel("bandwidth (GHz)")
-        _label_panel(ax, panel, rf"$\theta = {latex_theta(label)}$", y=0.95)
+        order_bars(ax, rows_by_label[label])
+        format_order_panel(ax, panel, label, cfg.frequency_windows_ghz[label], cfg.fibonacci_orders)
         if run.is_pwe:
             orders = run.numerics.fibonacci_orders
             ax.text(0.96, 0.05, f"PWE: m ≤ {max(orders)}", transform=ax.transAxes, ha="right", fontsize=7,
@@ -161,28 +171,36 @@ def angle_grid(run: FigureRun) -> NDArray[np.float64]:
     return np.unique(np.concatenate([log_part, uniform_part]))
 
 
-def _stack_by_order(
-    points: list[BandwidthPoint], n_expected: int, nu_m_ghz: float
+def stack_by_order(
+    rows: Sequence[dict[str, Any]], n_expected: int, nu_m_ghz: float
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     """Bordes de cada subbanda, numeradas de menor a mayor frecuencia.
 
-    Para θ > 0 hay exactamente F_{m−2} subbandas, así que la subbanda i es la
-    misma rama física en todos los ángulos; un ángulo con otro número de
-    intervalos se deja vacío. En θ = 0 todas colapsan a ν_m.
+    ``rows`` son registros ``{"theta": θ, "bands": [{"min": ν, "max": ν}, ...]}``
+    como los de ``summary.json``. Para θ > 0 hay exactamente F_{m−2} subbandas,
+    así que la subbanda i es la misma rama física en todos los ángulos; un ángulo
+    con otro número de intervalos se deja vacío. En θ = 0 todas colapsan a ν_m.
     """
-    thetas = np.array([p.theta for p in points], dtype=float)
+    thetas = np.array([row["theta"] for row in rows], dtype=float)
     lo = np.full((n_expected, thetas.size), np.nan)
     hi = np.full((n_expected, thetas.size), np.nan)
-    for j, point in enumerate(points):
-        if point.n_modes != n_expected:
+    for j, row in enumerate(rows):
+        if len(row["bands"]) != n_expected:
             continue
-        for i, interval in enumerate(sorted(point.intervals, key=lambda item: item.nu_min_ghz)):
-            lo[i, j] = interval.nu_min_ghz
-            hi[i, j] = interval.nu_max_ghz
+        for i, band in enumerate(sorted(row["bands"], key=lambda item: item["min"])):
+            lo[i, j] = band["min"]
+            hi[i, j] = band["max"]
     if thetas.size and thetas[0] == 0.0:
         lo[:, 0] = nu_m_ghz
         hi[:, 0] = nu_m_ghz
     return thetas, lo, hi
+
+
+def fill_subbands(ax: Axes, rows: Sequence[dict[str, Any]], m: int, nu_m_ghz: float) -> None:
+    """Regiones permitidas frente a θ, un color por subbanda (panel de la Fig. 6 de la TMM)."""
+    theta, lo, hi = stack_by_order(rows, n_layers_b(m), nu_m_ghz)
+    for mode_idx in range(lo.shape[0]):
+        _fill_tracked(ax, theta, lo[mode_idx], hi[mode_idx], BRANCH_COLORS[mode_idx % len(BRANCH_COLORS)])
 
 
 def _fill_tracked(ax: Axes, theta: NDArray[np.float64], lo: NDArray[np.float64], hi: NDArray[np.float64],
@@ -205,7 +223,7 @@ def _warn_incomplete(m: int, rows: list[tuple[float, int]]) -> None:
         print(f"Aviso m={m}: sin F_(m-2)={expected} subbandas en θ(°) = {incomplete}")
 
 
-def _format_angle_panel(ax: Axes, panel: str, m: int) -> None:
+def format_angle_panel(ax: Axes, panel: str, m: int) -> None:
     ax.set_ylim(0.95, 1.002)
     ax.set_xticks(ANGLE_TICKS[0])
     ax.set_xticklabels(ANGLE_TICKS[1])
@@ -235,7 +253,7 @@ def figure_06(run: FigureRun) -> dict[str, Any]:
                     ax.bar(row["theta"], band["max"] - band["min"], bottom=band["min"], width=width,
                            color=BRANCH_COLORS[idx % len(BRANCH_COLORS)], linewidth=0)
             ax.set_xlim(0.0, float(cfg.theta_max_rad) + width)
-            _format_angle_panel(ax, panel, m)
+            format_angle_panel(ax, panel, m)
         for ax in axes.ravel()[len(orders):]:
             ax.axis("off")
             ax.text(0.5, 0.5, "m = 7: omitido en PWE\n(costo O(N³), N ∝ F$_m$)", transform=ax.transAxes,
@@ -258,11 +276,9 @@ def figure_06(run: FigureRun) -> dict[str, Any]:
                  "bandwidths_ghz": list(p.bandwidths_ghz), "centers_ghz": list(p.centers_ghz)}
                 for p in points
             ]
-            th, lo, hi = _stack_by_order(points, n_layers_b(m), nu_m)
-            for mode_idx in range(lo.shape[0]):
-                _fill_tracked(ax, th, lo[mode_idx], hi[mode_idx], BRANCH_COLORS[mode_idx % len(BRANCH_COLORS)])
+            fill_subbands(ax, payload[str(m)], m, nu_m)
             ax.set_xlim(float(thetas[0]), float(thetas[-1]))
-            _format_angle_panel(ax, panel, m)
+            format_angle_panel(ax, panel, m)
         description = ("Bandas plasmon-polaritón vs ángulo: ν_min(θ)–ν_max(θ) relleno por subbanda.\n"
                        "A θ=0 las bandas colapsan hacia ν_m = 1 GHz; al aumentar θ se abren hacia abajo.")
     for ax in axes[:, 0]:

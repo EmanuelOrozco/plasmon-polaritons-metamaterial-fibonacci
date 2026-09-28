@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from matplotlib.axes import Axes
 from numpy.typing import ArrayLike, NDArray
@@ -103,9 +105,10 @@ def plot_dispersion_branches(
     ax: Axes,
     scan: DispersionScan,
     *,
-    color: str,
+    color: str | tuple[float, float, float],
     linestyle: str,
     linewidth: float = 0.75,
+    alpha: float = 1.0,
     label: str | None = None,
     max_dk: float = 0.12,
     edge_nu_ghz: ArrayLike | None = None,
@@ -136,8 +139,9 @@ def plot_dispersion_branches(
         k_pos = _fill_isolated_nans(k_pos, max_dk)
         k_pos, nu_p = _polyline_with_breaks(k_pos, nu, max_dk)
     k_neg = -k_pos
-    ax.plot(k_neg, nu_p, color=color, linestyle=linestyle, linewidth=linewidth, label=label)
-    ax.plot(k_pos, nu_p, color=color, linestyle=linestyle, linewidth=linewidth)
+    line: dict[str, Any] = {"color": color, "linestyle": linestyle, "linewidth": linewidth, "alpha": alpha}
+    ax.plot(k_neg, nu_p, label=label, **line)
+    ax.plot(k_pos, nu_p, **line)
 
 
 def format_dispersion_axes(

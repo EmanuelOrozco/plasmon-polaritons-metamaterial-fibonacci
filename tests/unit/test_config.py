@@ -27,7 +27,8 @@ from fibonacci_photonics.physics.constants import SPEED_OF_LIGHT, SPEED_OF_LIGHT
 def test_every_figure_and_its_pwe_numerics_validate(figure_id):
     setup = load_figure(figure_id)
     assert setup.spec.thickness_a == setup.spec.thickness_b == pytest.approx(0.012)
-    assert setup.path.name == f"{figure_id}.yaml"
+    assert (setup.path.parent.name, setup.tmm_path.parent.name) == ("physics", "tmm")
+    assert setup.path.name == setup.tmm_path.name == f"{figure_id}.yaml"
     numerics = load_pwe_numerics(figure_id).model
     orders = getattr(numerics, "fibonacci_orders", None) or setup.config.fibonacci_orders
     assert set(orders) <= set(setup.config.fibonacci_orders)
@@ -69,8 +70,30 @@ def test_speed_of_light_option(option, expected):
     assert spec.speed_of_light == expected
 
 
+@pytest.mark.parametrize("figure_id", FIGURE_IDS)
+def test_tmm_grids_are_not_physics(figure_id):
+    """La física es común a los dos métodos; las mallas de la TMM viven aparte."""
+    physics, grids = load_yaml(f"physics/{figure_id}.yaml"), load_yaml(f"tmm/{figure_id}.yaml")
+    assert not set(physics) & set(grids)
+    assert all("points" in key or key.startswith(("frequency_", "nu_m_")) for key in grids)
+
+
+def test_tmm_grid_cannot_override_physics(tmp_path, monkeypatch):
+    from fibonacci_photonics.config import loader
+
+    for folder in ("physics", "tmm"):
+        (tmp_path / folder).mkdir()
+    (tmp_path / "physics" / "figure_01.yaml").write_text(
+        loader.resolve("physics/figure_01.yaml").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    (tmp_path / "tmm" / "figure_01.yaml").write_text("frequency_points: 100\nfrequency_max_ghz: 9.0\n")
+    monkeypatch.setattr(loader, "configs_dir", lambda: tmp_path)
+    with pytest.raises(ConfigError, match="frequency_max_ghz"):
+        load_figure("figure_01")
+
+
 def _figure_05() -> dict:
-    return load_yaml("figure_05.yaml")
+    return load_yaml("physics/figure_05.yaml") | load_yaml("tmm/figure_05.yaml")
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,6 @@
 {
-  "config": "configs/figure_05.yaml",
+  "config": "configs/tmm/figure_05.yaml",
+  "physics": "configs/physics/figure_05.yaml",
   "method": "tmm",
   "intervals": {
     "pi/12": [

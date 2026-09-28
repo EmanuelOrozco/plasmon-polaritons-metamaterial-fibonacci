@@ -53,8 +53,9 @@ El cálculo no integra Maxwell en el tiempo. Para cada terna
 esa frecuencia es banda o gap.
 
 \begin{enumerate}
-\item Un YAML en \texttt{configs/figure\_0N.yaml} fija \(a\), \(b\),
-\(\omega_e/2\pi\), \(\omega_m/2\pi\), polarización y el barrido.
+\item Un YAML en \texttt{configs/physics/figure\_0N.yaml} fija \(a\), \(b\),
+\(\omega_e/2\pi\), \(\omega_m/2\pi\), polarización y el barrido; otro en
+\texttt{configs/tmm/figure\_0N.yaml} fija el número de frecuencias.
 \item \texttt{config.load\_figure} valida el YAML con Pydantic y convierte milímetros y GHz a SI.
 \item \texttt{TMMSolver(spec).scan} recorre \(\nu\), calcula \(R_m\) y
 \(k L_m/\pi\).

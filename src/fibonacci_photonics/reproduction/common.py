@@ -8,6 +8,7 @@ from typing import Any, Literal
 
 from matplotlib.figure import Figure
 
+from fibonacci_photonics.analysis.band_closure import DEFAULT_EDGE_XTOL_FRACTION
 from fibonacci_photonics.config import FigureSetup, load_figure, load_pwe_numerics
 from fibonacci_photonics.errors import InvalidParameterError
 from fibonacci_photonics.io.paths import relative, result_dirs
@@ -36,7 +37,7 @@ class FigureRun:
     method : {"tmm", "pwe"}
         Método que calcula R(ν).
     setup : FigureSetup
-        Definición física validada (``configs/<figura>.yaml``).
+        Física (``configs/physics/<figura>.yaml``) y mallas de la TMM (``configs/tmm/<figura>.yaml``).
     numerics : pydantic model or None
         Numérica del PWE (``configs/pwe/<figura>.yaml``); ``None`` en la TMM.
     numerics_path : Path or None
@@ -102,8 +103,20 @@ class FigureRun:
 
     @property
     def close_band_edges(self) -> bool:
-        """El cierre de bordes solo se usa en el PWE (la malla de la TMM ya es densa)."""
-        return self.is_pwe and bool(getattr(self.numerics, "close_band_edges", False))
+        """Cierre de las curvas en los bordes exactos: siempre en la TMM, configurable en el PWE.
+
+        Aun con la malla densa de la TMM, las puntas de las bandas planas junto a ν_m
+        caen entre muestras; refinarlas cuesta milisegundos.
+        """
+        if not self.is_pwe:
+            return True
+        return bool(getattr(self.numerics, "close_band_edges", False))
+
+    @property
+    def edge_xtol_fraction(self) -> float:
+        if self.is_pwe:
+            return float(self.numerics.edge_xtol_fraction)
+        return DEFAULT_EDGE_XTOL_FRACTION
 
     def solver(self, *, workers: int | None = None) -> DispersionSolver:
         """Solver configurado para esta figura; ``workers`` solo afecta al PWE."""
@@ -119,8 +132,12 @@ class FigureRun:
     def finish(self, fig: Figure, payload: dict[str, Any], *, title: str, description: str) -> dict[str, Any]:
         """Guarda la figura, ``summary.json``, ``metadata.json`` y el README de la carpeta."""
         paths = save_figure(fig, self.dirs["output"], self.figure_id, formats=self.formats)
-        config_path = self.numerics_path if self.is_pwe and self.numerics_path else self.setup.path
-        extra: dict[str, Any] = {"config": relative(config_path), "method": self.method}
+        config_path = self.numerics_path if self.is_pwe and self.numerics_path else self.setup.tmm_path
+        extra: dict[str, Any] = {
+            "config": relative(config_path),
+            "physics": relative(self.setup.path),
+            "method": self.method,
+        }
         if self.is_pwe:
             extra["numerics"] = self.numerics.model_dump(mode="json")
         extra |= payload

@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from fibonacci_photonics.benchmark import plasmon_report
+from fibonacci_photonics.comparison import plasmon_report
 
 if __name__ == "__main__":
     plasmon_report.main()

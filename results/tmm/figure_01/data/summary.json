@@ -1,5 +1,6 @@
 {
-  "config": "configs/figure_01.yaml",
+  "config": "configs/tmm/figure_01.yaml",
+  "physics": "configs/physics/figure_01.yaml",
   "method": "tmm",
   "n0_gap_closed_ghz": {
     "3": 1.7320508075688772,
@@ -10,73 +11,113 @@
       "m": 3,
       "theta": 0.0,
       "theta_label": "0",
-      "seconds": 0.0038238819979596883,
+      "seconds": 0.0038066260021878406,
       "n_allowed": 12000,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 0,
+      "n_extrema": 6,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 48,
+      "edge_seconds": 0.003995802995632403
     },
     {
       "m": 4,
       "theta": 0.0,
       "theta_label": "0",
-      "seconds": 0.003961848997278139,
+      "seconds": 0.0040602139924885705,
       "n_allowed": 12000,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 0,
+      "n_extrema": 11,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 89,
+      "edge_seconds": 0.007507770002121106
     },
     {
       "m": 3,
       "theta": 0.2617993877991494,
       "theta_label": "pi/12",
-      "seconds": 0.004287293995730579,
+      "seconds": 0.0036173770058667287,
       "n_allowed": 11548,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 13,
+      "n_extrema": 0,
+      "n_hidden_gaps": 1,
+      "edge_evaluations": 145,
+      "edge_seconds": 0.01073119300417602
     },
     {
       "m": 4,
       "theta": 0.2617993877991494,
       "theta_label": "pi/12",
-      "seconds": 0.0037480469909496605,
+      "seconds": 0.003775075005250983,
       "n_allowed": 11419,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 26,
+      "n_extrema": 0,
+      "n_hidden_gaps": 4,
+      "edge_evaluations": 351,
+      "edge_seconds": 0.026252170995576307
     },
     {
       "m": 3,
       "theta": 0.5235987755982988,
       "theta_label": "pi/6",
-      "seconds": 0.0036901830026181415,
+      "seconds": 0.003560311990440823,
       "n_allowed": 10930,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 12,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 114,
+      "edge_seconds": 0.007980246999068186
     },
     {
       "m": 4,
       "theta": 0.5235987755982988,
       "theta_label": "pi/6",
-      "seconds": 0.0038946129934629425,
+      "seconds": 0.0034039330057566985,
       "n_allowed": 10014,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 26,
+      "n_extrema": 0,
+      "n_hidden_gaps": 2,
+      "edge_evaluations": 289,
+      "edge_seconds": 0.019744610006455332
     },
     {
       "m": 3,
       "theta": 1.0471975511965976,
       "theta_label": "pi/3",
-      "seconds": 0.0041213289950974286,
+      "seconds": 0.0035710429947357625,
       "n_allowed": 6005,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 12,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 107,
+      "edge_seconds": 0.007656336994841695
     },
     {
       "m": 4,
       "theta": 1.0471975511965976,
       "theta_label": "pi/3",
-      "seconds": 0.0037560579949058592,
+      "seconds": 0.0036900940031046048,
       "n_allowed": 5666,
       "clipped_near_unit": 0,
-      "max_abs_imag_r": 0.0
+      "max_abs_imag_r": 0.0,
+      "n_edges": 23,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 217,
+      "edge_seconds": 0.01547352600027807
     }
   ],
   "outputs": {

@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from fibonacci_photonics.benchmark.compare import compare_scans
+from fibonacci_photonics.comparison.compare import compare_scans
 from fibonacci_photonics.physics.electromagnetics import Polarization
 from fibonacci_photonics.physics.units import omega_from_nu_ghz
 from fibonacci_photonics.solvers import TMMSolver

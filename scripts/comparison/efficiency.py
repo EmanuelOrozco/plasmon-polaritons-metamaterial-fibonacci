@@ -11,7 +11,7 @@ for _name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from fibonacci_photonics.benchmark import efficiency  # noqa: E402
+from fibonacci_photonics.comparison import efficiency  # noqa: E402
 
 if __name__ == "__main__":
     efficiency.main(plot_only="--plot-only" in sys.argv)

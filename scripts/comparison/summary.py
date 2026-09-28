@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from fibonacci_photonics.benchmark import summary
+from fibonacci_photonics.comparison import summary
 
 if __name__ == "__main__":
     summary.main()

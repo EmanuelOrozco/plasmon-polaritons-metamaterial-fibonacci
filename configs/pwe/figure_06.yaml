@@ -1,4 +1,4 @@
-# Parámetros numéricos del PWE para la Figura 6 (física en configs/figure_06.yaml).
+# Parámetros numéricos del PWE para la Figura 6 (física en configs/physics/figure_06.yaml).
 rule: inverse
 fibonacci_orders: [2, 3, 4, 5, 6]
 harmonics_per_layer: {2: 16, 3: 16, 4: 16, 5: 8, 6: 8}

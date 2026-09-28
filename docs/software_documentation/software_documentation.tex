@@ -38,15 +38,18 @@ Subpaquete & Responsabilidad \\
 \texttt{solvers} & contrato \texttt{DispersionSolver}, \texttt{TMMSolver}, \texttt{PWESolver} \\
 \texttt{analysis} & bordes de banda, subbandas plasmónicas, anchos vs $\theta$ \\
 \texttt{config} & esquemas Pydantic de los YAML \\
-\texttt{benchmark} & comparación y tiempos TMM vs PWE \\
-\texttt{reproduction}, \texttt{studies} & Figs.~1--6 y estudios numéricos \\
+\texttt{comparison} & comparación y tiempos TMM vs PWE \\
+\texttt{reproduction} & Figs.~1--6 con cualquiera de los dos métodos \\
+\texttt{studies.tmm}, \texttt{studies.pwe} & estudios numéricos de cada método \\
 \texttt{io}, \texttt{viz} & resultados, metadatos, tablas LaTeX, estilo de figuras \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 Los parámetros científicos no están en los scripts: están en
-\texttt{configs/figure\_0N.yaml} y se validan al cargarlos. El diseño completo
+\texttt{configs/physics/figure\_0N.yaml} (comunes a los dos métodos), con las
+mallas de cada método en \texttt{configs/tmm/} y \texttt{configs/pwe/}, y se
+validan al cargarlos. El diseño completo
 está en \textit{Arquitectura, flujo y ejecución del proyecto}.
 
 \section{Instalación}

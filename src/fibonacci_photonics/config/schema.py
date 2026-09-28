@@ -65,7 +65,7 @@ class StrictModel(BaseModel):
 
 
 class SuperlatticeConfig(StrictModel):
-    """Parámetros físicos de la superred (bloque común de ``configs/figure_0N.yaml``)."""
+    """Parámetros físicos de la superred (bloque común de ``configs/physics/figure_0N.yaml``)."""
 
     layer_a_thickness_mm: PositiveFloat
     layer_b_thickness_mm: PositiveFloat

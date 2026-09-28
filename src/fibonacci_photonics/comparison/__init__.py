@@ -1,4 +1,4 @@
-"""Comparación y benchmarking de los métodos TMM y PWE.
+"""Comparación de los métodos TMM y PWE (salidas en ``results/comparison``).
 
 - ``compare``: acuerdo punto a punto entre barridos y errores de borde entre bandas.
 - ``timing``: tiempos, ajustes de potencias y ``benchmark_methods`` sobre cualquier
@@ -7,8 +7,8 @@
   informes de ``results/comparison`` (figuras, JSON y tablas LaTeX).
 """
 
-from fibonacci_photonics.benchmark.compare import ScanAgreement, compare_scans, edge_errors, match_intervals
-from fibonacci_photonics.benchmark.timing import MethodRun, benchmark_methods, power_fit, stopwatch, timed
+from fibonacci_photonics.comparison.compare import ScanAgreement, compare_scans, edge_errors, match_intervals
+from fibonacci_photonics.comparison.timing import MethodRun, benchmark_methods, power_fit, stopwatch, timed
 
 __all__ = [
     "MethodRun",

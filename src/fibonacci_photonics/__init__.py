@@ -10,9 +10,10 @@ Capas del paquete:
 - ``physics``: materiales, polarización, palabras de Fibonacci y ``SuperlatticeSpec``.
 - ``solvers``: protocolo ``DispersionSolver``, barridos y ambos métodos.
 - ``analysis``: bordes de banda, subbandas plasmónicas y anchos de banda.
-- ``config``: esquemas Pydantic de los YAML de ``configs/``.
-- ``benchmark``: comparación y tiempos TMM vs PWE.
-- ``reproduction`` y ``studies``: figuras del artículo y estudios numéricos.
+- ``config``: esquemas Pydantic de los YAML de ``configs/`` (``physics/``, ``tmm/``, ``pwe/``).
+- ``comparison``: comparación y tiempos TMM vs PWE.
+- ``reproduction``: figuras del artículo con cualquiera de los dos métodos.
+- ``studies.tmm`` y ``studies.pwe``: estudios numéricos de cada método.
 - ``io`` y ``viz``: rutas, resultados, tablas LaTeX y gráficas.
 
 Ejemplo::
