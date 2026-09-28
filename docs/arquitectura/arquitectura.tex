@@ -290,8 +290,8 @@ llaman a \texttt{fibonacci\_photonics.studies}; y
 tiempos sean comparables; \texttt{--plot-only} redibuja sin medir.
 
 Cada carpeta tiene un \texttt{run\_all.py} que lanza sus scripts en orden con
-el mismo intérprete y aborta si uno falla. Los envoltorios antiguos
-\texttt{scripts/reproduce\_figure\_0N.py} siguen ejecutando la versión TMM.
+el mismo intérprete y aborta si uno falla. Para una sola figura se usa
+\texttt{scripts/run\_figure.py N --method tmm|pwe|both}.
 \texttt{PWE\_WORKERS=n} limita los procesos del PWE.
 
 \section{Flujo de una corrida}

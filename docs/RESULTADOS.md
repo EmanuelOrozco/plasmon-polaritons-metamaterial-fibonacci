@@ -199,9 +199,9 @@ formulación, en [metodo_ondas_planas.pdf](metodo_ondas_planas/metodo_ondas_plan
 - Figs. 5–6 ($m\le 6$): los bordes de las subbandas coinciden con errores
   relativos de ancho menores que $10^{-5}$.
 - Tiempo en un núcleo (`scripts/comparison/efficiency.py`, `results/comparison/efficiency/`):
-  - Las seis figuras cuestan 0.27 s con la TMM y ≈5.0 h con el PWE, entre $3\times10^4$ y
-    $4\times10^5$ veces más por figura.
-  - El PWE crece como $N^{2.6}$ con $N=2hF_m+1$ (36.5 s por frecuencia con $m=10$). La TMM por
+  - Las seis figuras cuestan 0.31 s con la TMM y ≈5.2 h con el PWE, entre $3\times10^4$ y
+    $3\times10^5$ veces más por figura.
+  - El PWE crece como $N^{2.6}$ con $N=2hF_m+1$ (35.2 s por frecuencia con $m=10$). La TMM por
     recurrencia tarda 0.2–0.3 µs por frecuencia hasta $m=20$.
   - Las cifras exactas de la última corrida están en
     `results/comparison/tables/efficiency_macros.tex`, de donde las toman los PDF.

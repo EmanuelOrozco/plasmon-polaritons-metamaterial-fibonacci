@@ -454,19 +454,21 @@ barrido: no es un bug, es adaptación de impedancia con el aire.
 
 \section{Tests automáticos}
 
-\texttt{pytest tests} cubre:
+\texttt{pytest tests} cubre tres niveles:
 
 \begin{itemize}
-\item \texttt{test\_fibonacci.py}: palabras, inflación, \(N_B\), \(L_m\),
-identidad de substitución.
-\item \texttt{test\_materials.py}: ceros de Drude, \(\nu_e\) y \(\nu_m\).
-\item \texttt{test\_transfer\_matrix.py}: \(\det T=1\), (7)--(9), recurrencia
-vs producto, y que TE coincide con TM a \(\theta=0\).
-\item \texttt{test\_dispersion.py}: máscara de banda, frecuencia
+\item \texttt{unit/}: Fibonacci (palabras, inflación, \(N_B\), \(L_m\),
+identidad de substitución), materiales (ceros de Drude, \(\nu_e\), \(\nu_m\)),
+matriz de transferencia (\(\det T=1\), (7)--(9), recurrencia vs producto),
+coeficientes de Fourier, PWE frente a la TMM, bordes de banda, validación de
+los YAML con Pydantic y el contrato común de los solvers (entradas inválidas,
+\texttt{ConvergenceWarning}).
+\item \texttt{analytic/}: casos con solución cerrada: límite homogéneo, bicapa
+de cuarto de onda, invariante de Kohmoto, TE = TM a \(\theta=0\), dualidad
+\(\varepsilon\leftrightarrow\mu\), Parseval y cierre del gap
 \(\langle n\rangle=0\).
-\item \texttt{test\_validation.py}: \(N_{\mathrm{modos}}=F_{m-2}\) en las
-ventanas de las Figs.~2 y 4.
-\item \texttt{test\_params.py}: YAML de cada figura.
+\item \texttt{regression/}: \(N_{\mathrm{modos}}=F_{m-2}\) en las ventanas de
+las Figs.~2 y 4 y valores guardados en \texttt{reference\_values.json}.
 \end{itemize}
 
 Tres casos se omiten (\texttt{skip}) cuando \(k>m\) en una identidad de

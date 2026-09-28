@@ -127,7 +127,7 @@ Salidas:
 - Parámetros numéricos del PWE: `configs/pwe/`
 - Estudio de tiempos TMM vs PWE (un núcleo): `configs/comparison/efficiency.yaml`,
   `scripts/comparison/efficiency.py` → `results/comparison/efficiency/`. Conclusión: la TMM es
-  el método óptimo en 1D (exacta; 0.27 s frente a ≈5 h del PWE para las seis figuras).
+  el método óptimo en 1D (exacta; 0.31 s frente a ≈5.2 h del PWE para las seis figuras).
 
 ### Regenerar documentación PDF (opcional)
 
