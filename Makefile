@@ -1,5 +1,5 @@
 .PHONY: all reproduce tests lint results tmm pwe comparison figures documents paper docs guides pwe-docs \
-        verify presentation clean
+        verify presentation presentation-pwe clean
 
 PYTHON := .venv/bin/python
 export MPLCONFIGDIR ?= /tmp/mpl
@@ -67,6 +67,12 @@ presentation:
 	$(PYTHON) presentacion/scripts/generar_imagenes.py
 	cd presentacion && pdflatex -interaction=nonstopmode presentacion.tex
 	cd presentacion && pdflatex -interaction=nonstopmode presentacion.tex
+
+# Presentación del método de ondas planas: usa results/pwe y results/comparison ya generados.
+presentation-pwe:
+	$(PYTHON) presentacion/scripts/generar_imagenes_pwe.py
+	cd presentacion && pdflatex -interaction=nonstopmode presentacion_pwe.tex
+	cd presentacion && pdflatex -interaction=nonstopmode presentacion_pwe.tex
 
 clean:
 	find docs presentacion -type f \( -name '*.aux' -o -name '*.log' -o -name '*.out' -o -name '*.toc' \

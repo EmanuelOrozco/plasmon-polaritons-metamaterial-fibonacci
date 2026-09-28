@@ -192,7 +192,7 @@ results/pwe/                 salidas PWE
 results/comparison/          comparación TMM vs PWE y tablas
 tests/                       pytest: unit/, analytic/ (casos cerrados), regression/ (valores de referencia)
 docs/                        LaTeX, PDF y anexos Markdown
-presentacion/                presentación (independiente; no se regenera con make results)
+presentacion/                presentaciones del paper (TMM) y del PWE (make presentation / presentation-pwe)
 notebooks/                   exploración / validación (opcional)
 referencias/                 solo local (no se sube): paper original y material del PWE del libro
 ```
