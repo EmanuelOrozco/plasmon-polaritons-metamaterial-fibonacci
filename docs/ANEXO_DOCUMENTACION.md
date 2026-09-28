@@ -143,7 +143,7 @@ generadas y comparación con el PRB 2010.
 ## 5b. Método de ondas planas (`metodo_ondas_planas`)
 
 Paper que desarrolla el PWE para la superred siguiendo el capítulo 1D de
-Sukhoivanov y Guryev (`references/pwe/PWE-Method-1D.pdf`, cuaderno
+Sukhoivanov y Guryev (`referencias/metodo_ondas_planas/PWE-Method-1D.pdf`, cuaderno
 `PWE-1d.ipynb`).
 
 1. Planteamiento, celda unidad $S_m$, red recíproca y zona de Brillouin.

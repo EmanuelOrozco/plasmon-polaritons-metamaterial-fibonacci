@@ -4,7 +4,7 @@
 PYTHON := .venv/bin/python
 export MPLCONFIGDIR ?= /tmp/mpl
 
-# Documentos LaTeX (docs/<carpeta>/<nombre>.tex); cada PDF se copia también a la raíz.
+# Documentos LaTeX (docs/<carpeta>/<nombre>.tex).
 PWE_DOCS   := docs/metodo_ondas_planas/metodo_ondas_planas.pdf docs/comparacion_tmm_pwe/comparacion_tmm_pwe.pdf
 GUIDES     := docs/guia_conceptual/guia_conceptual.pdf docs/solucion_numerica/solucion_numerica.pdf \
               docs/arquitectura/arquitectura.pdf
@@ -58,7 +58,6 @@ docs/%.pdf: docs/%.tex
 	cd $(dir $<) && for pass in 1 2; do \
 	  pdflatex -interaction=nonstopmode -halt-on-error $(notdir $<) > /dev/null \
 	  || { grep -a -A4 '^!' $(notdir $(basename $<)).log; exit 1; }; done
-	cp $@ $(notdir $@)
 
 # Comprueba salidas, criterios TMM vs PWE y que los PDF estén al día y compilen limpios.
 verify:

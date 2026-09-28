@@ -9,7 +9,7 @@ Las figuras del paper se calculan con dos métodos independientes:
 - **Matriz de transferencia (TMM)** a incidencia oblicua: exacta para medios
   estratificados; es el método de producción.
 - **Expansión en ondas planas (PWE)**, siguiendo el capítulo 1D de Sukhoivanov
-  y Guryev (`references/pwe/`), en la forma $k(\omega)$ con la regla inversa de
+  y Guryev (copia local en `referencias/`), en la forma $k(\omega)$ con la regla inversa de
   Li para tratar el metamaterial de Drude; sirve de verificación independiente.
 
 No se usa FDTD ni elementos finitos.
@@ -119,9 +119,6 @@ Por método:
 `scripts/tmm/figure_0N.py` y `scripts/pwe/figure_0N.py` siguen disponibles como envoltorios
 de una línea sobre el mismo runner.
 
-Los scripts antiguos `scripts/reproduce_figure_0N.py` y `scripts/reproduce_all.py`
-siguen funcionando: llaman a `scripts/tmm/`.
-
 Salidas:
 
 - Imágenes: `results/<método>/figure_0N/output/` (PDF y PNG; la TMM también SVG)
@@ -190,15 +187,14 @@ scripts/tmm/                 figuras 1–6 y convergencia con la TMM
 scripts/pwe/                 benchmark del libro, estudios numéricos y figuras 1–6 con el PWE
 scripts/comparison/          superposiciones, errores, tablas LaTeX y eficiencia (tiempo, memoria)
 scripts/verify_results.py    verificación automática (make verify)
-scripts/reproduce_*.py       envoltorios antiguos de scripts/tmm/ (los usa la presentación)
-results/tmm/                 salidas TMM (figures/ es un enlace a esta carpeta)
+results/tmm/                 salidas TMM
 results/pwe/                 salidas PWE
 results/comparison/          comparación TMM vs PWE y tablas
-references/pwe/              cuaderno PWE-1d.ipynb y PWE_2D.m (el PDF del capítulo es local)
 tests/                       pytest: unit/, analytic/ (casos cerrados), regression/ (valores de referencia)
 docs/                        LaTeX, PDF y anexos Markdown
 presentacion/                presentación (independiente; no se regenera con make results)
 notebooks/                   exploración / validación (opcional)
+referencias/                 solo local (no se sube): paper original y material del PWE del libro
 ```
 
 ### Qué se sube al repositorio
@@ -208,10 +204,11 @@ El `.gitignore` deja fuera todo lo que se regenera o es local:
 - Se sube: código (`src/`, `scripts/`, `tests/`), configuración (`configs/`),
   figuras y resúmenes (`results/**/output/`, `summary.json`, `results/comparison/tables/`),
   los barridos PWE (`results/pwe/**/data/*.npz`, horas de cómputo que usa la comparación),
-  las fuentes y los PDF de `docs/`, `presentacion/` y el enlace `figures`.
-- No se sube: entorno y cachés, auxiliares de LaTeX, copias de los PDF en la raíz,
+  las fuentes y los PDF de `docs/` y `presentacion/`.
+- No se sube: entorno y cachés, auxiliares de LaTeX,
   barridos TMM (`results/tmm/**/data/*.npz`, segundos de cómputo), metadatos de
-  corrida y el material con copyright (`references/paper/`, `references/pwe/*.pdf`).
+  corrida y el material de partida externo (`referencias/`: paper de APS, capítulo,
+  cuaderno y `PWE_2D.m` del libro, con copyright de sus autores).
 
 ## Convención física importante
 

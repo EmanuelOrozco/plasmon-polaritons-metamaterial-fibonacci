@@ -337,7 +337,7 @@ make presentation -> presentacion/ (objetivo aparte)
 \end{lstlisting}
 
 Todos los PDF se compilan con una sola regla de patrón (dos pases de
-\texttt{pdflatex}, que se detiene en el primer error) y se copian a la raíz.
+\texttt{pdflatex}, que se detiene en el primer error) y quedan junto a su fuente en \texttt{docs/<documento>/}.
 \texttt{make verify} comprueba que existan todas las salidas, que se cumplan
 los criterios de acuerdo TMM vs PWE (conteos \(F_{m-2}\), errores de
 semitraza, de borde y de ancho), que cada tabla y figura citada exista y que
@@ -483,7 +483,7 @@ está en otra ruta, use el intérprete explícito.
 \begin{center}
 \begin{tabular}{ll}
 \toprule
-PDF en la raíz & Contenido \\
+PDF en \texttt{docs/} & Contenido \\
 \midrule
 \texttt{paper\_reimplementation.pdf} & artículo de la reproducción \\
 \texttt{software\_documentation.pdf} & manual corto de la API \\
@@ -498,8 +498,8 @@ PDF en la raíz & Contenido \\
 
 Fuentes LaTeX en \texttt{docs/}. Auditoría previa al código:
 \texttt{docs/fase\_A\_auditoria\_matematica.md}. Informe de validación:
-\texttt{docs/INFORME\_VALIDACION.md}. Capítulo del libro y cuaderno del PWE:
-\texttt{references/pwe/}.
+\texttt{docs/INFORME\_VALIDACION.md}. El paper original y el material del PWE (capítulo del libro, cuaderno y
+\texttt{PWE\_2D.m}) se guardan solo en local, en \texttt{referencias/}.
 
 \section{Resumen operativo}
 

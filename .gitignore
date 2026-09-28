@@ -1,8 +1,8 @@
 # Qué se sube al repositorio
-#   src/, scripts/, tests/, configs/, notebooks/, references/pwe/ (código de referencia),
+#   src/, scripts/, tests/, configs/, notebooks/,
 #   results/**/output/ (figuras), results/**/summary.json, results/comparison/tables/,
 #   results/pwe/**/data/*.npz (barridos PWE: horas de cómputo, los usa la comparación),
-#   docs/**/*.tex y docs/**/*.pdf, presentacion/ y el enlace figures -> results/tmm.
+#   docs/**/*.tex y docs/**/*.pdf, presentacion/.
 # Todo lo demás se regenera con `make` o es local.
 
 # Entorno de Python y cachés
@@ -45,16 +45,14 @@ Thumbs.db
 *.snm
 *.vrb
 
-# Copias de los PDF en la raíz (las canónicas están en docs/<documento>/)
+# PDF sueltos en la raíz (los documentos viven en docs/<documento>/)
 /*.pdf
 
 # Datos regenerables en segundos: barridos TMM y metadatos de cada corrida
 results/tmm/**/data/*.npz
 results/**/data/metadata.json
 
-# Material con copyright (artículo APS y capítulo del libro): solo local
-references/paper/
-references/pwe/*.pdf
-docs/paper_source/
+# Material de partida externo (artículo APS y método PWE del libro): solo local
+referencias/
+references/
 Plasmon_polaritons*.pdf
-_paper_pages/
