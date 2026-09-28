@@ -306,7 +306,7 @@ Phys.\ Rev.\ B \textbf{81}, 153101 (2010)}
     \node[caja] (p) {\textbf{1. Leer el paper}\\PDF de 4 páginas};
     \node[caja,right=of p] (a) {\textbf{2. Auditoría matemática}\\qué dice, qué falta};
     \node[caja,right=of a] (e) {\textbf{3. Ecuaciones completas}\\Helmholtz, TMM, Bloch};
-    \node[caja,below=of e] (c) {\textbf{4. Código Python}\\paquete \texttt{fibonacci\_tmm}};
+    \node[caja,below=of e] (c) {\textbf{4. Código Python}\\paquete \texttt{fibonacci\_photonics}};
     \node[caja,below=of a] (t) {\textbf{5. Tests automáticos}\\\texttt{pytest}};
     \node[caja,below=of p,fill=naranja!45] (f) {\textbf{6. Figuras y comparación}\\PNG/PDF/SVG + JSON};
     \draw[flecha] (p) -- (a);
@@ -318,7 +318,7 @@ Phys.\ Rev.\ B \textbf{81}, 153101 (2010)}
   \end{tikzpicture}
   \vspace{0.6em}
 
-  {\small Resultado: biblioteca \texttt{src/fibonacci\_tmm/}, un YAML por figura en \texttt{configs/}, un script por figura en \texttt{scripts/}.}
+  {\small Resultado: paquete \texttt{src/fibonacci\_photonics/}, un YAML por figura en \texttt{configs/}, un único runner \texttt{scripts/run\_figure.py}.}
 \end{frame}
 
 \begin{frame}{Auditoría: lo que el paper dice y lo que no}
@@ -462,15 +462,17 @@ Phys.\ Rev.\ B \textbf{81}, 153101 (2010)}
       fl/.style={-{Stealth[length=2.5mm]},line width=1pt,fondo},
       node distance=0.55cm and 0.7cm]
     \node[io] (yaml) {\texttt{configs/*.yaml}\\parámetros};
-    \node[mod,right=of yaml] (params) {\texttt{params.py}\\\texttt{SuperlatticeSpec}};
+    \node[mod,right=of yaml] (params) {\texttt{config/} (Pydantic)\\\texttt{SuperlatticeSpec}};
     \node[mod,right=1.0cm of params,yshift=1.15cm] (mat) {\texttt{materials.py}\\Drude $\varepsilon_B,\mu_B$};
     \node[mod,right=1.0cm of params] (fib) {\texttt{fibonacci.py}\\palabras $S_m$, $F_m$};
     \node[mod,right=1.0cm of params,yshift=-1.15cm] (em) {\texttt{electromagnetics.py}\\$q$, $Q$, $\chi$};
-    \node[mod,right=of fib] (tmm) {\texttt{transfer\_matrix.py}\\$M$, $T_m$, $R_m$};
-    \node[mod,below=1.6cm of tmm] (disp) {\texttt{dispersion.py}\\$|R|\le1$, $k(\nu)$};
-    \node[mod,left=of disp] (modes) {\texttt{plasmon\_modes.py}\\\texttt{bandwidth.py}};
-    \node[mod,left=of modes] (plot) {\texttt{plotting.py}\\estilo PRB};
-    \node[io,left=of plot] (out) {\texttt{figures/figure\_0N/}\\PNG, PDF, SVG, JSON};
+    \node[mod,right=of fib] (tmm) {\texttt{solvers/tmm/}\\$M$, $T_m$, $R_m$};
+    \node[mod,below=1.6cm of tmm] (disp) {\texttt{solvers/scan.py}\\$|R|\le1$, $k(\nu)$};
+    \node[mod,left=of disp] (modes) {\texttt{analysis/}\\modos, anchos};
+    \node[mod,left=of modes] (plot) {\texttt{viz/}\\estilo PRB};
+    \node[io,left=of plot] (out) {\texttt{results/tmm/figure\_0N/}\\PNG, PDF, SVG, JSON};
+    \node[draw=fondo,dashed,rounded corners,fit=(mat)(fib)(em),inner sep=3pt,
+          label={[font=\scriptsize,fondo]above:\texttt{physics/}}] {};
     \draw[fl] (yaml) -- (params);
     \draw[fl] (params.east) -- (mat.west);
     \draw[fl] (params) -- (fib);
@@ -483,7 +485,7 @@ Phys.\ Rev.\ B \textbf{81}, 153101 (2010)}
     \draw[fl] (modes) -- (plot);
     \draw[fl] (plot) -- (out);
     \node[draw=rojo,dashed,rounded corners,fit=(out)(plot)(modes)(disp),inner sep=6pt,
-          label={[font=\scriptsize,rojo]below:\texttt{scripts/reproduce\_figure\_0N.py} orquesta cada figura}] {};
+          label={[font=\scriptsize,rojo]below:\texttt{reproduction/} (\texttt{scripts/run\_figure.py}) orquesta cada figura}] {};
   \end{tikzpicture}
 \end{frame}
 
@@ -778,8 +780,8 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && pip install -e .
 
 pytest                                   # tests
-python scripts/reproduce_all.py          # las 6 figuras
-python scripts/reproduce_figure_03.py    # una figura
+python scripts/run_figure.py all        # las 6 figuras (TMM)
+python scripts/run_figure.py 3          # una figura
 \end{verbatim}
   \vspace{0.3em}
   \small Para experimentar: editar \texttt{configs/figure\_0N.yaml} (por ejemplo \texttt{omega\_m\_over\_2pi\_ghz}, \texttt{fibonacci\_orders}, \texttt{thetas\_rad}) y volver a ejecutar el script.

@@ -1,5 +1,84 @@
 {
   "config": "configs/figure_03.yaml",
+  "method": "tmm",
+  "n0_gap_closed_ghz": {
+    "3": null,
+    "4": null
+  },
+  "runs": [
+    {
+      "m": 3,
+      "theta": 0.0,
+      "theta_label": "0",
+      "seconds": 0.0027568999939830974,
+      "n_allowed": 6729,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.0,
+      "theta_label": "0",
+      "seconds": 0.0025375020049978048,
+      "n_allowed": 6809,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "seconds": 0.0024981419992400333,
+      "n_allowed": 6546,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "seconds": 0.0026970009930664673,
+      "n_allowed": 6631,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "seconds": 0.0026387480029370636,
+      "n_allowed": 7011,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "seconds": 0.0023906830028863624,
+      "n_allowed": 6031,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "seconds": 0.002527046002796851,
+      "n_allowed": 4039,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "seconds": 0.002456111993524246,
+      "n_allowed": 3401,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    }
+  ],
   "outputs": {
     "pdf": "results/tmm/figure_03/output/figure_03.pdf",
     "png": "results/tmm/figure_03/output/figure_03.png",

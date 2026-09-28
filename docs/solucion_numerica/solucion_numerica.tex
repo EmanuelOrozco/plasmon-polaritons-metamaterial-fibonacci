@@ -35,7 +35,7 @@ de las ecuaciones del PRB 2010 a las seis figuras}
 \maketitle
 
 \begin{abstract}
-Este documento describe, con el código real del paquete \texttt{fibonacci\_tmm},
+Este documento describe, con el código real del paquete \texttt{fibonacci\_photonics},
 cómo se resuelve numéricamente el modelo de Reyes-Gómez \textit{et al.},
 Phys.\ Rev.\ B \textbf{81}, 153101 (2010), y cómo se generan las Figs.~1--6.
 La física de fondo está en la \textit{Guía conceptual} hermana; aquí el hilo
@@ -55,11 +55,11 @@ esa frecuencia es banda o gap.
 \begin{enumerate}
 \item Un YAML en \texttt{configs/figure\_0N.yaml} fija \(a\), \(b\),
 \(\omega_e/2\pi\), \(\omega_m/2\pi\), polarización y el barrido.
-\item \texttt{params.spec\_from\_mapping} convierte milímetros y GHz a SI.
-\item \texttt{scan\_dispersion} recorre \(\nu\), calcula \(R_m\) y
+\item \texttt{config.load\_figure} valida el YAML con Pydantic y convierte milímetros y GHz a SI.
+\item \texttt{TMMSolver(spec).scan} recorre \(\nu\), calcula \(R_m\) y
 \(k L_m/\pi\).
-\item Los scripts \texttt{scripts/tmm/figure\_0N.py} dibujan y
-guardan PDF/PNG/SVG más los datos \texttt{.npz} y un \texttt{summary.json}.
+\item \texttt{reproduction.run\_figure("figure\_0N", "tmm")} (o
+\texttt{scripts/run\_figure.py}) dibuja y guarda PDF/PNG/SVG más los datos \texttt{.npz} y un \texttt{summary.json}.
 \end{enumerate}
 
 Dos caminos independientes para \(R_m\), que deben coincidir:
@@ -71,12 +71,13 @@ Dos caminos independientes para \(R_m\), que deben coincidir:
 \(R_m=2R_{m-1}R_{m-2}-R_{m-3}\).
 \end{itemize}
 
-Por defecto las figuras usan \texttt{method="recurrence"} (más barato en \(m\)
+Por defecto las figuras usan \texttt{TMMSolver(spec, algorithm="recurrence")} (más barato en \(m\)
 alto). El producto sirve de test.
 
 \section{Arquitectura del código}
 
-El paquete vive en \texttt{src/fibonacci\_tmm/}.
+El paquete vive en \texttt{src/fibonacci\_photonics/}; la TMM está en
+\texttt{solvers/tmm/} y la física compartida en \texttt{physics/}.
 
 {\small
 \begin{center}
@@ -84,17 +85,18 @@ El paquete vive en \texttt{src/fibonacci\_tmm/}.
 \toprule
 Módulo & Rol numérico & Qué calcula \\
 \midrule
-\texttt{constants.py} & \(c\), GHz, mm, tolerancias & SI y umbrales \\
-\texttt{fibonacci.py} & \(S_m\), \(F_m\), \(L_m\) & palabras y conteos \\
-\texttt{materials.py} & Drude y aire & \(\varepsilon(\omega)\), \(\mu(\omega)\) \\
-\texttt{params.py} & YAML \(\to\) SI & \texttt{SuperlatticeSpec} \\
-\texttt{electromagnetics.py} & \(n\), \(q\), \(Q\), \(\chi\) & cinemática de la onda \\
-\texttt{transfer\_matrix.py} & \(M\), \(T_m\), \(R_m\) & TMM \\
-\texttt{dispersion.py} & \(\cos(kL)=R\), intervalos & barrido y bandas \\
-\texttt{plasmon\_modes.py} & recuento & subbandas en una ventana \\
-\texttt{bandwidth.py} & \(\nu_{\min}(\theta),\nu_{\max}(\theta)\) & Fig.~6 \\
-\texttt{plotting.py} & estilo PRB & cortes de curva y relleno \\
-\texttt{provenance.py} & metadatos & reproducibilidad \\
+\texttt{physics/constants.py} & \(c\), GHz, mm & SI \\
+\texttt{physics/fibonacci.py} & \(S_m\), \(F_m\), \(L_m\) & palabras y conteos \\
+\texttt{physics/materials.py} & Drude y aire & \(\varepsilon(\omega)\), \(\mu(\omega)\) \\
+\texttt{config/} & YAML \(\to\) SI & esquemas Pydantic, \texttt{SuperlatticeSpec} \\
+\texttt{physics/electromagnetics.py} & \(n\), \(q\), \(Q\), \(\chi\) & cinemática de la onda \\
+\texttt{solvers/tmm/transfer\_matrix.py} & \(M\), \(T_m\), \(R_m\) & TMM \\
+\texttt{solvers/tmm/solver.py} & \(\cos(kL)=R\) & \texttt{TMMSolver}: barrido y evaluador \\
+\texttt{solvers/scan.py} & bandas, intervalos & \texttt{DispersionScan}, máscara \\
+\texttt{analysis/plasmon\_modes.py} & recuento & subbandas en una ventana \\
+\texttt{analysis/bandwidth.py} & \(\nu_{\min}(\theta),\nu_{\max}(\theta)\) & Fig.~6 \\
+\texttt{viz/} & estilo PRB & cortes de curva y relleno \\
+\texttt{io/provenance.py} & metadatos & reproducibilidad \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -107,15 +109,14 @@ Los parámetros científicos no están quemados en los scripts: están en YAML.
 El núcleo trabaja en SI. Las figuras hablan GHz y mm.
 
 \begin{lstlisting}[style=tiny]
-# constants.py
+# physics/constants.py
 SPEED_OF_LIGHT = 299_792_458.0  # m/s   [IMPL; el paper no da c]
 GHZ = 1.0e9
 MM  = 1.0e-3
-BAND_ABS_R_TOLERANCE = 1.0e-12
-SMALL_Q_ABS = 1.0e-14
 \end{lstlisting}
 
-Conversiones en \texttt{params.py}:
+Conversiones en \texttt{physics/units.py}; la tolerancia de banda
+\(10^{-12}\) está en \texttt{solvers/scan.py}:
 
 \begin{equation}
 \omega=2\pi\nu_{\mathrm{GHz}}\times 10^9,\qquad
@@ -126,7 +127,7 @@ Ejemplo: \(\omega_e/2\pi=3\,\mathrm{GHz}\) \(\Rightarrow\)
 \(\omega_e=1.884955592\times 10^{10}\,\mathrm{rad/s}\).
 Usar \(\omega_e=3\times 10^9\) sin el \(2\pi\) desplazaría todas las figuras.
 
-\texttt{dispersion.omega\_from\_nu\_ghz} es la única puerta de \(\nu\) a
+\texttt{units.omega\_from\_nu\_ghz} es la única puerta de \(\nu\) a
 \(\omega\) en el barrido.
 
 \section{De YAML a \texttt{SuperlatticeSpec}}
@@ -147,11 +148,13 @@ frequency_points: 12000
 plasmon_window_ghz: [2.0, 2.999]
 \end{lstlisting}
 
-\texttt{spec\_from\_mapping} construye aire (\(\varepsilon=\mu=1\)) y el Drude
+\texttt{SuperlatticeConfig.to\_spec} construye aire (\(\varepsilon=\mu=1\)) y el Drude
 con \(\omega_e\), \(\omega_m\) ya en rad/s.
-La función \texttt{load\_figure\_config} de \texttt{scripts/\_common.py}
-devuelve \((\mathrm{spec},\,\mathrm{dict},\,\mathrm{ruta})\): el diccionario
+\texttt{load\_figure("figure\_02")} devuelve la configuración validada
+(\texttt{ModeCountConfig}), el \texttt{spec} y la ruta: la configuración
 conserva ángulos, ventanas y número de puntos que el \texttt{spec} no necesita.
+Un valor inválido (espesor negativo, ventana invertida, \(\theta>\pi/2\),
+clave desconocida) detiene la carga con un \texttt{ConfigError}.
 
 \section{Fibonacci en código}
 
@@ -256,7 +259,9 @@ orden de multiplicación.
 \section{Barrido de dispersión}
 \label{sec:scan}
 
-Función central: \texttt{dispersion.scan\_dispersion}.
+Función central: \texttt{TMMSolver.scan}. Antes de calcular valida que las
+frecuencias sean finitas, positivas y estrictamente crecientes, que
+\(\theta\in[0,\pi/2]\) y que \(m\ge 0\) sea entero.
 
 \begin{enumerate}
 \item \(\omega_i=2\pi\nu_i\times 10^9\) en una malla uniforme de \(\nu\).
@@ -326,7 +331,7 @@ Config: \(\nu_e=\nu_m=3\,\mathrm{GHz}\), \(m\in\{3,4\}\),
 \(12000\) puntos en \([0.15,5]\,\mathrm{GHz}\) (se evita \(\nu=0\), polo de
 Drude).
 
-Para cada panel: \texttt{scan\_dispersion} con \texttt{method="recurrence"},
+Para cada panel: \texttt{TMMSolver.scan} con la recurrencia,
 \texttt{plot\_dispersion\_branches} con \texttt{S3\_STYLE}/\texttt{S4\_STYLE},
 ejes \(k L_m/\pi\in[-1,1]\), \(\nu\in[0,5]\).
 Se guarda también la frecuencia donde se cierra el gap \(\langle n\rangle=0\):
@@ -368,7 +373,7 @@ Panel & \(m\) & \(\theta\) & \(\nu\) (GHz) \\
 Se detectan intervalos y se informa \(\Delta\nu\).
 Valores de esta implementación: \(4.51\,\mathrm{MHz}\) (\(m=3\), \(\pi/12\))
 y \(33.1\,\mathrm{MHz}\) (\(m=3\), \(\pi/3\)).
-Convergencia (\texttt{scripts/analyze\_convergence.py}): el ancho a
+Convergencia (\texttt{scripts/tmm/convergence.py}): el ancho a
 \(\pi/3\), \(m=3\), pasa de \(0.03299\,\mathrm{GHz}\) (500 puntos) a
 \(0.03310\,\mathrm{GHz}\) (16000); estable desde 2000 puntos (\(<0.2\%\)).
 
@@ -475,7 +480,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 pytest
 python scripts/tmm/run_all.py
-# o una sola: python scripts/tmm/figure_04.py
+# o una sola: python scripts/run_figure.py 4 --method tmm
 \end{lstlisting}
 
 Salida de cada figura:
@@ -528,7 +533,7 @@ No se calibró nada contra el dibujo impreso.
 \toprule
 Figura & Script & Núcleo \\
 \midrule
-1 & \texttt{tmm/figure\_01.py} & \texttt{scan\_dispersion} + \texttt{plot\_dispersion\_branches} \\
+1 & \texttt{tmm/figure\_01.py} & \texttt{TMMSolver.scan} + \texttt{plot\_dispersion\_branches} \\
 2 & \texttt{tmm/figure\_02.py} & idem + \texttt{detect\_plasmon\_modes} \\
 3 & \texttt{tmm/figure\_03.py} & igual que 1, otro YAML \\
 4 & \texttt{tmm/figure\_04.py} & ventanas densas + anchos \\
@@ -541,15 +546,13 @@ Figura & Script & Núcleo \\
 El camino mínimo, para una sola curva, es:
 
 \begin{lstlisting}[style=tiny]
-from fibonacci_photonics.core.params import load_spec
-from fibonacci_photonics.tmm.dispersion import scan_dispersion
-from fibonacci_photonics.core.electromagnetics import Polarization
 import numpy as np
+from fibonacci_photonics import TMMSolver, load_spec
 
-spec = load_spec("configs/figure_02.yaml")
+spec = load_spec("figure_02.yaml")
 nu = np.linspace(2.0, 4.0, 4000)
-scan = scan_dispersion(spec, m=3, theta=np.pi/3, nu_ghz=nu,
-                       polarization=Polarization.TE)
+scan = TMMSolver(spec).scan(m=3, theta=np.pi/3, nu_ghz=nu,
+                            polarization="TE")
 # scan.allowed, scan.k_lm_over_pi, scan.nu_ghz
 \end{lstlisting}
 

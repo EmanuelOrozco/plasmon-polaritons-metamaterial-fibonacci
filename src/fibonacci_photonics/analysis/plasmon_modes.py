@@ -1,17 +1,20 @@
-"""Detección automática de modos plasmon-polaritón y anchos de banda."""
+"""Conteo de subbandas plasmon-polaritón en una ventana de frecuencia.
+
+El paper predice F_{m−2} subbandas (una por capa B de la celda) bajo ν_m.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
-
-from fibonacci_photonics.core.bands import DispersionScan, FrequencyInterval, allowed_intervals
-from fibonacci_photonics.core.fibonacci import n_layers_b
+from fibonacci_photonics.physics.fibonacci import n_layers_b
+from fibonacci_photonics.solvers.scan import DispersionScan, FrequencyInterval, allowed_intervals
 
 
 @dataclass(frozen=True)
 class PlasmonModeReport:
+    """Subbandas detectadas frente a las F_{m−2} esperadas."""
+
     m: int
     expected_modes: int
     detected_modes: int
@@ -26,14 +29,12 @@ def intervals_in_window(
     *,
     min_points: int = 3,
 ) -> list[FrequencyInterval]:
-    selected = [
+    """Intervalos con al menos ``min_points`` muestras que tocan [nu_min, nu_max] (GHz)."""
+    return [
         interval
         for interval in intervals
-        if interval.n_points >= min_points
-        and interval.nu_max_ghz >= nu_min
-        and interval.nu_min_ghz <= nu_max
+        if interval.n_points >= min_points and interval.nu_max_ghz >= nu_min and interval.nu_min_ghz <= nu_max
     ]
-    return selected
 
 
 def detect_plasmon_modes(
@@ -43,14 +44,11 @@ def detect_plasmon_modes(
     nu_max_ghz: float,
     min_points: int = 3,
 ) -> PlasmonModeReport:
-    """Cuenta subbandas conexas en una ventana de frecuencia."""
-    intervals = intervals_in_window(
-        allowed_intervals(scan), nu_min_ghz, nu_max_ghz, min_points=min_points
-    )
-    expected = n_layers_b(scan.m)
+    """Cuenta las subbandas conexas del barrido en la ventana [nu_min_ghz, nu_max_ghz]."""
+    intervals = intervals_in_window(allowed_intervals(scan), nu_min_ghz, nu_max_ghz, min_points=min_points)
     return PlasmonModeReport(
         m=scan.m,
-        expected_modes=expected,
+        expected_modes=n_layers_b(scan.m),
         detected_modes=len(intervals),
         intervals=tuple(intervals),
         window_ghz=(nu_min_ghz, nu_max_ghz),
@@ -58,6 +56,7 @@ def detect_plasmon_modes(
 
 
 def bandwidths_ghz(intervals: list[FrequencyInterval]) -> list[float]:
+    """Anchos Δν (GHz) de cada intervalo."""
     return [interval.bandwidth_ghz for interval in intervals]
 
 
@@ -66,7 +65,7 @@ def merge_touching_intervals(
     *,
     gap_ghz: float = 1.0e-6,
 ) -> list[FrequencyInterval]:
-    """Une intervalos separados por menos de gap_ghz (artefacto de malla)."""
+    """Une intervalos separados por menos de ``gap_ghz`` (artefacto de malla)."""
     if not intervals:
         return []
     ordered = sorted(intervals, key=lambda item: item.nu_min_ghz)

@@ -86,16 +86,16 @@
   },
   "pwe_numerics": {
     "book_residual_laurent": 0.1567671069868088,
-    "book_residual_inverse": 0.00015667203813649055,
+    "book_residual_inverse": 0.0001566720388100351,
     "cost": [
       {
         "m": 3,
         "layers": 3,
         "harmonics_per_layer": 16,
         "n_plane_waves": 97,
-        "pwe_seconds_per_frequency": 0.03322062816732796,
-        "tmm_seconds_per_frequency": 7.576810833901012e-06,
-        "max_abs_delta_r": 1.5648618783004054e-06,
+        "pwe_seconds_per_frequency": 0.09540109600008388,
+        "tmm_seconds_per_frequency": 7.902845839756385e-06,
+        "max_abs_delta_r": 1.5649516260651808e-06,
         "max_abs_r_tmm": 2.015931989759685
       },
       {
@@ -103,9 +103,9 @@
         "layers": 5,
         "harmonics_per_layer": 16,
         "n_plane_waves": 161,
-        "pwe_seconds_per_frequency": 0.12582999333487047,
-        "tmm_seconds_per_frequency": 8.873389172852816e-06,
-        "max_abs_delta_r": 1.9529831081888105e-05,
+        "pwe_seconds_per_frequency": 0.35584212783336017,
+        "tmm_seconds_per_frequency": 2.2525184164502813e-05,
+        "max_abs_delta_r": 1.952913176284099e-05,
         "max_abs_r_tmm": 1.1354933042329731
       },
       {
@@ -113,9 +113,9 @@
         "layers": 8,
         "harmonics_per_layer": 16,
         "n_plane_waves": 257,
-        "pwe_seconds_per_frequency": 0.4493646170012653,
-        "tmm_seconds_per_frequency": 1.1899114166832684e-05,
-        "max_abs_delta_r": 8.808586776254401e-05,
+        "pwe_seconds_per_frequency": 1.0248343390000325,
+        "tmm_seconds_per_frequency": 2.3510576659949342e-05,
+        "max_abs_delta_r": 8.808672144411389e-05,
         "max_abs_r_tmm": 4.055774507853033
       },
       {
@@ -123,9 +123,9 @@
         "layers": 13,
         "harmonics_per_layer": 8,
         "n_plane_waves": 209,
-        "pwe_seconds_per_frequency": 0.2116263143325341,
-        "tmm_seconds_per_frequency": 9.599140830687248e-06,
-        "max_abs_delta_r": 0.0028518383987998774,
+        "pwe_seconds_per_frequency": 0.6448482963338998,
+        "tmm_seconds_per_frequency": 2.7756493339741912e-05,
+        "max_abs_delta_r": 0.0028519803306465974,
         "max_abs_r_tmm": 7.194677604532116
       },
       {
@@ -133,9 +133,9 @@
         "layers": 13,
         "harmonics_per_layer": 16,
         "n_plane_waves": 417,
-        "pwe_seconds_per_frequency": 1.3908681401662761,
-        "tmm_seconds_per_frequency": 9.860933326611606e-06,
-        "max_abs_delta_r": 0.00035280767697720705,
+        "pwe_seconds_per_frequency": 2.658989385832683,
+        "tmm_seconds_per_frequency": 2.5755009167672447e-05,
+        "max_abs_delta_r": 0.00035280978279494946,
         "max_abs_r_tmm": 7.194677604532116
       },
       {
@@ -143,9 +143,9 @@
         "layers": 21,
         "harmonics_per_layer": 8,
         "n_plane_waves": 337,
-        "pwe_seconds_per_frequency": 0.9267243594998339,
-        "tmm_seconds_per_frequency": 1.1144678343650108e-05,
-        "max_abs_delta_r": 0.03320984658837034,
+        "pwe_seconds_per_frequency": 1.7058748616667192,
+        "tmm_seconds_per_frequency": 3.06106608331902e-05,
+        "max_abs_delta_r": 0.03321097269014217,
         "max_abs_r_tmm": 57.22448673713199
       },
       {
@@ -153,9 +153,9 @@
         "layers": 21,
         "harmonics_per_layer": 16,
         "n_plane_waves": 673,
-        "pwe_seconds_per_frequency": 5.535470878833924,
-        "tmm_seconds_per_frequency": 1.1966360834776425e-05,
-        "max_abs_delta_r": 0.004108948732223894,
+        "pwe_seconds_per_frequency": 7.743080466333292,
+        "tmm_seconds_per_frequency": 3.544745833399551e-05,
+        "max_abs_delta_r": 0.004108941791976406,
         "max_abs_r_tmm": 57.22448673713199
       },
       {
@@ -163,9 +163,9 @@
         "layers": 34,
         "harmonics_per_layer": 8,
         "n_plane_waves": 545,
-        "pwe_seconds_per_frequency": 2.957694277499589,
-        "tmm_seconds_per_frequency": 1.1421412503599034e-05,
-        "max_abs_delta_r": 0.8033334124824023,
+        "pwe_seconds_per_frequency": 5.331884948832642,
+        "tmm_seconds_per_frequency": 2.855653083922031e-05,
+        "max_abs_delta_r": 0.803360416330861,
         "max_abs_r_tmm": 819.3676918091243
       }
     ],
@@ -187,20 +187,20 @@
       "Fig. 6"
     ],
     "tmm_seconds": [
-      0.003423865669436711,
-      0.002949174060742018,
-      0.0033891028947813113,
-      0.0034074531000806017,
-      0.04065218003233895,
-      0.26363787899026647
+      0.003947151398340492,
+      0.0035608352576893976,
+      0.0041209502406925995,
+      0.004845017280022148,
+      0.040152410030714236,
+      0.254588857977069
     ],
     "pwe_single_core_seconds": [
-      199.0894522459712,
-      999.4378529918322,
-      199.0894522459712,
-      1310.3136049903696,
-      996.971292738046,
-      15550.181464797046
+      198.102258003928,
+      970.7036831296136,
+      198.102258003928,
+      1196.4157659967896,
+      1023.5826095219818,
+      15312.022344271929
     ],
     "outputs": {
       "pdf": "results/comparison/timing/output/timing.pdf",
@@ -208,32 +208,32 @@
     }
   },
   "efficiency": {
-    "pwe_time_exponent_in_n": 2.51582926946372,
-    "tmm_product_time_exponent_in_layers": 0.9583524304797247,
+    "pwe_time_exponent_in_n": 2.6451027666757594,
+    "tmm_product_time_exponent_in_layers": 0.9298504973461635,
     "figure_ratio_range": [
-      24524.42383028295,
-      384543.4013337923
+      25492.432676867993,
+      272605.6143803454
     ],
     "tmm_fastest": {
       "method": "TMM, recurrencia (vectorizada)",
       "n_plane_waves": null,
-      "seconds_per_frequency": 1.3687651244254084e-06,
+      "seconds_per_frequency": 1.5315272503357846e-06,
       "max_abs_error": 2.886579864025407e-15
     },
     "pwe_most_accurate": {
       "method": "PWE",
       "harmonics_per_layer": 24,
       "n_plane_waves": 385,
-      "seconds_per_frequency": 1.1886031722999177,
+      "seconds_per_frequency": 1.1320330454000214,
       "max_abs_error": 1.0310338556251963e-06
     },
     "book": {
       "n_plane_waves": 101,
       "k_points": 41,
       "n_bands": 8,
-      "pwe_seconds": 0.11584931366572467,
-      "tmm_root_seconds": 0.07761623000260442,
-      "tmm_grid_seconds": 0.01432595849983045,
+      "pwe_seconds": 0.10989187366794795,
+      "tmm_root_seconds": 0.06587296333358002,
+      "tmm_grid_seconds": 0.013835359099903143,
       "tmm_grid_points": 60001,
       "pwe_max_rel_error": 4.588178838805775e-06,
       "tmm_missing_roots": 0

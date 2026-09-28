@@ -49,14 +49,14 @@ experiencia previa en cristales fotónicos.
 
 ## 2. Solución numérica e implementación (`solucion_numerica`)
 
-Puente entre las ecuaciones del paper y el código TMM en `src/fibonacci_photonics/` (antes `fibonacci_tmm`).
+Puente entre las ecuaciones del paper y el código TMM en `src/fibonacci_photonics/`.
 
 **Temas principales**
 
 1. **Flujo global** — YAML → `SuperlatticeSpec` → barrido en $\nu$ → detección de modos → plot.
-2. **Arquitectura del código** — módulos: materiales, Fibonacci, TMM, dispersión, plotting.
+2. **Arquitectura del código** — módulos: `physics/`, `solvers/tmm/`, `solvers/scan.py`, `analysis/`, `viz/`.
 3. **Unidades** — espesores en mm → SI; frecuencias de plasma como $\omega/2\pi$ en GHz.
-4. **YAML → especificación** — `params.spec_from_mapping`.
+4. **YAML → especificación** — `config.load_figure` / `config.load_spec` (Pydantic v2).
 5. **Fibonacci en código** — recurrencia de secuencias y longitud de celda $L_m$.
 6. **Materiales** — A homogéneo; B Drude sin pérdidas $\varepsilon=1-\omega_e^2/\omega^2$, $\mu=1-\omega_m^2/\omega^2$.
 7. **Cinemática** — $n$, $q=(\omega/c)n_A\sin\theta$, $Q=\sqrt{(\omega/c)^2 n^2-q^2}$, $\chi$.
@@ -83,12 +83,12 @@ Manual operativo del repositorio: árbol de directorios, dependencias y problema
 
 1. **Qué es el repositorio** — reproducción científica, no un demonio ni una GUI.
 2. **Árbol del proyecto** — `src/`, `scripts/{tmm,pwe,comparison}/`, `configs/`, `results/{tmm,pwe,comparison}/`, `tests/`, `docs/`.
-3. **Módulos y responsabilidades** — mapa de `fibonacci_photonics/{core,tmm,pwe,analysis}`.
+3. **Módulos y responsabilidades** — mapa de `fibonacci_photonics/{physics,solvers,config,analysis,benchmark,reproduction,studies,io,viz}`.
 4. **Objetos que cruzan fronteras** — `SuperlatticeSpec`, resultados de scan, metadatos.
-5. **Capa de configuración** — un YAML por figura; `base.yaml` como referencia común.
-6. **Capa de scripts** — `scripts/tmm/figure_0N.py`, `scripts/pwe/figure_0N.py`, `scripts/comparison/`, `_common.py`.
+5. **Capa de configuración** — un YAML por figura validado con Pydantic (`extra="forbid"`).
+6. **Capa de scripts** — `scripts/tmm/figure_0N.py`, `scripts/pwe/figure_0N.py`, `scripts/comparison/` y el runner único `scripts/run_figure.py`.
 7. **Flujo de una corrida** — de config a PNG/SVG/PDF + `summary.json`.
-8. **Tests** — `pytest`; algunos casos skipped por $k>m$.
+8. **Tests** — `pytest` en `unit/`, `analytic/` y `regression/`; algunos casos skipped por $k>m$.
 9. **Dependencias** — runtime Python; LaTeX solo para PDF; notebooks opcionales.
 10. **Cómo ejecutar** — venv, tests, figuras, docs, `make all`.
 11. **Cambiar un parámetro** — editar YAML y re-ejecutar el script de esa figura.
@@ -101,7 +101,7 @@ Manual operativo del repositorio: árbol de directorios, dependencias y problema
 
 ## 4. Documentación del software (`software_documentation`)
 
-Referencia más corta orientada a la API del paquete `fibonacci_photonics` (alias `fibonacci_tmm`).
+Referencia más corta orientada a la API del paquete `fibonacci_photonics` (v2.0).
 
 **Temas principales**
 

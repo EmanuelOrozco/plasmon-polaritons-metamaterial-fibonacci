@@ -1,4 +1,4 @@
-.PHONY: all reproduce tests results tmm pwe comparison figures documents paper docs guides pwe-docs \
+.PHONY: all reproduce tests lint results tmm pwe comparison figures documents paper docs guides pwe-docs \
         verify presentation clean
 
 PYTHON := .venv/bin/python
@@ -24,6 +24,10 @@ reproduce: results documents verify
 
 tests:
 	$(PYTHON) -m pytest tests
+
+lint:
+	$(PYTHON) -m ruff check src tests scripts presentacion/scripts
+	$(PYTHON) -m mypy --cache-dir /tmp/mypy_cache
 
 # Resultados por método: results/tmm, results/pwe y results/comparison.
 results: tmm pwe comparison

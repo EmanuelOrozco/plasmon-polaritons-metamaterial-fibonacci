@@ -12,19 +12,20 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-import yaml
 from matplotlib.patches import Arc, FancyArrowPatch, Rectangle
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
-from fibonacci_tmm.dispersion import average_epsilon_mu, omega_from_nu_ghz, scan_dispersion
-from fibonacci_tmm.fibonacci import n_layers_a, n_layers_b, sequence
-from fibonacci_tmm.params import load_spec
-from fibonacci_tmm.plasmon_modes import detect_plasmon_modes
-from fibonacci_tmm.plotting import plot_dispersion_branches
+from fibonacci_photonics.config import load_figure, load_spec  # noqa: E402
+from fibonacci_photonics.physics.effective_medium import average_epsilon_mu  # noqa: E402
+from fibonacci_photonics.physics.fibonacci import n_layers_a, n_layers_b, sequence  # noqa: E402
+from fibonacci_photonics.physics.units import omega_from_nu_ghz  # noqa: E402
+from fibonacci_photonics.solvers import TMMSolver  # noqa: E402
+from fibonacci_photonics.viz.dispersion import plot_dispersion_branches  # noqa: E402
 
 OUT = ROOT / "presentacion" / "imagenes"
+TMM_RESULTS = ROOT / "results" / "tmm"
 
 COLOR_A = "#cfe6fb"
 COLOR_B = "#f4a261"
@@ -34,8 +35,14 @@ RED = "#c8412c"
 GREEN = "#2e8b57"
 PURPLE = "#7b4fa0"
 
-SPEC_FIG1 = load_spec(ROOT / "configs" / "figure_01.yaml")
-SPEC_FIG3 = load_spec(ROOT / "configs" / "figure_03.yaml")
+SPEC_FIG1 = load_spec("figure_01.yaml")
+SPEC_FIG3 = load_spec("figure_03.yaml")
+TMM_FIG1 = TMMSolver(SPEC_FIG1)
+
+
+def load_summary(name: str) -> dict:
+    """``results/tmm/<name>/data/summary.json`` (ejecute antes ``make tmm``)."""
+    return json.loads((TMM_RESULTS / name / "data" / "summary.json").read_text(encoding="utf-8"))
 
 
 def style() -> None:
@@ -228,8 +235,7 @@ def fig_polarizacion() -> None:
 
 def fig_osciladores() -> None:
     """Cada capa B es un oscilador: N_B capas → N_B modos (datos reales de la Fig. 2)."""
-    summary = json.loads((ROOT / "figures" / "figure_02" / "data" / "summary.json").read_text(encoding="utf-8"))
-    counts = {entry["m"]: entry for entry in summary["mode_counts"]}
+    counts = {entry["m"]: entry for entry in load_summary("figure_02")["mode_counts"]}
     fig, (ax_w, ax_l) = plt.subplots(1, 2, figsize=(11, 4.4), gridspec_kw={"width_ratios": [1.25, 1]})
     for row, m in enumerate((3, 4, 5, 6)):
         y = -row * 1.2
@@ -263,7 +269,7 @@ def fig_osciladores() -> None:
 def fig_semitraza() -> None:
     """R_m(ν) → bandas (|R|≤1) y gaps; relación cos(kL)=R."""
     nu = np.linspace(0.15, 5.0, 8000)
-    scan = scan_dispersion(SPEC_FIG1, 3, np.pi / 6, nu)
+    scan = TMM_FIG1.scan(3, np.pi / 6, nu)
     r = np.real(scan.r)
     r_plot = np.where(np.abs(r) < 3.5, r, np.nan)
     fig, (ax_r, ax_k) = plt.subplots(1, 2, figsize=(11, 4.6), sharey=True, gridspec_kw={"width_ratios": [1, 1]})
@@ -271,7 +277,7 @@ def fig_semitraza() -> None:
     edges = np.flatnonzero(np.diff(allowed.astype(int)) != 0)
     starts = np.r_[0, edges + 1]
     ends = np.r_[edges, allowed.size - 1]
-    for s, e in zip(starts, ends):
+    for s, e in zip(starts, ends, strict=True):
         color = GREEN if allowed[s] else "gray"
         alpha = 0.13 if allowed[s] else 0.18
         for ax in (ax_r, ax_k):
@@ -298,7 +304,7 @@ def fig_semitraza() -> None:
 
 def fig_leer_dispersion() -> None:
     nu = np.linspace(0.15, 5.0, 10000)
-    scan = scan_dispersion(SPEC_FIG1, 4, np.pi / 6, nu)
+    scan = TMM_FIG1.scan(4, np.pi / 6, nu)
     fig, ax = plt.subplots(figsize=(10.0, 5.0))
     plot_dispersion_branches(ax, scan, color=BLUE, linestyle="-", linewidth=1.8)
 
@@ -316,7 +322,7 @@ def fig_leer_dispersion() -> None:
     edges = np.flatnonzero(np.diff(allowed.astype(int)) != 0)
     starts = np.r_[0, edges + 1]
     ends = np.r_[edges, allowed.size - 1]
-    for s, e in zip(starts, ends):
+    for s, e in zip(starts, ends, strict=True):
         if not allowed[s] and nu[e] - nu[s] > 0.08:
             gaps.append((nu[s], nu[e]))
             ax.axhspan(nu[s], nu[e], color="gray", alpha=0.2, lw=0)
@@ -390,7 +396,8 @@ def fig_gap_n0() -> None:
 
 
 def fig_convergencia() -> None:
-    data = json.loads((ROOT / "data" / "processed" / "convergence_figure04.json").read_text(encoding="utf-8"))
+    path = TMM_RESULTS / "convergence" / "convergence_figure04.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
     n = np.array([d["n_points"] for d in data])
     w = np.array([d["width_ghz"] for d in data]) * 1e3
     fig, ax = plt.subplots(figsize=(6.5, 4.0))
@@ -406,25 +413,19 @@ def fig_convergencia() -> None:
 
 
 def fig_conteo_modos() -> None:
-    cfg = yaml.safe_load((ROOT / "configs" / "figure_05.yaml").read_text(encoding="utf-8"))
-    spec = load_spec(ROOT / "configs" / "figure_05.yaml")
-    orders = list(cfg["fibonacci_orders"])
+    """Subbandas detectadas en la Fig. 5 (TMM) frente a F_{m−2}."""
+    orders = list(load_figure("figure_05").config.fibonacci_orders)
     expected = [n_layers_b(m) for m in orders]
-    detected = {}
-    for theta, label in zip(cfg["thetas_rad"], cfg["theta_labels"]):
-        lo, hi = cfg["frequency_windows_ghz"][label]
-        nu = np.linspace(lo, min(hi, spec.nu_m_ghz() - 1e-4), cfg["frequency_points"])
-        detected[label] = [
-            detect_plasmon_modes(scan_dispersion(spec, m, theta, nu), nu_min_ghz=lo, nu_max_ghz=hi).detected_modes
-            for m in orders
-        ]
-    det_12, det_3 = detected["pi/12"], detected["pi/3"]
+    rows = load_summary("figure_05")["intervals"]
+    detected = {label: {row["m"]: row["n"] for row in rows[label]} for label in rows}
+    det_12 = [detected["pi/12"][m] for m in orders]
+    det_3 = [detected["pi/3"][m] for m in orders]
     x = np.arange(len(orders))
     fig, ax = plt.subplots(figsize=(8.0, 4.2))
     ax.bar(x - 0.27, expected, 0.27, color="#bbbbbb", label=r"esperado $F_{m-2}$")
     ax.bar(x, det_12, 0.27, color=BLUE, label=r"detectado, $\theta=\pi/12$")
     ax.bar(x + 0.27, det_3, 0.27, color=RED, label=r"detectado, $\theta=\pi/3$")
-    for xi, e in zip(x, expected):
+    for xi, e in zip(x, expected, strict=True):
         ax.text(xi, e + 0.25, str(e), ha="center", fontsize=11, weight="bold")
     ax.set_xticks(x, [f"m={m}" for m in orders])
     ax.set_ylabel("número de subbandas")

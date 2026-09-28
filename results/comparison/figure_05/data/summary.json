@@ -37,8 +37,8 @@
         ],
         "max_abs_edge_error_ghz": 2.5496582622963615e-10,
         "max_relative_width_error": 6.44488387953225e-08,
-        "tmm_seconds": 0.0021313220058800653,
-        "pwe_seconds": 10.599296311003854,
+        "tmm_seconds": 0.0022786129993619397,
+        "pwe_seconds": 15.829820219005342,
         "pwe_evaluations": 327
       },
       {
@@ -76,8 +76,8 @@
         ],
         "max_abs_edge_error_ghz": 1.253364079190078e-10,
         "max_relative_width_error": 1.3069315211342045e-08,
-        "tmm_seconds": 0.00195455300854519,
-        "pwe_seconds": 24.120525662001455,
+        "tmm_seconds": 0.002093503004289232,
+        "pwe_seconds": 24.219650938000996,
         "pwe_evaluations": 323
       },
       {
@@ -136,8 +136,8 @@
         ],
         "max_abs_edge_error_ghz": 1.0985263809715207e-09,
         "max_relative_width_error": 1.044172760552237e-06,
-        "tmm_seconds": 0.0031022840121295303,
-        "pwe_seconds": 94.06819926299795,
+        "tmm_seconds": 0.003150329997879453,
+        "pwe_seconds": 101.9723653139954,
         "pwe_evaluations": 437
       },
       {
@@ -217,8 +217,8 @@
         ],
         "max_abs_edge_error_ghz": 8.495313896794698e-09,
         "max_relative_width_error": 3.442504267475304e-06,
-        "tmm_seconds": 0.004380194004625082,
-        "pwe_seconds": 84.59335038399149,
+        "tmm_seconds": 0.0044112210016464815,
+        "pwe_seconds": 85.91639465899789,
         "pwe_evaluations": 630
       },
       {
@@ -340,8 +340,8 @@
         ],
         "max_abs_edge_error_ghz": 8.69736294095702e-09,
         "max_relative_width_error": 3.628574148651444e-06,
-        "tmm_seconds": 0.0076073829986853525,
-        "pwe_seconds": 186.39364802501223,
+        "tmm_seconds": 0.007607480001752265,
+        "pwe_seconds": 185.97299638100958,
         "pwe_evaluations": 567
       }
     ],
@@ -381,8 +381,8 @@
         ],
         "max_abs_edge_error_ghz": 2.8056031942114146e-09,
         "max_relative_width_error": 7.797211344096293e-08,
-        "tmm_seconds": 0.0022150339937070385,
-        "pwe_seconds": 22.731258419007645,
+        "tmm_seconds": 0.00211314600892365,
+        "pwe_seconds": 21.995902415001183,
         "pwe_evaluations": 552
       },
       {
@@ -420,8 +420,8 @@
         ],
         "max_abs_edge_error_ghz": 7.740748042550649e-10,
         "max_relative_width_error": 2.209203979104626e-08,
-        "tmm_seconds": 0.0022400339948944747,
-        "pwe_seconds": 38.68985503001022,
+        "tmm_seconds": 0.0021315659978426993,
+        "pwe_seconds": 43.87617995899927,
         "pwe_evaluations": 546
       },
       {
@@ -480,8 +480,8 @@
         ],
         "max_abs_edge_error_ghz": 1.2187517439699036e-08,
         "max_relative_width_error": 1.1914534750736297e-06,
-        "tmm_seconds": 0.003489516006084159,
-        "pwe_seconds": 110.94466579001164,
+        "tmm_seconds": 0.003402348011150025,
+        "pwe_seconds": 117.29025677898608,
         "pwe_evaluations": 527
       },
       {
@@ -561,8 +561,8 @@
         ],
         "max_abs_edge_error_ghz": 9.43132095754251e-08,
         "max_relative_width_error": 4.107124483129549e-06,
-        "tmm_seconds": 0.0049561280029593036,
-        "pwe_seconds": 113.43418543100415,
+        "tmm_seconds": 0.004817852008272894,
+        "pwe_seconds": 119.71209835799527,
         "pwe_evaluations": 967
       },
       {
@@ -684,8 +684,8 @@
         ],
         "max_abs_edge_error_ghz": 9.65400928087945e-08,
         "max_relative_width_error": 3.988284073606696e-06,
-        "tmm_seconds": 0.008575732004828751,
-        "pwe_seconds": 311.3963084230054,
+        "tmm_seconds": 0.008146350999595597,
+        "pwe_seconds": 306.7969444999908,
         "pwe_evaluations": 1143
       }
     ]

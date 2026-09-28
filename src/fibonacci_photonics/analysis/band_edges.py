@@ -3,9 +3,9 @@
 Las subbandas plasmon-polaritón pueden ser mucho más estrechas que el paso de
 la malla. Con R(ν) muestreada en una malla se detectan:
 
-- bordes: segmentos donde |R| − 1 cambia de signo;
-- bandas enteras entre dos muestras: segmentos donde |R| > 1 en ambos extremos
-  pero R cambia de signo (R pasa por 0, luego por la banda |R| ≤ 1);
+- bordes: tramos donde |R| − 1 cambia de signo;
+- bandas enteras entre dos muestras: |R| > 1 en ambos extremos pero R cambia
+  de signo (R pasa por 0 y por lo tanto por la banda |R| ≤ 1);
 - gaps enteros entre dos muestras: dentro de una banda R(ν) es monótona, así
   que un extremo local de R entre muestras con |R| ≤ 1 indica que R tocó ±1;
   se maximiza |R| en ese tramo y, si supera 1, hay un gap que separa dos
@@ -18,20 +18,24 @@ evaluando el signo entre bordes consecutivos.
 from __future__ import annotations
 
 from collections.abc import Callable
+from itertools import pairwise
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 from scipy.optimize import minimize_scalar
 
-from fibonacci_photonics.analysis.comparison import refine_crossing
-from fibonacci_photonics.core.bands import FrequencyInterval
+from fibonacci_photonics.analysis.roots import DEFAULT_XTOL_GHZ, refine_crossing
+from fibonacci_photonics.errors import InvalidParameterError
+from fibonacci_photonics.solvers.scan import FrequencyInterval
+
+RealFunction = Callable[[float], float]
 
 
 def _hidden_gap_edges(
-    r_of_nu: Callable[[float], float],
+    r_of_nu: RealFunction,
     grid: NDArray[np.float64],
     r_grid: NDArray[np.float64],
-    excess: Callable[[float], float],
+    excess: RealFunction,
     xtol: float,
 ) -> list[float]:
     """Bordes de gaps más estrechos que la malla, rodeados de muestras en banda."""
@@ -44,8 +48,12 @@ def _hidden_gap_edges(
         if slope_lo * slope_hi > 0.0 or slope_lo == slope_hi == 0.0 or not np.isfinite(slope_lo * slope_hi):
             continue
         sign = float(np.sign(slope_lo)) if slope_lo != 0.0 else -float(np.sign(slope_hi))
-        found = minimize_scalar(lambda nu: -sign * r_of_nu(nu), bounds=(grid[i - 1], grid[i + 1]),
-                                method="bounded", options={"xatol": max(xtol, 1.0e-15 * abs(grid[i + 1]))})
+        found = minimize_scalar(
+            lambda nu, s=sign: -s * r_of_nu(nu),
+            bounds=(grid[i - 1], grid[i + 1]),
+            method="bounded",
+            options={"xatol": max(xtol, 1.0e-15 * abs(grid[i + 1]))},
+        )
         peak = float(found.x)
         if not (np.isfinite(found.fun) and -found.fun > 1.0):
             continue
@@ -62,15 +70,29 @@ def _hidden_gap_edges(
 
 
 def locate_bands(
-    r_of_nu: Callable[[float], float],
-    grid: NDArray[np.float64],
-    r_grid: NDArray[np.float64],
+    r_of_nu: RealFunction,
+    grid: ArrayLike,
+    r_grid: ArrayLike,
     *,
-    xtol: float = 1.0e-13,
+    xtol: float = DEFAULT_XTOL_GHZ,
 ) -> list[FrequencyInterval]:
-    """Bandas |R| ≤ 1 en [grid[0], grid[-1]] con bordes refinados."""
+    """Bandas |R| ≤ 1 en [grid[0], grid[−1]] con bordes refinados por Brent.
+
+    Parameters
+    ----------
+    r_of_nu : callable
+        Re R(ν) escalar, ν en GHz.
+    grid : array_like
+        Malla creciente de frecuencias (GHz); puede ser no uniforme.
+    r_grid : array_like
+        Re R en la malla.
+    xtol : float
+        Tolerancia absoluta de los bordes, en GHz.
+    """
     grid = np.asarray(grid, dtype=np.float64)
     r_grid = np.asarray(r_grid, dtype=np.float64)
+    if grid.shape != r_grid.shape or grid.ndim != 1:
+        raise InvalidParameterError("la malla y R deben ser 1-D y de igual tamaño")
 
     def excess(nu: float) -> float:
         return abs(r_of_nu(nu)) - 1.0
@@ -87,7 +109,7 @@ def locate_bands(
             if root is not None:
                 edges.append(root)
         elif fa > 0.0 and fb > 0.0 and ra * rb < 0.0:
-            zero = refine_crossing(lambda nu: r_of_nu(nu), a, b, xtol=xtol)
+            zero = refine_crossing(r_of_nu, a, b, xtol=xtol)
             if zero is None:
                 continue
             lo = refine_crossing(excess, a, zero, xtol=xtol)
@@ -100,25 +122,24 @@ def locate_bands(
     # Un mismo gap oculto puede detectarse desde dos tripletas vecinas.
     points = points[np.concatenate(([True], np.diff(points) > 10.0 * xtol))]
     intervals: list[FrequencyInterval] = []
-    for lo, hi in zip(points[:-1], points[1:], strict=True):
+    for lo, hi in pairwise(points):
         if hi <= lo:
             continue
         if excess(0.5 * (lo + hi)) <= 0.0:
             if intervals and intervals[-1].nu_max_ghz == lo:
-                prev = intervals.pop()
-                lo = prev.nu_min_ghz
+                lo = intervals.pop().nu_min_ghz
             intervals.append(FrequencyInterval(float(lo), float(hi), 0))
     return intervals
 
 
 def refine_grid_interval(
-    r_of_nu: Callable[[float], float],
-    grid: NDArray[np.float64],
+    r_of_nu: RealFunction,
+    grid: ArrayLike,
     interval: FrequencyInterval,
     *,
-    xtol: float = 1.0e-13,
+    xtol: float = DEFAULT_XTOL_GHZ,
 ) -> FrequencyInterval:
-    """Lleva los bordes de un intervalo de malla (no uniforme) al cruce |R| = 1.
+    """Lleva los bordes de un intervalo de malla (uniforme o no) al cruce |R| = 1.
 
     Los extremos de ``interval`` son muestras con |R| ≤ 1; cada cruce está entre
     esa muestra y su vecina exterior. Sin vecina (borde de la malla) o sin cambio
@@ -140,10 +161,34 @@ def refine_grid_interval(
     )
 
 
+def refine_band_edges(
+    r_of_nu: RealFunction,
+    interval: FrequencyInterval,
+    step_ghz: float,
+    *,
+    xtol: float = DEFAULT_XTOL_GHZ,
+) -> tuple[float, float]:
+    """Bordes exactos de una banda de malla uniforme de paso ``step_ghz``.
+
+    ``interval`` son las muestras extremas con |R| ≤ 1; los cruces están a menos
+    de un paso hacia fuera.
+    """
+
+    def excess(nu: float) -> float:
+        return abs(r_of_nu(nu)) - 1.0
+
+    lo = refine_crossing(excess, interval.nu_min_ghz - step_ghz, interval.nu_min_ghz, xtol=xtol)
+    hi = refine_crossing(excess, interval.nu_max_ghz, interval.nu_max_ghz + step_ghz, xtol=xtol)
+    return (
+        interval.nu_min_ghz if lo is None else lo,
+        interval.nu_max_ghz if hi is None else hi,
+    )
+
+
 def validate_bands(
     bands: list[FrequencyInterval],
-    r_of_nu: Callable[[float], float],
-    r_check: Callable[[float], float],
+    r_of_nu: RealFunction,
+    r_check: RealFunction,
     *,
     tolerance: float = 1.0e-2,
 ) -> tuple[list[FrequencyInterval], list[FrequencyInterval]]:
@@ -151,7 +196,7 @@ def validate_bands(
 
     Una banda se acepta si en su centro la evaluación de control (p. ej. con más
     ondas planas) también da |R| ≤ 1 y difiere de la original en menos de
-    ``tolerance``. Las bandas espurias del PWE (donde |Im k Lm| es grande) no
+    ``tolerance``. Las bandas espurias del PWE, donde |Im k L_m| es grande, no
     sobreviven al cambio de truncamiento.
     """
     kept: list[FrequencyInterval] = []
@@ -165,6 +210,14 @@ def validate_bands(
 
 
 def plasmon_grid(nu_min: float, nu_m: float, points: int, min_offset: float) -> NDArray[np.float64]:
-    """Malla logarítmica en ν_m − ν: resuelve subbandas que colapsan hacia ν_m."""
+    """Malla logarítmica en ν_m − ν ∈ [min_offset, ν_m − nu_min] (GHz).
+
+    Resuelve las subbandas que colapsan hacia ν_m, cuyo ancho decrece
+    geométricamente al acercarse al plasmón magnético.
+    """
+    if not 0.0 < min_offset < nu_m - nu_min:
+        raise InvalidParameterError(
+            f"se requiere 0 < min_offset < ν_m − ν_min: {min_offset} y {nu_m - nu_min}"
+        )
     offsets = np.logspace(np.log10(min_offset), np.log10(nu_m - nu_min), points)
     return np.sort(nu_m - offsets)

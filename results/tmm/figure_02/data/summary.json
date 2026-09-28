@@ -1,10 +1,15 @@
 {
   "config": "configs/figure_02.yaml",
+  "method": "tmm",
   "mode_counts": [
     {
       "m": 3,
       "expected": 1,
       "detected": 1,
+      "seconds": 0.0038967129949014634,
+      "n_allowed": 4333,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "intervals": [
         {
           "nu_min": 2.0440036669722477,
@@ -17,6 +22,10 @@
       "m": 4,
       "expected": 2,
       "detected": 2,
+      "seconds": 0.003988165000919253,
+      "n_allowed": 3680,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "intervals": [
         {
           "nu_min": 2.0828402366863905,
@@ -34,6 +43,10 @@
       "m": 5,
       "expected": 3,
       "detected": 3,
+      "seconds": 0.003800180013058707,
+      "n_allowed": 3491,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "intervals": [
         {
           "nu_min": 2.069839153262772,
@@ -56,6 +69,10 @@
       "m": 6,
       "expected": 5,
       "detected": 5,
+      "seconds": 0.003909474005922675,
+      "n_allowed": 3248,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "intervals": [
         {
           "nu_min": 2.0750062505208766,

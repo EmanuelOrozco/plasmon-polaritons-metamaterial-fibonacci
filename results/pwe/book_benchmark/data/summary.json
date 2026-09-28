@@ -2,14 +2,14 @@
   "config": "configs/pwe/book_benchmark.yaml",
   "n_plane_waves": 101,
   "max_abs_tmm_residual_laurent": 0.1567671069868088,
-  "max_abs_tmm_residual_inverse": 0.00015667203813649055,
+  "max_abs_tmm_residual_inverse": 0.0001566720388100351,
   "band_edges_k0_first4_inverse": [
-    4.1069848202069454e-07,
-    0.3401237818836381,
-    0.4051906110033104,
-    0.7061211207351935
+    0.0,
+    0.34012378188368836,
+    0.4051906110033526,
+    0.7061211207352175
   ],
-  "field_mode_frequency": 1.9817877416310083,
+  "field_mode_frequency": 1.981787741631075,
   "projected_band_edges": {
     "TM": {
       "k0": [

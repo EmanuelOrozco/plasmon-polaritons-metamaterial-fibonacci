@@ -131,9 +131,9 @@ En la primera zona, $kL_m/\pi=\arccos(R_m)/\pi\in[0,1]$.
 
 \section{Implementación computacional}
 
-Biblioteca \texttt{fibonacci\_tmm} en Python~3.14, NumPy, con parámetros en YAML.
+Paquete \texttt{fibonacci\_photonics} en Python~3.14, NumPy, con parámetros en YAML validados con Pydantic.
 Dos caminos independientes para $R_m$: producto de matrices y recurrencia; coinciden
-dentro de $10^{-8}$ hasta $m=7$. Tests: 110 casos, 3 omitidos ($k>m$ en una identidad).
+dentro de $10^{-8}$ hasta $m=7$. Tests: 319 casos (unitarios, analíticos y de regresión), 3 omitidos ($k>m$ en una identidad).
 Tolerancia de banda: $\lvert R\rvert\le 1+10^{-12}$, documentada.
 
 \section{Reproducción de resultados}

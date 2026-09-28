@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fibonacci-photonics"
-version = "0.1.0"
+version = "2.0.0"
 description = "Plasmon-polaritones en superredes Fibonacci (Reyes-Gómez et al., PRB 81, 153101, 2010): TMM y método de ondas planas (PWE)"
 readme = "README.md"
 license = { text = "MIT" }
@@ -15,10 +15,19 @@ dependencies = [
   "scipy>=1.10",
   "matplotlib>=3.7",
   "pyyaml>=6.0",
+  "pydantic>=2.5",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = [
+  "pytest>=7.0",
+  "mypy>=1.8",
+  "ruff>=0.4",
+  "types-PyYAML>=6.0",
+]
+
+[project.scripts]
+fibonacci-figure = "fibonacci_photonics.reproduction.cli:main"
 
 [project.urls]
 Paper = "https://doi.org/10.1103/PhysRevB.81.153101"
@@ -26,10 +35,41 @@ Paper = "https://doi.org/10.1103/PhysRevB.81.153101"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+fibonacci_photonics = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q --import-mode=importlib"
 pythonpath = ["src"]
 
 [tool.ruff]
-line-length = 100
+line-length = 120
+target-version = "py310"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "NPY", "RUF"]
+ignore = [
+  "RUF001",  # letras griegas y signos matemáticos en cadenas
+  "RUF002",  # ... en docstrings
+  "RUF003",  # ... en comentarios
+  "UP007",   # Union[...] en los esquemas Pydantic (compatibles con 3.10)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B018"]
+"presentacion/scripts/*" = ["E501"]  # llamadas de dibujo con textos largos
+
+[tool.mypy]
+files = ["src/fibonacci_photonics"]
+plugins = ["pydantic.mypy"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "matplotlib.*"]
+ignore_missing_imports = true

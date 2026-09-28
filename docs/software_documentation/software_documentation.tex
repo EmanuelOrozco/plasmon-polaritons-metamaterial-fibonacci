@@ -8,9 +8,9 @@
 \lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible}
 \hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue}
 
-\title{Documentación del software \texttt{fibonacci\_tmm}}
+\title{Documentación del software \texttt{fibonacci\_photonics} 2.0}
 \author{Emanuel Orozco Gallego}
-\date{31 de agosto de 2026}
+\date{28 de septiembre de 2026}
 
 \setlength{\emergencystretch}{3em}
 \begin{document}
@@ -19,7 +19,7 @@
 \begin{abstract}
 Manual independiente de la biblioteca Python que reproduce
 Reyes-Gómez \textit{et al.}, Phys.\ Rev.\ B \textbf{81}, 153101 (2010),
-con el método de matriz de transferencia.
+con la matriz de transferencia (TMM) y la expansión en ondas planas (PWE).
 \end{abstract}
 
 \tableofcontents
@@ -27,48 +27,48 @@ con el método de matriz de transferencia.
 
 \section{Arquitectura}
 
-El paquete vive en \texttt{src/fibonacci\_tmm/}.
+El paquete vive en \texttt{src/fibonacci\_photonics/}.
 
 \begin{center}
 \begin{tabular}{ll}
 \toprule
-Módulo & Responsabilidad \\
+Subpaquete & Responsabilidad \\
 \midrule
-\texttt{fibonacci.py} & $S_m$, $F_m$, $L_m$, inflación \\
-\texttt{materials.py} & Aire y Drude \\
-\texttt{electromagnetics.py} & $n$, $q$, $Q$, TE/TM \\
-\texttt{transfer\_matrix.py} & $M_j$, $T_m$, $R_m$ \\
-\texttt{dispersion.py} & $\cos(kL)=R$, bandas \\
-\texttt{plasmon\_modes.py} & recuento de subbandas \\
-\texttt{bandwidth.py} & intervalos $\nu_{\min}(\theta)$--$\nu_{\max}(\theta)$ (bordes refinados) \\
-\texttt{params.py} & YAML $\to$ SI \\
-\texttt{plotting.py} & estilo de figuras \\
-\texttt{provenance.py} & metadatos de corrida \\
+\texttt{physics} & materiales, TE/TM, $S_m$, $F_m$, $L_m$, \texttt{SuperlatticeSpec} \\
+\texttt{solvers} & contrato \texttt{DispersionSolver}, \texttt{TMMSolver}, \texttt{PWESolver} \\
+\texttt{analysis} & bordes de banda, subbandas plasmónicas, anchos vs $\theta$ \\
+\texttt{config} & esquemas Pydantic de los YAML \\
+\texttt{benchmark} & comparación y tiempos TMM vs PWE \\
+\texttt{reproduction}, \texttt{studies} & Figs.~1--6 y estudios numéricos \\
+\texttt{io}, \texttt{viz} & resultados, metadatos, tablas LaTeX, estilo de figuras \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Los parámetros científicos no están en los scripts: están en \texttt{configs/figure\_0N.yaml}.
+Los parámetros científicos no están en los scripts: están en
+\texttt{configs/figure\_0N.yaml} y se validan al cargarlos. El diseño completo
+está en \textit{Arquitectura, flujo y ejecución del proyecto}.
 
 \section{Instalación}
 
 \begin{lstlisting}
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt      # = pip install -e ".[dev]"
 \end{lstlisting}
 
-Python $\ge$ 3.10. Dependencias: NumPy, SciPy, Matplotlib, PyYAML, pytest.
+Python $\ge$ 3.10. Dependencias: NumPy, SciPy, Matplotlib, PyYAML y Pydantic~2;
+el extra \texttt{dev} añade pytest, Ruff, mypy y \texttt{types-PyYAML}.
 
 \section{Uso}
 
 \begin{lstlisting}
-.venv/bin/pytest
-.venv/bin/python scripts/tmm/figure_01.py      # una figura, TMM
-.venv/bin/python scripts/tmm/run_all.py        # Figs. 1-6, TMM
-.venv/bin/python scripts/pwe/run_all.py        # Figs. 1-6, ondas planas
-.venv/bin/python scripts/comparison/run_all.py # TMM vs PWE
-make paper pwe-docs
+make tests lint
+python scripts/run_figure.py figure_01 --method tmm   # una figura
+python scripts/run_figure.py all --method both        # todas, ambos metodos
+fibonacci-figure 5 --method pwe --workers 8           # comando instalado
+python scripts/comparison/run_all.py                  # TMM vs PWE
+make documents verify
 \end{lstlisting}
 
 Para un orden nuevo de Fibonacci, cambie \texttt{fibonacci\_orders} en el YAML.
@@ -77,28 +77,36 @@ Para otro Drude, edite \texttt{omega\_e\_over\_2pi\_ghz} y \texttt{omega\_m\_ove
 
 \section{API principal}
 
-\texttt{sequence(m)}, \texttt{paper\_fibonacci(m)}, \texttt{build\_cell(m,a,b)}.
+\begin{lstlisting}[language=Python]
+import numpy as np
+from fibonacci_photonics import PWESolver, TMMSolver, get_solver, load_spec
 
-{\raggedright
-\texttt{scan\_dispersion(spec, m, theta, nu\_ghz, polarization)} (TMM; alias de
-\texttt{scan\_dispersion\_tmm}).
+spec = load_spec()                       # superred del articulo
+nu = np.linspace(0.5, 5.0, 2001)         # GHz, > 0 y creciente
+scan = TMMSolver(spec).scan(4, np.pi / 6, nu, "TE")
+pwe = get_solver("pwe", spec, harmonics_per_layer=16)
+r = pwe.semitrace(4, np.pi / 6, nu, "TE")
+report = pwe.convergence_report(4, np.pi / 6, nu[::200])
+\end{lstlisting}
 
-\texttt{scan\_dispersion\_pwe(spec, m, theta, nu\_ghz, polarization,
-harmonics\_per\_layer=16)}: la misma semitraza con ondas planas; devuelve el
-mismo \texttt{DispersionScan}.\par}
+\begin{itemize}
+\item \texttt{solver.semitrace}, \texttt{solver.scan} y \texttt{solver.evaluator}
+tienen la misma firma en los dos métodos y devuelven los mismos objetos.
+\item \texttt{TMMSolver(spec, algorithm="recurrence"|"product")}: las dos vías de
+$R_m$ deben coincidir.
+\item \texttt{PWESolver(spec, harmonics\_per\_layer, rule="inverse"|"laurent", workers)}:
+$n_{\max}=hF_m$; \texttt{convergence\_report} compara con 1.5 veces más ondas
+planas y emite \texttt{ConvergenceWarning} si no converge.
+\item \texttt{close\_band\_edges(solver, scan)}: bordes $|R|=1$ y puntas refinados.
+\item \texttt{detect\_plasmon\_modes(scan, nu\_min\_ghz, nu\_max\_ghz)},
+\texttt{bandwidth\_versus\_angle}, \texttt{compare\_scans}.
+\item \texttt{sequence(m)}, \texttt{paper\_fibonacci(m)}, \texttt{build\_cell(m, a, b)}.
+\item \texttt{load\_spec(path)}, \texttt{load\_figure(figure\_id)}: YAML validados.
+\end{itemize}
 
-\texttt{compare\_scans(ref, cand)}, \texttt{locate\_bands},
-\texttt{validate\_bands}: comparación y localización de subbandas.
-
-El paquete es \texttt{fibonacci\_photonics} (subpaquetes \texttt{core},
-\texttt{tmm}, \texttt{pwe}, \texttt{analysis}); \texttt{fibonacci\_tmm}
-sigue disponible como alias.
-
-\texttt{semitrace\_by\_recurrence} y \texttt{semitrace\_by\_product} deben coincidir.
-
-\texttt{detect\_plasmon\_modes(scan, nu\_min\_ghz=..., nu\_max\_ghz=...)}.
-
-\texttt{load\_spec(path)} lee un YAML.
+Las entradas inválidas (frecuencias $\le 0$ o no finitas, mallas no crecientes,
+$\theta\notin[0,\pi/2]$, órdenes negativos, armónicos $<1$) lanzan
+\texttt{InvalidParameterError}; los YAML inválidos, \texttt{ConfigError}.
 
 \section{Modelo físico}
 
@@ -121,40 +129,43 @@ $N_B=F_{m-2}$, $L_m=F_{m-1}a+F_{m-2}b$.
 Banda si $\lvert R\rvert\le 1+10^{-12}$. $kL_m/\pi=\arccos(R)/\pi$.
 Los puntos con $\lvert R\rvert>1$ se dejan como NaN, no se recortan en silencio.
 
-\section{Tests}
+\section{Pruebas}
 
 \begin{itemize}
-\item \texttt{core/test\_fibonacci.py}: secuencias, inflación, $N_B$, $L_m$.
-\item \texttt{core/test\_materials.py}: ceros de Drude, $\nu_e,\nu_m$.
-\item \texttt{core/test\_params.py}: YAML de las figuras.
-\item \texttt{tmm/test\_transfer\_matrix.py}: $\det T=1$, (7)--(9), recurrencia vs producto, TE$=$TM a $\theta=0$.
-\item \texttt{tmm/test\_dispersion.py}: máscara de banda, gap $\langle n\rangle=0$.
-\item \texttt{pwe/test\_fourier.py}, \texttt{pwe/test\_solver.py}: Fourier de la celda, benchmark del libro, $R_{\rm PWE}\approx R_{\rm TMM}$.
-\item \texttt{analysis/test\_validation.py}: $N_{\mathrm{modos}}=F_{m-2}$.
-\item \texttt{analysis/test\_comparison.py}: métricas y localización de bordes.
-\item \texttt{compat/test\_legacy\_imports.py}: alias \texttt{fibonacci\_tmm}.
+\item \texttt{tests/unit/}: contrato común, validaciones, esquemas Pydantic,
+Fourier, matrices de transferencia, PWE frente a TMM, bordes y análisis de bandas.
+\item \texttt{tests/analytic/}: límite homogéneo, bicapa de cuarto de onda
+($R=-5/3$), $\det T=1$, invariante de Kohmoto, TE$=$TM a $\theta=0$,
+dualidad $\varepsilon\leftrightarrow\mu$, Parseval, razón áurea.
+\item \texttt{tests/regression/}: valores de referencia previos a la
+refactorización y $N_{\mathrm{modos}}=F_{m-2}$.
 \end{itemize}
 
 \section{Reproducción de figuras}
 
-Cada \texttt{results/tmm/figure\_0N/} contiene \texttt{data/}, \texttt{output/} y \texttt{README.md}
-(\texttt{figures/} es un enlace a \texttt{results/tmm/}). Las versiones PWE están en
-\texttt{results/pwe/figure\_0N/} y la comparación en \texttt{results/comparison/}.
-Las imágenes finales son PDF, PNG (300 dpi) y SVG.
+Cada \texttt{results/tmm/figure\_0N/} contiene \texttt{data/}, \texttt{output/} y
+\texttt{README.md}. Las versiones PWE están en \texttt{results/pwe/figure\_0N/} y
+la comparación en \texttt{results/comparison/}. Las imágenes finales son PDF,
+PNG (300 dpi) y, para la TMM, SVG.
 
 \section{Solución de problemas}
 
 \begin{itemize}
-\item \texttt{ZeroDivisionError} en $\omega=0$: el Drude diverge; no incluya el origen en el barrido.
+\item \texttt{InvalidParameterError} con $\nu=0$: el Drude diverge; no incluya el origen en el barrido.
 \item $\mu_B=0$ o $\varepsilon_B=0$: polo; el escáner enmascara una vecindad relativa $10^{-6}$.
 \item $\lvert R\rvert$ siempre $\le 1$ a $\theta=0$ si $\omega_e=\omega_m$: no es un bug, es adaptación de impedancia.
+\item \texttt{ConvergenceWarning}: aumente \texttt{harmonics\_per\_layer} o use la TMM cerca de $\nu_m$.
 \item Fig.~6: el original grafica $\nu(\theta)$ relleno, no $\Delta\nu$;
 el caption del PRB está incompleto (parámetros inferidos de las Figs.~3--5).
-\item ImportError: añada \texttt{src} al \texttt{PYTHONPATH} o use los scripts de \texttt{scripts/}.
+\item \texttt{ImportError}: instale el paquete (\texttt{pip install -e .}) o use \texttt{PYTHONPATH=src}.
 \end{itemize}
 
 \section{Extensiones}
 
-Nuevo orden: YAML. Nueva polarización: \texttt{Polarization.TM}. Nuevo material: implemente \texttt{epsilon\_mu(omega)} con la misma interfaz que \texttt{DrudeMetamaterial}.
+Nuevo orden: YAML. Nueva polarización: \texttt{Polarization.TM}. Nuevo material:
+implemente \texttt{epsilon\_mu(omega)} con la misma interfaz que
+\texttt{DrudeMetamaterial}. Nuevo método numérico: implemente
+\texttt{semitrace}, \texttt{scan} y \texttt{evaluator} (protocolo
+\texttt{DispersionSolver}) y todo el post-proceso funciona sin cambios.
 
 \end{document}

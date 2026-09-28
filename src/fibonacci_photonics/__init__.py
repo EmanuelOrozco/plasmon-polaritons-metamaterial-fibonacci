@@ -1,24 +1,40 @@
 """Plasmon-polaritones en superredes de Fibonacci (Reyes-Gómez et al., PRB 81, 153101, 2010).
 
-Dos métodos numéricos independientes calculan la misma semitraza R(ν) = cos(k Lm):
+Dos métodos independientes calculan la misma semitraza R_m(ν) = cos(k L_m):
 
-- ``fibonacci_photonics.tmm``: matriz de transferencia (analítica por capas).
-- ``fibonacci_photonics.pwe``: expansión en ondas planas (k(ω), regla inversa).
+- ``solvers.tmm``: matriz de transferencia (``TMMSolver``), exacta por capas.
+- ``solvers.pwe``: ondas planas en la forma k(ω) con la regla inversa (``PWESolver``).
 
-``core`` contiene la física compartida y ``analysis`` el post-proceso, que no
-depende del método que produjo el barrido.
+Capas del paquete:
+
+- ``physics``: materiales, polarización, palabras de Fibonacci y ``SuperlatticeSpec``.
+- ``solvers``: protocolo ``DispersionSolver``, barridos y ambos métodos.
+- ``analysis``: bordes de banda, subbandas plasmónicas y anchos de banda.
+- ``config``: esquemas Pydantic de los YAML de ``configs/``.
+- ``benchmark``: comparación y tiempos TMM vs PWE.
+- ``reproduction`` y ``studies``: figuras del artículo y estudios numéricos.
+- ``io`` y ``viz``: rutas, resultados, tablas LaTeX y gráficas.
+
+Ejemplo::
+
+    import numpy as np
+    from fibonacci_photonics import TMMSolver, load_spec
+
+    solver = TMMSolver(load_spec())
+    scan = solver.scan(m=4, theta=0.0, nu_ghz=np.linspace(0.5, 3.0, 2001), polarization="TE")
 """
 
 from fibonacci_photonics.analysis.bandwidth import BandwidthPoint, bandwidth_versus_angle
 from fibonacci_photonics.analysis.plasmon_modes import PlasmonModeReport, detect_plasmon_modes
-from fibonacci_photonics.core.bands import DispersionScan, FrequencyInterval, allowed_intervals
-from fibonacci_photonics.core.constants import BAND_ABS_R_TOLERANCE, GOLDEN_RATIO, SPEED_OF_LIGHT
-from fibonacci_photonics.core.effective_medium import (
+from fibonacci_photonics.config import load_figure, load_spec
+from fibonacci_photonics.errors import ConvergenceWarning, InvalidParameterError
+from fibonacci_photonics.physics.constants import GOLDEN_RATIO, SPEED_OF_LIGHT
+from fibonacci_photonics.physics.effective_medium import (
     average_epsilon_mu,
     zero_average_index_frequency_ghz,
 )
-from fibonacci_photonics.core.electromagnetics import Polarization
-from fibonacci_photonics.core.fibonacci import (
+from fibonacci_photonics.physics.electromagnetics import Polarization
+from fibonacci_photonics.physics.fibonacci import (
     FibonacciCell,
     build_cell,
     cell_length,
@@ -27,27 +43,43 @@ from fibonacci_photonics.core.fibonacci import (
     paper_fibonacci,
     sequence,
 )
-from fibonacci_photonics.core.params import SuperlatticeSpec, load_spec
-from fibonacci_photonics.pwe.dispersion import scan_dispersion as scan_dispersion_pwe
-from fibonacci_photonics.tmm.dispersion import scan_dispersion as scan_dispersion_tmm
-from fibonacci_photonics.tmm.transfer_matrix import (
+from fibonacci_photonics.physics.superlattice import SuperlatticeSpec
+from fibonacci_photonics.solvers import (
+    BAND_ABS_R_TOLERANCE,
+    DispersionScan,
+    DispersionSolver,
+    FrequencyInterval,
+    PWESolver,
+    TMMSolver,
+    allowed_intervals,
+    get_solver,
+)
+from fibonacci_photonics.solvers.tmm.transfer_matrix import (
     analytic_r0_r1_r2,
     cell_transfer_matrix,
     semitrace_by_product,
     semitrace_by_recurrence,
 )
 
+__version__ = "2.0.0"
+
 __all__ = [
     "BAND_ABS_R_TOLERANCE",
+    "GOLDEN_RATIO",
+    "SPEED_OF_LIGHT",
     "BandwidthPoint",
+    "ConvergenceWarning",
     "DispersionScan",
+    "DispersionSolver",
     "FibonacciCell",
     "FrequencyInterval",
-    "GOLDEN_RATIO",
+    "InvalidParameterError",
+    "PWESolver",
     "PlasmonModeReport",
     "Polarization",
-    "SPEED_OF_LIGHT",
     "SuperlatticeSpec",
+    "TMMSolver",
+    "__version__",
     "allowed_intervals",
     "analytic_r0_r1_r2",
     "average_epsilon_mu",
@@ -56,12 +88,12 @@ __all__ = [
     "cell_length",
     "cell_transfer_matrix",
     "detect_plasmon_modes",
+    "get_solver",
+    "load_figure",
     "load_spec",
     "n_layers_a",
     "n_layers_b",
     "paper_fibonacci",
-    "scan_dispersion_pwe",
-    "scan_dispersion_tmm",
     "semitrace_by_product",
     "semitrace_by_recurrence",
     "sequence",

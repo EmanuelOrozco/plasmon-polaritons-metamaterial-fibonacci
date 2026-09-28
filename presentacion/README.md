@@ -26,7 +26,7 @@ presentacion/
     └── generar_imagenes.py   # genera todo lo que hay en imagenes/
 ```
 
-Las figuras de resultados 1 a 6 se toman directamente de `../figures/figure_0N/output/`, así que conviene regenerarlas (`make figures`) antes de compilar si se cambió algún YAML de `configs/`.
+Las figuras de resultados 1 a 6 se toman directamente de `../results/tmm/figure_0N/output/`, así que conviene regenerarlas (`make tmm`) antes de compilar si se cambió algún YAML de `configs/`.
 
 ## Regenerar
 

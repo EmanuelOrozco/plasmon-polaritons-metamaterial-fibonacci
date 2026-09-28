@@ -74,7 +74,7 @@ def expected_outputs() -> list[Path]:
         paths += [RESULTS / "tmm" / fig / "output" / f"{fig}.{ext}" for ext in ("pdf", "png", "svg")]
         paths += [RESULTS / "tmm" / fig / "data" / "summary.json"]
         paths += [RESULTS / "pwe" / fig / "output" / f"{fig}.{ext}" for ext in ("pdf", "png")]
-        paths += [RESULTS / "pwe" / fig / "data" / "summary.json", RESULTS / "comparison" / fig / "data" / "summary.json"]
+        paths += [RESULTS / method / fig / "data" / "summary.json" for method in ("pwe", "comparison")]
     paths.append(RESULTS / "tmm" / "convergence" / "convergence_figure04.json")
     for study in ("book_benchmark", "cell_fourier", "spectral_pollution", "convergence"):
         paths.append(RESULTS / "pwe" / study / "data" / "summary.json")
@@ -129,7 +129,8 @@ def check_acceptance(report: Report) -> None:
     eff = summary["efficiency"]
     low, high = eff["figure_ratio_range"]
     report.check(eff["recommended_method"] == "TMM" and low > 1,
-                 f"tiempo: PWE/TMM por figura entre {low:.1e} y {high:.1e}; método recomendado {eff['recommended_method']}")
+                 f"tiempo: PWE/TMM por figura entre {low:.1e} y {high:.1e}; "
+                 f"método recomendado {eff['recommended_method']}")
 
 
 # -------------------------------------------------------------- 3. documentos
@@ -192,7 +193,7 @@ def compare_values(new, old, path: str, tol: float, diffs: list[str]) -> None:
     elif isinstance(new, list) and isinstance(old, list):
         if len(new) != len(old):
             diffs.append(f"{path}: longitud {len(new)} ≠ {len(old)}")
-        for i, (a, b) in enumerate(zip(new, old)):
+        for i, (a, b) in enumerate(zip(new, old, strict=False)):
             compare_values(a, b, f"{path}[{i}]", tol, diffs)
     elif isinstance(new, (int, float)) and isinstance(old, (int, float)) and not isinstance(new, bool):
         if not np.isclose(new, old, rtol=tol, atol=1e-12, equal_nan=True):
@@ -206,7 +207,7 @@ def check_reference(report: Report, reference: Path, tol: float) -> None:
     old_files = sorted(p for p in reference.rglob("*") if p.suffix in (".json", ".npz"))
     for old_path in old_files:
         rel = old_path.relative_to(reference)
-        new_path = ROOT / rel
+        new_path = RESULTS / rel
         if "efficiency" in rel.parts or "timing" in rel.parts:
             continue
         if not new_path.exists():

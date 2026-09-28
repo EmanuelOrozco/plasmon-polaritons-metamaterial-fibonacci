@@ -111,9 +111,13 @@ Por método:
 ### Una figura por aparte
 
 ```bash
-.venv/bin/python scripts/tmm/figure_03.py        # TMM
-.venv/bin/python scripts/pwe/figure_03.py        # PWE
+.venv/bin/python scripts/run_figure.py 3 --method tmm     # TMM
+.venv/bin/python scripts/run_figure.py 3 --method pwe     # PWE
+.venv/bin/python scripts/run_figure.py all --method both  # las seis, ambos métodos
 ```
+
+`scripts/tmm/figure_0N.py` y `scripts/pwe/figure_0N.py` siguen disponibles como envoltorios
+de una línea sobre el mismo runner.
 
 Los scripts antiguos `scripts/reproduce_figure_0N.py` y `scripts/reproduce_all.py`
 siguen funcionando: llaman a `scripts/tmm/`.
@@ -170,13 +174,18 @@ frequency_points: 20000            # más resolución en frecuencia
 ```text
 configs/                     YAML por figura (física) + configs/pwe/ (numérica del PWE)
                              + configs/comparison/ (estudio de eficiencia)
-src/fibonacci_photonics/     biblioteca
-  core/                      constantes, materiales de Drude, Fibonacci, parámetros, bandas
-  tmm/                       matriz de transferencia y barrido en frecuencia
-  pwe/                       ondas planas: Fourier de la celda, solver k(ω), forma ω(k) del libro
-  analysis/                  modos de plasmón, anchos de banda, comparación, localización de bordes
-  plotting.py                estilo común de las figuras
-src/fibonacci_tmm/           alias del nombre antiguo (compatibilidad)
+src/fibonacci_photonics/     biblioteca (v2.0)
+  physics/                   constantes, unidades, materiales de Drude, Fibonacci, SuperlatticeSpec
+  solvers/                   contrato DispersionSolver, DispersionScan, intervalos permitidos
+    tmm/                     matriz de transferencia y TMMSolver
+    pwe/                     ondas planas: Fourier de la celda, solver k(ω), ω(k), convergencia, PWESolver
+  config/                    esquema Pydantic v2 y carga de YAML
+  analysis/                  modos de plasmón, anchos de banda, bordes, cierre de bandas, raíces
+  benchmark/                 comparación TMM vs PWE, tiempos y eficiencia
+  reproduction/              pipeline de figuras y CLI de scripts/run_figure.py
+  studies/                   convergencia, benchmark del libro, contaminación espectral
+  io/, viz/                  rutas, resultados, procedencia, LaTeX; estilo de las figuras
+scripts/run_figure.py        runner único: figuras 1–6 con --method tmm|pwe|both
 scripts/tmm/                 figuras 1–6 y convergencia con la TMM
 scripts/pwe/                 benchmark del libro, estudios numéricos y figuras 1–6 con el PWE
 scripts/comparison/          superposiciones, errores, tablas LaTeX y eficiencia (tiempo, memoria)
@@ -186,7 +195,7 @@ results/tmm/                 salidas TMM (figures/ es un enlace a esta carpeta)
 results/pwe/                 salidas PWE
 results/comparison/          comparación TMM vs PWE y tablas
 references/pwe/              cuaderno PWE-1d.ipynb y PWE_2D.m (el PDF del capítulo es local)
-tests/                       pytest, organizado por paquete (core, tmm, pwe, analysis, compat)
+tests/                       pytest: unit/, analytic/ (casos cerrados), regression/ (valores de referencia)
 docs/                        LaTeX, PDF y anexos Markdown
 presentacion/                presentación (independiente; no se regenera con make results)
 notebooks/                   exploración / validación (opcional)

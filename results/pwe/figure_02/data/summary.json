@@ -1,21 +1,27 @@
 {
   "config": "configs/pwe/figure_02.yaml",
+  "method": "pwe",
   "numerics": {
     "rule": "inverse",
     "harmonics_per_layer": 8,
-    "frequency_points": 3000
+    "frequency_points": 3000,
+    "close_band_edges": true,
+    "edge_xtol_fraction": 1e-06
   },
   "mode_counts": [
     {
       "m": 3,
       "expected": 1,
       "detected": 1,
-      "seconds": 6.310154423001222,
+      "seconds": 6.281619285000488,
+      "n_allowed": 1083,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "n_edges": 2,
       "n_extrema": 0,
       "n_hidden_gaps": 0,
       "edge_evaluations": 17,
-      "edge_seconds": 0.10093183199933264,
+      "edge_seconds": 0.09730637799657416,
       "intervals": [
         {
           "nu_min": 2.0440146715571856,
@@ -28,12 +34,15 @@
       "m": 4,
       "expected": 2,
       "detected": 2,
-      "seconds": 17.778890398010844,
+      "seconds": 19.161513079990982,
+      "n_allowed": 920,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "n_edges": 4,
       "n_extrema": 0,
       "n_hidden_gaps": 0,
       "edge_evaluations": 32,
-      "edge_seconds": 0.28361495900026057,
+      "edge_seconds": 0.3290538579894928,
       "intervals": [
         {
           "nu_min": 2.083361120373458,
@@ -51,12 +60,15 @@
       "m": 5,
       "expected": 3,
       "detected": 3,
-      "seconds": 51.65162903099554,
+      "seconds": 54.8791377239977,
+      "n_allowed": 873,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "n_edges": 6,
       "n_extrema": 0,
       "n_hidden_gaps": 0,
       "edge_evaluations": 49,
-      "edge_seconds": 0.8992291460017441,
+      "edge_seconds": 1.138665800986928,
       "intervals": [
         {
           "nu_min": 2.0700233411137043,
@@ -79,12 +91,15 @@
       "m": 6,
       "expected": 5,
       "detected": 5,
-      "seconds": 177.39238466200186,
+      "seconds": 190.71200621599564,
+      "n_allowed": 811,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0,
       "n_edges": 10,
       "n_extrema": 0,
       "n_hidden_gaps": 0,
       "edge_evaluations": 84,
-      "edge_seconds": 5.277701602011803,
+      "edge_seconds": 5.80408814700786,
       "intervals": [
         {
           "nu_min": 2.0753584528176057,

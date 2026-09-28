@@ -94,7 +94,7 @@ de la matriz de transferencia de la celda: hay banda si $|R_m|\le 1$ y gap si
 $|R_m|>1$. Justo debajo de $\nu_m=\omega_m/2\pi$ ($\mu_B\to 0^-$) aparecen
 $F_{m-2}$ subbandas estrechas de plasmón-polaritón.
 
-La implementación original del proyecto (\code{fibonacci\_photonics.tmm})
+La implementación original del proyecto (\code{fibonacci\_photonics.solvers.tmm})
 reproduce las seis figuras con la TMM. Este documento construye un segundo
 método, independiente, basado en ondas planas, y lo usa para verificar esos
 resultados. La TMM es exacta para medios estratificados (solo multiplica
@@ -203,7 +203,7 @@ $m$ & $S_m$ & capas $F_m$ & capas B & $L_m$ (mm) \\
 \end{tabular}
 \end{table}
 
-\noindent La palabra de cada orden la devuelve \code{core.fibonacci.sequence(m)}
+\noindent La palabra de cada orden la devuelve \code{physics.fibonacci.sequence(m)}
 y es la misma en la TMM y en el PWE. La Fig.~\ref{fig:celda} muestra la celda
 $S_4=\mathrm{ABAAB}$ y su perfil de permeabilidad.
 
@@ -254,7 +254,7 @@ f_n=f_A\,(\mathbb 1_A)_n+f_B\,(\mathbb 1_B)_n .
 \end{equation}
 Con esto, para cada frecuencia los coeficientes de $\varepsilon(z)$, $\mu(z)$,
 $1/\varepsilon$ o $1/\mu$ cuestan una combinación lineal de dos vectores
-precalculados (\code{pwe.fourier.cell\_fourier}). Que $\varepsilon_B$ y
+precalculados (\code{solvers.pwe.fourier.cell\_fourier}). Que $\varepsilon_B$ y
 $\mu_B$ sean negativos o dependan de $\omega$ no cambia nada.
 
 \subsection{Matrices de Toeplitz}
@@ -382,7 +382,7 @@ ondas planas).
 autovalores $\lambda=\kappa^2$; $\omega=c\sqrt\lambda$.
 \item Dibujar $\omega L_m/2\pi c$ frente a $k$.
 \end{enumerate}
-La implementación está en \code{pwe.eigenfrequency.nondispersive\_bands}; el
+La implementación está en \code{solvers.pwe.eigenfrequency.nondispersive\_bands}; el
 listado del Apéndice~\ref{app:codigo} muestra el núcleo.
 
 %=====================================================================
@@ -488,7 +488,7 @@ M_2=\toep{r_2},\;M_1=\toep{r_1}-K\toep{p_1}K,\;M_0=\toep{r_0}-K\toep{p_0}K,
 \label{eq:qep-omega}
 \end{equation}
 que se linealiza en forma compañera de tamaño $2N$~\cite{tisseur}
-(función \code{drude\_qep\_frequencies\_ghz} de \code{pwe/eigenfrequency.py}).
+(función \code{drude\_qep\_frequencies\_ghz} de \code{solvers/pwe/eigenfrequency.py}).
 
 \subsection{Contaminación espectral}
 
@@ -861,24 +861,25 @@ como base para la extensión a dos dimensiones, donde la TMM ya no se aplica.
 
 \begin{table}[H]
 \centering
-\caption{Ecuaciones y módulos.}
+\caption{Ecuaciones y módulos (rutas relativas a \code{solvers/pwe/} salvo las de \code{analysis/} y \code{benchmark/}).}
 \begin{tabular}{ll}
 \toprule
 Ecuación & Implementación \\
 \midrule
-\eqref{eq:fourier}, \eqref{eq:toeplitz} & \code{pwe/fourier.py}: \code{cell\_fourier}, \code{toeplitz\_matrix} \\
-\eqref{eq:maestra} (no dispersivo) & \code{pwe/eigenfrequency.py}: \code{nondispersive\_bands} \\
-\eqref{eq:qep-omega} (Drude, $\omega(k)$) & \code{pwe/eigenfrequency.py}: \code{drude\_qep\_frequencies\_ghz} \\
-\eqref{eq:qep-k}, \eqref{eq:companion} & \code{pwe/bloch.py}: \code{qep\_matrices}, \code{bloch\_eigenvalues} \\
-\eqref{eq:rpwe} & \code{pwe/bloch.py}: \code{select\_bloch\_wavevector}, \code{solve\_bloch} \\
-barrido & \code{pwe/dispersion.py}: \code{scan\_dispersion}, \code{SemitraceEvaluator} \\
+\eqref{eq:fourier}, \eqref{eq:toeplitz} & \code{fourier.py}: \code{cell\_fourier}, \code{toeplitz\_matrix} \\
+\eqref{eq:maestra} (no dispersivo) & \code{eigenfrequency.py}: \code{nondispersive\_bands} \\
+\eqref{eq:qep-omega} (Drude, $\omega(k)$) & \code{eigenfrequency.py}: \code{drude\_qep\_frequencies\_ghz} \\
+\eqref{eq:qep-k}, \eqref{eq:companion} & \code{bloch.py}: \code{qep\_matrices}, \code{bloch\_eigenvalues} \\
+\eqref{eq:rpwe} & \code{bloch.py}: \code{select\_bloch\_wavevector}, \code{solve\_bloch} \\
+barrido & \code{solver.py}: \code{PWESolver}; \code{semitrace.py}: \code{SemitraceEvaluator} \\
+convergencia & \code{convergence.py}: \code{check\_harmonic\_convergence} \\
 bordes y validación & \code{analysis/band\_edges.py}: \code{locate\_bands}, \code{validate\_bands} \\
-comparación & \code{analysis/comparison.py}: \code{compare\_scans} \\
+comparación & \code{benchmark/compare.py}: \code{compare\_scans} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-El núcleo del solver $k(\omega)$ (\code{pwe/bloch.py}) es:
+El núcleo del solver $k(\omega)$ (\code{solvers/pwe/bloch.py}) es:
 \begin{lstlisting}
 t_chi = cell.toeplitz(chi_a, chi_b)            # [[χ]]
 t_inv_chi = cell.toeplitz(1 / chi_a, 1 / chi_b)  # [[1/χ]]
