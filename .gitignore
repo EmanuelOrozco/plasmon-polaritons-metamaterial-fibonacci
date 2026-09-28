@@ -1,4 +1,11 @@
-# Entorno y cachés
+# Qué se sube al repositorio
+#   src/, scripts/, tests/, configs/, notebooks/, references/pwe/ (código de referencia),
+#   results/**/output/ (figuras), results/**/summary.json, results/comparison/tables/,
+#   results/pwe/**/data/*.npz (barridos PWE: horas de cómputo, los usa la comparación),
+#   docs/**/*.tex y docs/**/*.pdf, presentacion/ y el enlace figures -> results/tmm.
+# Todo lo demás se regenera con `make` o es local.
+
+# Entorno de Python y cachés
 .venv/
 venv/
 env/
@@ -13,13 +20,22 @@ build/
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
-.DS_Store
 
-# Artefactos LaTeX (no los PDF finales)
+# Editores y sistema operativo
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Artefactos de LaTeX (se conservan los .tex y los PDF finales)
 *.aux
 *.log
 *.out
 *.toc
+*.lof
+*.lot
 *.bbl
 *.blg
 *.synctex.gz
@@ -29,22 +45,16 @@ build/
 *.snm
 *.vrb
 
-# Copias duplicadas en la raíz (las canónicas viven en docs/ y figures/)
+# Copias de los PDF en la raíz (las canónicas están en docs/<documento>/)
 /*.pdf
-/paper_reimplementation.tex
-/software_documentation.tex
 
-# Datos numéricos regenerables
-figures/**/data/*.npz
-figures/**/data/metadata.json
-figures/reproduced/
+# Datos regenerables en segundos: barridos TMM y metadatos de cada corrida
+results/tmm/**/data/*.npz
+results/**/data/metadata.json
 
-# Material del artículo APS (copyright; no publicar)
+# Material con copyright (artículo APS y capítulo del libro): solo local
+references/paper/
+references/pwe/*.pdf
+docs/paper_source/
 Plasmon_polaritons*.pdf
 _paper_pages/
-figures/paper_reference/
-docs/paper_source/
-
-# Datos locales vacíos / opcionales
-data/raw/
-data/reference/

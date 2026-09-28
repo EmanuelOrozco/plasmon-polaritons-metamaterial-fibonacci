@@ -1,7 +1,7 @@
 # Resultados obtenidos (reproducción del paper)
 
 Reimplementación de Reyes-Gómez *et al.*, Phys. Rev. B **81**, 153101 (2010).
-Todas las figuras se generaron con `python scripts/reproduce_figure_0N.py`
+Todas las figuras se generaron con `python scripts/tmm/figure_0N.py`
 (sin edición manual de las imágenes).
 
 Parámetros comunes del paper: $a=b=12\,\mathrm{mm}$, $\varepsilon_A=\mu_A=1$,
@@ -40,12 +40,12 @@ $\theta=0,\pi/12,\pi/6,\pi/3$.
   $\nu=3\sqrt{F_{m-2}/F_m}\,\mathrm{GHz}$ ($1.732$ para $m=3$, $1.897$ para $m=4$).
 - A $\theta\neq 0$ se abren gaps no Bragg y polaritónicos.
 
-**Archivos:** [PNG](../figures/figure_01/output/figure_01.png) ·
-[PDF](../figures/figure_01/output/figure_01.pdf) ·
-[SVG](../figures/figure_01/output/figure_01.svg) ·
-config `configs/figure_01.yaml` · script `scripts/reproduce_figure_01.py`
+**Archivos:** [PNG](../results/tmm/figure_01/output/figure_01.png) ·
+[PDF](../results/tmm/figure_01/output/figure_01.pdf) ·
+[SVG](../results/tmm/figure_01/output/figure_01.svg) ·
+config `configs/figure_01.yaml` · script `scripts/tmm/figure_01.py`
 
-![Figura 1](../figures/figure_01/output/figure_01.png)
+![Figura 1](../results/tmm/figure_01/output/figure_01.png)
 
 ---
 
@@ -64,12 +64,12 @@ $F_{m-2}$:
 | 5 | 3 | 3 | tres intervalos bajo 3 GHz |
 | 6 | 5 | 5 | cinco intervalos bajo 3 GHz |
 
-**Archivos:** [PNG](../figures/figure_02/output/figure_02.png) ·
-[PDF](../figures/figure_02/output/figure_02.pdf) ·
-[SVG](../figures/figure_02/output/figure_02.svg) ·
-config `configs/figure_02.yaml` · script `scripts/reproduce_figure_02.py`
+**Archivos:** [PNG](../results/tmm/figure_02/output/figure_02.png) ·
+[PDF](../results/tmm/figure_02/output/figure_02.pdf) ·
+[SVG](../results/tmm/figure_02/output/figure_02.svg) ·
+config `configs/figure_02.yaml` · script `scripts/tmm/figure_02.py`
 
-![Figura 2](../figures/figure_02/output/figure_02.png)
+![Figura 2](../results/tmm/figure_02/output/figure_02.png)
 
 ---
 
@@ -84,12 +84,12 @@ mismos ángulos que Fig. 1.
 - A $\theta=0$ no aparece polaritón plano en 1 GHz.
 - A $\theta\neq 0$ surge una banda casi plana (modos plasmon-polaritón), como en el original.
 
-**Archivos:** [PNG](../figures/figure_03/output/figure_03.png) ·
-[PDF](../figures/figure_03/output/figure_03.pdf) ·
-[SVG](../figures/figure_03/output/figure_03.svg) ·
-config `configs/figure_03.yaml` · script `scripts/reproduce_figure_03.py`
+**Archivos:** [PNG](../results/tmm/figure_03/output/figure_03.png) ·
+[PDF](../results/tmm/figure_03/output/figure_03.pdf) ·
+[SVG](../results/tmm/figure_03/output/figure_03.svg) ·
+config `configs/figure_03.yaml` · script `scripts/tmm/figure_03.py`
 
-![Figura 3](../figures/figure_03/output/figure_03.png)
+![Figura 3](../results/tmm/figure_03/output/figure_03.png)
 
 ---
 
@@ -109,12 +109,12 @@ config `configs/figure_03.yaml` · script `scripts/reproduce_figure_03.py`
 El ancho crece con $\theta$, en el mismo sentido que la lectura visual del impreso
 ($\sim 5$ y $\sim 40\,\mathrm{MHz}$).
 
-**Archivos:** [PNG](../figures/figure_04/output/figure_04.png) ·
-[PDF](../figures/figure_04/output/figure_04.pdf) ·
-[SVG](../figures/figure_04/output/figure_04.svg) ·
-config `configs/figure_04.yaml` · script `scripts/reproduce_figure_04.py`
+**Archivos:** [PNG](../results/tmm/figure_04/output/figure_04.png) ·
+[PDF](../results/tmm/figure_04/output/figure_04.pdf) ·
+[SVG](../results/tmm/figure_04/output/figure_04.svg) ·
+config `configs/figure_04.yaml` · script `scripts/tmm/figure_04.py`
 
-![Figura 4](../figures/figure_04/output/figure_04.png)
+![Figura 4](../results/tmm/figure_04/output/figure_04.png)
 
 ---
 
@@ -130,12 +130,12 @@ config `configs/figure_04.yaml` · script `scripts/reproduce_figure_04.py`
 - Los valores graficados ($\approx 0.994$–$1.000\,\mathrm{GHz}$ y $0.95$–$1.00\,\mathrm{GHz}$)
   son **frecuencias** de subbandas permitidas, no $\Delta\nu$ (aunque el PRB rotula “bandwidth”).
 
-**Archivos:** [PNG](../figures/figure_05/output/figure_05.png) ·
-[PDF](../figures/figure_05/output/figure_05.pdf) ·
-[SVG](../figures/figure_05/output/figure_05.svg) ·
-config `configs/figure_05.yaml` · script `scripts/reproduce_figure_05.py`
+**Archivos:** [PNG](../results/tmm/figure_05/output/figure_05.png) ·
+[PDF](../results/tmm/figure_05/output/figure_05.pdf) ·
+[SVG](../results/tmm/figure_05/output/figure_05.svg) ·
+config `configs/figure_05.yaml` · script `scripts/tmm/figure_05.py`
 
-![Figura 5](../figures/figure_05/output/figure_05.png)
+![Figura 5](../results/tmm/figure_05/output/figure_05.png)
 
 ---
 
@@ -156,19 +156,19 @@ $m=2..7$; $\theta$ de $0$ a $\pi/3$.
   de $0.2\,\mathrm{kHz}$: a ángulos pequeños hay subbandas de apenas
   $\sim 50\,\mathrm{Hz}$ de ancho y, cerca de $\pi/12$, gaps físicos de $0.4\,\mathrm{kHz}$.
 
-**Archivos:** [PNG](../figures/figure_06/output/figure_06.png) ·
-[PDF](../figures/figure_06/output/figure_06.pdf) ·
-[SVG](../figures/figure_06/output/figure_06.svg) ·
-config `configs/figure_06.yaml` · script `scripts/reproduce_figure_06.py`
+**Archivos:** [PNG](../results/tmm/figure_06/output/figure_06.png) ·
+[PDF](../results/tmm/figure_06/output/figure_06.pdf) ·
+[SVG](../results/tmm/figure_06/output/figure_06.svg) ·
+config `configs/figure_06.yaml` · script `scripts/tmm/figure_06.py`
 
-![Figura 6](../figures/figure_06/output/figure_06.png)
+![Figura 6](../results/tmm/figure_06/output/figure_06.png)
 
 ---
 
 ## Convergencia numérica
 
 Modo $m=3$, $\theta=\pi/3$, ventana $\approx 0.94$–$1.00\,\mathrm{GHz}$
-(`data/processed/convergence_figure04.json`):
+(`results/tmm/convergence/convergence_figure04.json`):
 
 | Puntos | $\Delta\nu$ (GHz) |
 |-------:|------------------:|
@@ -179,6 +179,36 @@ Modo $m=3$, $\theta=\pi/3$, ventana $\approx 0.94$–$1.00\,\mathrm{GHz}$
 
 A partir de ~2000 puntos la variación del ancho es $<0.2\%$. El recuento de modos es estable.
 Usar $c=3\times 10^8\,\mathrm{m/s}$ en lugar del valor SI cambia frecuencias en $\sim 0.07\%$.
+
+---
+
+## Verificación con ondas planas (PWE)
+
+Las seis figuras se recalcularon con el método de expansión en ondas planas
+(`scripts/pwe/`, salidas en `results/pwe/`), formulado como un problema
+cuadrático de autovalores en $k$ con la regla inversa de Li. La comparación
+punto a punto está en `results/comparison/` y en el anexo
+[comparacion_tmm_pwe.pdf](comparacion_tmm_pwe/comparacion_tmm_pwe.pdf); la
+formulación, en [metodo_ondas_planas.pdf](metodo_ondas_planas/metodo_ondas_planas.pdf).
+
+- Figs. 1–4: la semitraza del PWE coincide con la de la TMM (error en bandas de
+  $10^{-7}$–$10^{-5}$ en casi todo el rango; sube hasta $\sim 2\times10^{-2}$ en el
+  extremo de 0.15 GHz de la Fig. 1, donde $\varepsilon_B=\mu_B\approx-399$) y la
+  clasificación banda/gap coincide en más del 99.9 %.
+- El número de subbandas es $F_{m-2}$ con los dos métodos.
+- Figs. 5–6 ($m\le 6$): los bordes de las subbandas coinciden con errores
+  relativos de ancho menores que $10^{-5}$.
+- Tiempo en un núcleo (`scripts/comparison/efficiency.py`, `results/comparison/efficiency/`):
+  - Las seis figuras cuestan 0.27 s con la TMM y ≈5.0 h con el PWE, entre $3\times10^4$ y
+    $4\times10^5$ veces más por figura.
+  - El PWE crece como $N^{2.6}$ con $N=2hF_m+1$ (36.5 s por frecuencia con $m=10$). La TMM por
+    recurrencia tarda 0.2–0.3 µs por frecuencia hasta $m=20$.
+  - Las cifras exactas de la última corrida están en
+    `results/comparison/tables/efficiency_macros.tex`, de donde las toman los PDF.
+  - Para un error de $10^{-6}$, el PWE necesita 1.1 s por frecuencia; la TMM llega a
+    $3\times10^{-15}$ en microsegundos.
+- **Método óptimo: la TMM.** Es exacta, su costo es $O(m)$ frente a $O(N^3)$ y es estable junto a
+  $\nu_m$. El PWE queda como verificación independiente y como base para cristales 2D.
 
 ---
 
@@ -199,8 +229,8 @@ Usar $c=3\times 10^8\,\mathrm{m/s}$ en lugar del valor SI cambia frecuencias en 
 ```bash
 source .venv/bin/activate
 pytest
-python scripts/reproduce_all.py
+python scripts/tmm/run_all.py
 ```
 
-Los PNG/SVG/PDF quedan en `figures/figure_0N/output/` y los resúmenes numéricos en
-`figures/figure_0N/data/summary.json`.
+Los PNG/SVG/PDF quedan en `results/tmm/figure_0N/output/` y los resúmenes numéricos en
+`results/tmm/figure_0N/data/summary.json`.

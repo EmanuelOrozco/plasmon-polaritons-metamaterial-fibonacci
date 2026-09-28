@@ -1,0 +1,125 @@
+{
+  "figure": "figure_01",
+  "scans": [
+    {
+      "m": 3,
+      "theta": 0.0,
+      "n_points": 1500,
+      "tmm_seconds": 0.00035674967670671406,
+      "pwe_seconds": 3.0584427709982265,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.006069904517370273,
+      "rms_delta_r_in_bands": 0.0004914138020115882,
+      "max_abs_delta_k_over_pi": 0.002152433421409139,
+      "max_abs_r_reference": 0.999999987695079
+    },
+    {
+      "m": 3,
+      "theta": 0.2617993877991494,
+      "n_points": 1500,
+      "tmm_seconds": 0.00036558884963405465,
+      "pwe_seconds": 2.4484941519986023,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.006065553732093526,
+      "rms_delta_r_in_bands": 0.0005019960961078005,
+      "max_abs_delta_k_over_pi": 0.002152029435002034,
+      "max_abs_r_reference": 84.18139039092709
+    },
+    {
+      "m": 3,
+      "theta": 1.0471975511965976,
+      "n_points": 1500,
+      "tmm_seconds": 0.0003823914887476362,
+      "pwe_seconds": 2.573371006998059,
+      "classification_agreement": 0.9993333333333333,
+      "n_classification_mismatch": 1,
+      "max_abs_delta_r_in_bands": 0.006021498472321474,
+      "rms_delta_r_in_bands": 0.0006916992587919882,
+      "max_abs_delta_k_over_pi": 0.002150111229495044,
+      "max_abs_r_reference": 1337.0878517432611
+    },
+    {
+      "m": 3,
+      "theta": 0.5235987755982988,
+      "n_points": 1500,
+      "tmm_seconds": 0.00037350293230948114,
+      "pwe_seconds": 2.4829860190002364,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.006053694206833993,
+      "rms_delta_r_in_bands": 0.0005147494439118269,
+      "max_abs_delta_k_over_pi": 0.00215111363264886,
+      "max_abs_r_reference": 346.1999498380751
+    },
+    {
+      "m": 4,
+      "theta": 0.0,
+      "n_points": 1500,
+      "tmm_seconds": 0.00035846506763394936,
+      "pwe_seconds": 7.665795683002216,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.0190314178081486,
+      "rms_delta_r_in_bands": 0.00107137517830891,
+      "max_abs_delta_k_over_pi": 0.006115117684919069,
+      "max_abs_r_reference": 0.9999998711680359
+    },
+    {
+      "m": 4,
+      "theta": 0.2617993877991494,
+      "n_points": 1500,
+      "tmm_seconds": 0.00036348723304235637,
+      "pwe_seconds": 7.836979425999743,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.01901515950316726,
+      "rms_delta_r_in_bands": 0.0011029341135267417,
+      "max_abs_delta_k_over_pi": 0.006113128273180335,
+      "max_abs_r_reference": 9614.860899929823
+    },
+    {
+      "m": 4,
+      "theta": 1.0471975511965976,
+      "n_points": 1500,
+      "tmm_seconds": 0.0003794541879958837,
+      "pwe_seconds": 8.009490545999142,
+      "classification_agreement": 0.9993333333333333,
+      "n_classification_mismatch": 1,
+      "max_abs_delta_r_in_bands": 0.018841284018417587,
+      "rms_delta_r_in_bands": 0.0015650843249433789,
+      "max_abs_delta_k_over_pi": 0.006095640916430722,
+      "max_abs_r_reference": 1924831.0107523103
+    },
+    {
+      "m": 4,
+      "theta": 0.5235987755982988,
+      "n_points": 1500,
+      "tmm_seconds": 0.00037062455636547193,
+      "pwe_seconds": 7.9510363369990955,
+      "classification_agreement": 0.9993333333333333,
+      "n_classification_mismatch": 1,
+      "max_abs_delta_r_in_bands": 0.01897001722586758,
+      "rms_delta_r_in_bands": 0.0011709577495982186,
+      "max_abs_delta_k_over_pi": 0.006107935461037217,
+      "max_abs_r_reference": 151426.7417283751
+    }
+  ],
+  "worst_max_abs_delta_r_in_bands": 0.0190314178081486,
+  "worst_classification_agreement": 0.9993333333333333,
+  "mode_counts": {
+    "tmm": null,
+    "pwe": null
+  },
+  "outputs": {
+    "overlay": {
+      "pdf": "results/comparison/figure_01/output/figure_01_overlay.pdf",
+      "png": "results/comparison/figure_01/output/figure_01_overlay.png"
+    },
+    "error": {
+      "pdf": "results/comparison/figure_01/output/figure_01_error.pdf",
+      "png": "results/comparison/figure_01/output/figure_01_error.png"
+    }
+  }
+}

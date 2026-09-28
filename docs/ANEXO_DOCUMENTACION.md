@@ -2,7 +2,7 @@
 
 Este anexo resume el contenido de los documentos PDF/LaTeX del repositorio.
 Las fuentes canónicas están en `docs/*/*.tex`. Los PDF ya están versionados;
-también se pueden regenerar con `make paper`, `make docs` y `make guides`.
+también se pueden regenerar con `make paper`, `make docs`, `make guides` y `make pwe-docs`.
 
 | Documento | Fuente | PDF |
 |-----------|--------|-----|
@@ -11,9 +11,11 @@ también se pueden regenerar con `make paper`, `make docs` y `make guides`.
 | Arquitectura y ejecución | `docs/arquitectura/arquitectura.tex` | [arquitectura.pdf](arquitectura/arquitectura.pdf) |
 | Documentación del software | `docs/software_documentation/software_documentation.tex` | [software_documentation.pdf](software_documentation/software_documentation.pdf) |
 | Paper de reimplementación | `docs/scientific_paper/paper_reimplementation.tex` | [paper_reimplementation.pdf](scientific_paper/paper_reimplementation.pdf) |
+| Método de ondas planas (PWE) | `docs/metodo_ondas_planas/metodo_ondas_planas.tex` | [metodo_ondas_planas.pdf](metodo_ondas_planas/metodo_ondas_planas.pdf) |
+| Comparación TMM vs PWE | `docs/comparacion_tmm_pwe/comparacion_tmm_pwe.tex` | [comparacion_tmm_pwe.pdf](comparacion_tmm_pwe/comparacion_tmm_pwe.pdf) |
 | Auditoría matemática | [fase_A_auditoria_matematica.md](fase_A_auditoria_matematica.md) | solo Markdown |
 | Informe de validación | [INFORME_VALIDACION.md](INFORME_VALIDACION.md) | solo Markdown |
-| Resultados (figs. 1–6) | [RESULTADOS.md](RESULTADOS.md) | PDF por figura en `figures/*/output/` |
+| Resultados (figs. 1–6) | [RESULTADOS.md](RESULTADOS.md) | PDF por figura en `results/tmm/*/output/` y `results/pwe/*/output/` |
 
 ---
 
@@ -47,7 +49,7 @@ experiencia previa en cristales fotónicos.
 
 ## 2. Solución numérica e implementación (`solucion_numerica`)
 
-Puente entre las ecuaciones del paper y el código en `src/fibonacci_tmm/`.
+Puente entre las ecuaciones del paper y el código TMM en `src/fibonacci_photonics/` (antes `fibonacci_tmm`).
 
 **Temas principales**
 
@@ -80,11 +82,11 @@ Manual operativo del repositorio: árbol de directorios, dependencias y problema
 **Temas principales**
 
 1. **Qué es el repositorio** — reproducción científica, no un demonio ni una GUI.
-2. **Árbol del proyecto** — `src/`, `scripts/`, `configs/`, `figures/`, `tests/`, `docs/`.
-3. **Módulos y responsabilidades** — mapa de `fibonacci_tmm/*.py`.
+2. **Árbol del proyecto** — `src/`, `scripts/{tmm,pwe,comparison}/`, `configs/`, `results/{tmm,pwe,comparison}/`, `tests/`, `docs/`.
+3. **Módulos y responsabilidades** — mapa de `fibonacci_photonics/{core,tmm,pwe,analysis}`.
 4. **Objetos que cruzan fronteras** — `SuperlatticeSpec`, resultados de scan, metadatos.
 5. **Capa de configuración** — un YAML por figura; `base.yaml` como referencia común.
-6. **Capa de scripts** — `reproduce_figure_0N.py`, `reproduce_all.py`, `_common.py`.
+6. **Capa de scripts** — `scripts/tmm/figure_0N.py`, `scripts/pwe/figure_0N.py`, `scripts/comparison/`, `_common.py`.
 7. **Flujo de una corrida** — de config a PNG/SVG/PDF + `summary.json`.
 8. **Tests** — `pytest`; algunos casos skipped por $k>m$.
 9. **Dependencias** — runtime Python; LaTeX solo para PDF; notebooks opcionales.
@@ -99,7 +101,7 @@ Manual operativo del repositorio: árbol de directorios, dependencias y problema
 
 ## 4. Documentación del software (`software_documentation`)
 
-Referencia más corta orientada a la API del paquete `fibonacci_tmm`.
+Referencia más corta orientada a la API del paquete `fibonacci_photonics` (alias `fibonacci_tmm`).
 
 **Temas principales**
 
@@ -135,6 +137,28 @@ generadas y comparación con el PRB 2010.
 11. Conclusiones y apéndices (unidades, cómo reproducir).
 
 **Para quién:** evaluación académica o lectura tipo paper de lo hecho.
+
+---
+
+## 5b. Método de ondas planas (`metodo_ondas_planas`)
+
+Paper que desarrolla el PWE para la superred siguiendo el capítulo 1D de
+Sukhoivanov y Guryev (`references/pwe/PWE-Method-1D.pdf`, cuaderno
+`PWE-1d.ipynb`).
+
+1. Planteamiento, celda unidad $S_m$, red recíproca y zona de Brillouin.
+2. Coeficientes de Fourier analíticos (generalización de la ec. 4.38) y síntesis.
+3. Ecuación maestra, hermiticidad, campo E vs H y propagación fuera del eje.
+4. Validación con el cristal del libro (bandas, campo, Brewster).
+5. Por qué falla la forma $\omega(k)$ con Drude (contaminación espectral).
+6. Forma $k(\omega)$: problema cuadrático en $k$ con la regla inversa de Li.
+7. Figs. 1–6 con el PWE, convergencia, costo y límite de validez cerca de $\nu_m$.
+
+## 5c. Anexo de comparación (`comparacion_tmm_pwe`)
+
+Superposiciones TMM/PWE, error punto a punto de $R_m$, conteos de subbandas,
+errores de bordes y anchos (Figs. 5–6), tiempos y tablas generadas desde
+`results/comparison/`.
 
 ---
 

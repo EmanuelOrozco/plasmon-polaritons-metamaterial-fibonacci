@@ -1,0 +1,78 @@
+{
+  "config": "configs/figure_01.yaml",
+  "n0_gap_closed_ghz": {
+    "3": 1.7320508075688772,
+    "4": 1.8973665961010275
+  },
+  "panels": [
+    {
+      "m": 3,
+      "theta": 0.0,
+      "theta_label": "0",
+      "n_allowed": 12000,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.0,
+      "theta_label": "0",
+      "n_allowed": 12000,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "n_allowed": 11548,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "n_allowed": 11419,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "n_allowed": 10930,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "n_allowed": 10014,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 3,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "n_allowed": 6005,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    },
+    {
+      "m": 4,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "n_allowed": 5666,
+      "clipped_near_unit": 0,
+      "max_abs_imag_r": 0.0
+    }
+  ],
+  "outputs": {
+    "pdf": "results/tmm/figure_01/output/figure_01.pdf",
+    "png": "results/tmm/figure_01/output/figure_01.png",
+    "svg": "results/tmm/figure_01/output/figure_01.svg"
+  }
+}

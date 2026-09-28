@@ -6,7 +6,7 @@ Phys. Rev. B **81**, 153101 (2010). DOI: 10.1103/PhysRevB.81.153101
 
 **Auditor:** Emanuel Orozco Gallego
 **Fecha:** 31 de agosto de 2026
-**Fuente primaria:** `Plasmon_polaritons_in_photonic_metamaterial_Fibonacci_superlattices.pdf` (4 páginas, Brief Report)
+**Fuente primaria:** `references/paper/Plasmon_polaritons_in_photonic_metamaterial_Fibonacci_superlattices.pdf` (4 páginas, Brief Report; copia local, no se sube por copyright)
 
 **Estado:** auditoría previa a cualquier implementación. No se ha escrito código científico.
 

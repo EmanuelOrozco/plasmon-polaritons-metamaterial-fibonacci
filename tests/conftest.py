@@ -1,9 +1,14 @@
-from pathlib import Path
+import os
 
-import pytest
+for _name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_name, "1")
+
+from pathlib import Path  # noqa: E402
+
+import pytest  # noqa: E402
 import yaml
 
-from fibonacci_tmm.params import SuperlatticeSpec, spec_from_mapping
+from fibonacci_photonics.core.params import SuperlatticeSpec, spec_from_mapping
 
 
 @pytest.fixture

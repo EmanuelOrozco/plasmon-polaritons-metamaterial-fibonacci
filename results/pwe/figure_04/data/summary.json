@@ -1,0 +1,76 @@
+{
+  "config": "configs/pwe/figure_04.yaml",
+  "numerics": {
+    "rule": "inverse",
+    "harmonics_per_layer": 16,
+    "frequency_points": 4000
+  },
+  "modes": [
+    {
+      "m": 3,
+      "theta": "pi/12",
+      "detected": 1,
+      "seconds": 34.21473325900297,
+      "intervals": [
+        {
+          "nu_min": 0.994638159539885,
+          "nu_max": 0.9991432858214554,
+          "width": 0.004505126281570404
+        }
+      ]
+    },
+    {
+      "m": 3,
+      "theta": "pi/3",
+      "detected": 1,
+      "seconds": 32.794974014002946,
+      "intervals": [
+        {
+          "nu_min": 0.9577244311077769,
+          "nu_max": 0.990812703175794,
+          "width": 0.03308827206801701
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "theta": "pi/12",
+      "detected": 2,
+      "seconds": 117.93141252899659,
+      "intervals": [
+        {
+          "nu_min": 0.9950162540635159,
+          "nu_max": 0.9985531382845712,
+          "width": 0.0035368842210552476
+        },
+        {
+          "nu_min": 0.9991352838209553,
+          "nu_max": 0.9993913478369593,
+          "width": 0.0002560640160039762
+        }
+      ]
+    },
+    {
+      "m": 4,
+      "theta": "pi/3",
+      "detected": 2,
+      "seconds": 120.36269545200048,
+      "intervals": [
+        {
+          "nu_min": 0.9582645661415353,
+          "nu_max": 0.9850512628157039,
+          "width": 0.026786696674168553
+        },
+        {
+          "nu_min": 0.9908727181795449,
+          "nu_max": 0.9933933483370843,
+          "width": 0.0025206301575393386
+        }
+      ]
+    }
+  ],
+  "outputs": {
+    "pdf": "results/pwe/figure_04/output/figure_04.pdf",
+    "png": "results/pwe/figure_04/output/figure_04.png"
+  }
+}

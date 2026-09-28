@@ -1,0 +1,4 @@
+# Parámetros numéricos del PWE para la Figura 4 (física en configs/figure_04.yaml).
+rule: inverse
+harmonics_per_layer: 16
+frequency_points: 4000

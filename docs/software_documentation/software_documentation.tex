@@ -12,6 +12,7 @@
 \author{Emanuel Orozco Gallego}
 \date{31 de agosto de 2026}
 
+\setlength{\emergencystretch}{3em}
 \begin{document}
 \maketitle
 
@@ -39,7 +40,7 @@ Módulo & Responsabilidad \\
 \texttt{transfer\_matrix.py} & $M_j$, $T_m$, $R_m$ \\
 \texttt{dispersion.py} & $\cos(kL)=R$, bandas \\
 \texttt{plasmon\_modes.py} & recuento de subbandas \\
-\texttt{bandwidth.py} & intervalos $\nu_{\min}(\theta)$--$\nu_{\max}(\theta)$ \\
+\texttt{bandwidth.py} & intervalos $\nu_{\min}(\theta)$--$\nu_{\max}(\theta)$ (bordes refinados) \\
 \texttt{params.py} & YAML $\to$ SI \\
 \texttt{plotting.py} & estilo de figuras \\
 \texttt{provenance.py} & metadatos de corrida \\
@@ -63,9 +64,11 @@ Python $\ge$ 3.10. Dependencias: NumPy, SciPy, Matplotlib, PyYAML, pytest.
 
 \begin{lstlisting}
 .venv/bin/pytest
-.venv/bin/python scripts/reproduce_figure_01.py
-.venv/bin/python scripts/reproduce_all.py
-make paper
+.venv/bin/python scripts/tmm/figure_01.py      # una figura, TMM
+.venv/bin/python scripts/tmm/run_all.py        # Figs. 1-6, TMM
+.venv/bin/python scripts/pwe/run_all.py        # Figs. 1-6, ondas planas
+.venv/bin/python scripts/comparison/run_all.py # TMM vs PWE
+make paper pwe-docs
 \end{lstlisting}
 
 Para un orden nuevo de Fibonacci, cambie \texttt{fibonacci\_orders} en el YAML.
@@ -76,7 +79,20 @@ Para otro Drude, edite \texttt{omega\_e\_over\_2pi\_ghz} y \texttt{omega\_m\_ove
 
 \texttt{sequence(m)}, \texttt{paper\_fibonacci(m)}, \texttt{build\_cell(m,a,b)}.
 
-\texttt{scan\_dispersion(spec, m, theta, nu\_ghz, polarization)}.
+{\raggedright
+\texttt{scan\_dispersion(spec, m, theta, nu\_ghz, polarization)} (TMM; alias de
+\texttt{scan\_dispersion\_tmm}).
+
+\texttt{scan\_dispersion\_pwe(spec, m, theta, nu\_ghz, polarization,
+harmonics\_per\_layer=16)}: la misma semitraza con ondas planas; devuelve el
+mismo \texttt{DispersionScan}.\par}
+
+\texttt{compare\_scans(ref, cand)}, \texttt{locate\_bands},
+\texttt{validate\_bands}: comparación y localización de subbandas.
+
+El paquete es \texttt{fibonacci\_photonics} (subpaquetes \texttt{core},
+\texttt{tmm}, \texttt{pwe}, \texttt{analysis}); \texttt{fibonacci\_tmm}
+sigue disponible como alias.
 
 \texttt{semitrace\_by\_recurrence} y \texttt{semitrace\_by\_product} deben coincidir.
 
@@ -108,17 +124,22 @@ Los puntos con $\lvert R\rvert>1$ se dejan como NaN, no se recortan en silencio.
 \section{Tests}
 
 \begin{itemize}
-\item \texttt{test\_fibonacci.py}: secuencias, inflación, $N_B$, $L_m$.
-\item \texttt{test\_materials.py}: ceros de Drude, $\nu_e,\nu_m$.
-\item \texttt{test\_transfer\_matrix.py}: $\det T=1$, (7)--(9), recurrencia vs producto, TE$=$TM a $\theta=0$.
-\item \texttt{test\_dispersion.py}: máscara de banda, gap $\langle n\rangle=0$.
-\item \texttt{test\_validation.py}: $N_{\mathrm{modos}}=F_{m-2}$.
-\item \texttt{test\_params.py}: YAML de las figuras.
+\item \texttt{core/test\_fibonacci.py}: secuencias, inflación, $N_B$, $L_m$.
+\item \texttt{core/test\_materials.py}: ceros de Drude, $\nu_e,\nu_m$.
+\item \texttt{core/test\_params.py}: YAML de las figuras.
+\item \texttt{tmm/test\_transfer\_matrix.py}: $\det T=1$, (7)--(9), recurrencia vs producto, TE$=$TM a $\theta=0$.
+\item \texttt{tmm/test\_dispersion.py}: máscara de banda, gap $\langle n\rangle=0$.
+\item \texttt{pwe/test\_fourier.py}, \texttt{pwe/test\_solver.py}: Fourier de la celda, benchmark del libro, $R_{\rm PWE}\approx R_{\rm TMM}$.
+\item \texttt{analysis/test\_validation.py}: $N_{\mathrm{modos}}=F_{m-2}$.
+\item \texttt{analysis/test\_comparison.py}: métricas y localización de bordes.
+\item \texttt{compat/test\_legacy\_imports.py}: alias \texttt{fibonacci\_tmm}.
 \end{itemize}
 
 \section{Reproducción de figuras}
 
-Cada \texttt{figures/figure\_0N/} contiene \texttt{generate.py}, \texttt{data/}, \texttt{output/} y \texttt{README.md}.
+Cada \texttt{results/tmm/figure\_0N/} contiene \texttt{data/}, \texttt{output/} y \texttt{README.md}
+(\texttt{figures/} es un enlace a \texttt{results/tmm/}). Las versiones PWE están en
+\texttt{results/pwe/figure\_0N/} y la comparación en \texttt{results/comparison/}.
 Las imágenes finales son PDF, PNG (300 dpi) y SVG.
 
 \section{Solución de problemas}

@@ -1,0 +1,125 @@
+{
+  "figure": "figure_03",
+  "scans": [
+    {
+      "m": 3,
+      "theta": 0.0,
+      "n_points": 1500,
+      "tmm_seconds": 0.00035003471424360235,
+      "pwe_seconds": 3.4056771799951093,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.0004209304442952255,
+      "rms_delta_r_in_bands": 3.3933088455689654e-05,
+      "max_abs_delta_k_over_pi": 0.00013510232622365725,
+      "max_abs_r_reference": 1.3610901896799321
+    },
+    {
+      "m": 3,
+      "theta": 0.2617993877991494,
+      "n_points": 1500,
+      "tmm_seconds": 0.0003668565187766042,
+      "pwe_seconds": 2.678539073000138,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.00042084752529852887,
+      "rms_delta_r_in_bands": 3.4610542795358765e-05,
+      "max_abs_delta_k_over_pi": 0.000135090509798097,
+      "max_abs_r_reference": 3.5619169297612845
+    },
+    {
+      "m": 3,
+      "theta": 1.0471975511965976,
+      "n_points": 1500,
+      "tmm_seconds": 0.0003687546917703878,
+      "pwe_seconds": 2.57928607800568,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.00041999973852696604,
+      "rms_delta_r_in_bands": 4.411043811405816e-05,
+      "max_abs_delta_k_over_pi": 0.0001349748437803333,
+      "max_abs_r_reference": 26.912862755251798
+    },
+    {
+      "m": 3,
+      "theta": 0.5235987755982988,
+      "n_points": 1500,
+      "tmm_seconds": 0.00036443263153139417,
+      "pwe_seconds": 2.603647607000312,
+      "classification_agreement": 0.9993333333333333,
+      "n_classification_mismatch": 1,
+      "max_abs_delta_r_in_bands": 0.00042062076673121673,
+      "rms_delta_r_in_bands": 3.36101469754189e-05,
+      "max_abs_delta_k_over_pi": 0.00013505865228591318,
+      "max_abs_r_reference": 9.655269652532688
+    },
+    {
+      "m": 4,
+      "theta": 0.0,
+      "n_points": 1500,
+      "tmm_seconds": 0.00036476866917201507,
+      "pwe_seconds": 9.129379817000881,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.0004474546507817201,
+      "rms_delta_r_in_bands": 4.560747355945906e-05,
+      "max_abs_delta_k_over_pi": 0.0002642745435366134,
+      "max_abs_r_reference": 2.3938464363463607
+    },
+    {
+      "m": 4,
+      "theta": 0.2617993877991494,
+      "n_points": 1500,
+      "tmm_seconds": 0.0003686539172956412,
+      "pwe_seconds": 8.459229767002398,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.000447138933972413,
+      "rms_delta_r_in_bands": 4.621418712990514e-05,
+      "max_abs_delta_k_over_pi": 0.0002637788137842545,
+      "max_abs_r_reference": 15.780612920897845
+    },
+    {
+      "m": 4,
+      "theta": 1.0471975511965976,
+      "n_points": 1500,
+      "tmm_seconds": 0.0003771253759623505,
+      "pwe_seconds": 8.582347233001201,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.0004439100426636977,
+      "rms_delta_r_in_bands": 6.43625779263314e-05,
+      "max_abs_delta_k_over_pi": 0.00026811303944840326,
+      "max_abs_r_reference": 756.8732844673839
+    },
+    {
+      "m": 4,
+      "theta": 0.5235987755982988,
+      "n_points": 1500,
+      "tmm_seconds": 0.0003667552330700989,
+      "pwe_seconds": 8.308244202999049,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.00044627550546744166,
+      "rms_delta_r_in_bands": 4.87257394532778e-05,
+      "max_abs_delta_k_over_pi": 0.0002879046090384918,
+      "max_abs_r_reference": 104.48050996744453
+    }
+  ],
+  "worst_max_abs_delta_r_in_bands": 0.0004474546507817201,
+  "worst_classification_agreement": 0.9993333333333333,
+  "mode_counts": {
+    "tmm": null,
+    "pwe": null
+  },
+  "outputs": {
+    "overlay": {
+      "pdf": "results/comparison/figure_03/output/figure_03_overlay.pdf",
+      "png": "results/comparison/figure_03/output/figure_03_overlay.png"
+    },
+    "error": {
+      "pdf": "results/comparison/figure_03/output/figure_03_error.pdf",
+      "png": "results/comparison/figure_03/output/figure_03_error.png"
+    }
+  }
+}

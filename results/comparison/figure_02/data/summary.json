@@ -1,0 +1,245 @@
+{
+  "figure": "figure_02",
+  "scans": [
+    {
+      "m": 3,
+      "theta": 1.0471975511965976,
+      "n_points": 3000,
+      "tmm_seconds": 0.0006604572273235218,
+      "pwe_seconds": 5.745407787995646,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 4.690291867004426e-06,
+      "rms_delta_r_in_bands": 1.6285204099833925e-06,
+      "max_abs_delta_k_over_pi": 8.1069221583574e-06,
+      "max_abs_r_reference": 1871.9046946992942
+    },
+    {
+      "m": 4,
+      "theta": 1.0471975511965976,
+      "n_points": 3000,
+      "tmm_seconds": 0.0006912145000762504,
+      "pwe_seconds": 16.044319478001853,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.00018348597221706786,
+      "rms_delta_r_in_bands": 2.938249027504704e-05,
+      "max_abs_delta_k_over_pi": 0.0004417988052004343,
+      "max_abs_r_reference": 3771587.1964717642
+    },
+    {
+      "m": 5,
+      "theta": 1.0471975511965976,
+      "n_points": 3000,
+      "tmm_seconds": 0.0006903456969391273,
+      "pwe_seconds": 48.66207246900012,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.0004901264620100765,
+      "rms_delta_r_in_bands": 5.686314604681921e-05,
+      "max_abs_delta_k_over_pi": 0.0011813928755858884,
+      "max_abs_r_reference": 14120102551.666576
+    },
+    {
+      "m": 6,
+      "theta": 1.0471975511965976,
+      "n_points": 3000,
+      "tmm_seconds": 0.0007007393484827569,
+      "pwe_seconds": 167.13472864899813,
+      "classification_agreement": 1.0,
+      "n_classification_mismatch": 0,
+      "max_abs_delta_r_in_bands": 0.0014311637746213801,
+      "rms_delta_r_in_bands": 0.0001171355228092349,
+      "max_abs_delta_k_over_pi": 0.0006977943817503274,
+      "max_abs_r_reference": 1.0651039599346602e+17
+    }
+  ],
+  "worst_max_abs_delta_r_in_bands": 0.0014311637746213801,
+  "worst_classification_agreement": 1.0,
+  "mode_counts": {
+    "tmm": [
+      {
+        "m": 3,
+        "expected": 1,
+        "detected": 1,
+        "intervals": [
+          {
+            "nu_min": 2.0440036669722477,
+            "nu_max": 2.766063838653221,
+            "width": 0.7220601716809734
+          }
+        ]
+      },
+      {
+        "m": 4,
+        "expected": 2,
+        "detected": 2,
+        "intervals": [
+          {
+            "nu_min": 2.0828402366863905,
+            "nu_max": 2.640553379448287,
+            "width": 0.5577131427618967
+          },
+          {
+            "nu_min": 2.77689807483957,
+            "nu_max": 2.8322360196683056,
+            "width": 0.05533794482873544
+          }
+        ]
+      },
+      {
+        "m": 5,
+        "expected": 3,
+        "detected": 3,
+        "intervals": [
+          {
+            "nu_min": 2.069839153262772,
+            "nu_max": 2.4978748229019083,
+            "width": 0.42803566963913653
+          },
+          {
+            "nu_min": 2.57588132344362,
+            "nu_max": 2.715726310525877,
+            "width": 0.1398449870822569
+          },
+          {
+            "nu_min": 2.808400700058338,
+            "nu_max": 2.821901825152096,
+            "width": 0.013501125093757782
+          }
+        ]
+      },
+      {
+        "m": 6,
+        "expected": 5,
+        "detected": 5,
+        "intervals": [
+          {
+            "nu_min": 2.0750062505208766,
+            "nu_max": 2.355862988582382,
+            "width": 0.28085673806150524
+          },
+          {
+            "nu_min": 2.3860321693474456,
+            "nu_max": 2.5742145178764897,
+            "width": 0.18818234852904414
+          },
+          {
+            "nu_min": 2.642386865572131,
+            "nu_max": 2.6973914492874407,
+            "width": 0.055004583715309696
+          },
+          {
+            "nu_min": 2.7955662971914323,
+            "nu_max": 2.8074006167180596,
+            "width": 0.01183431952662728
+          },
+          {
+            "nu_min": 2.8225685473789484,
+            "nu_max": 2.8272356029669137,
+            "width": 0.004667055587965319
+          }
+        ]
+      }
+    ],
+    "pwe": [
+      {
+        "m": 3,
+        "expected": 1,
+        "detected": 1,
+        "seconds": 5.745407787995646,
+        "intervals": [
+          {
+            "nu_min": 2.0440146715571856,
+            "nu_max": 2.7655885295098366,
+            "width": 0.7215738579526509
+          }
+        ]
+      },
+      {
+        "m": 4,
+        "expected": 2,
+        "detected": 2,
+        "seconds": 16.044319478001853,
+        "intervals": [
+          {
+            "nu_min": 2.083361120373458,
+            "nu_max": 2.640213404468156,
+            "width": 0.5568522840946981
+          },
+          {
+            "nu_min": 2.7769256418806267,
+            "nu_max": 2.832277425808603,
+            "width": 0.05535178392797624
+          }
+        ]
+      },
+      {
+        "m": 5,
+        "expected": 3,
+        "detected": 3,
+        "seconds": 48.66207246900012,
+        "intervals": [
+          {
+            "nu_min": 2.0700233411137043,
+            "nu_max": 2.4974991663887964,
+            "width": 0.4274758252750921
+          },
+          {
+            "nu_min": 2.5761920640213405,
+            "nu_max": 2.715571857285762,
+            "width": 0.13937979326442163
+          },
+          {
+            "nu_min": 2.8082694231410468,
+            "nu_max": 2.8216072024008003,
+            "width": 0.013337779259753546
+          }
+        ]
+      },
+      {
+        "m": 6,
+        "expected": 5,
+        "detected": 5,
+        "seconds": 167.13472864899813,
+        "intervals": [
+          {
+            "nu_min": 2.0753584528176057,
+            "nu_max": 2.3554518172724244,
+            "width": 0.2800933644548187
+          },
+          {
+            "nu_min": 2.3861287095698565,
+            "nu_max": 2.5741913971323775,
+            "width": 0.1880626875625211
+          },
+          {
+            "nu_min": 2.642880960320107,
+            "nu_max": 2.6968989663221072,
+            "width": 0.05401800600200035
+          },
+          {
+            "nu_min": 2.7955985328442816,
+            "nu_max": 2.8069356452150718,
+            "width": 0.011337112370790159
+          },
+          {
+            "nu_min": 2.8229409803267753,
+            "nu_max": 2.8269423141047016,
+            "width": 0.00400133377792633
+          }
+        ]
+      }
+    ]
+  },
+  "outputs": {
+    "overlay": {
+      "pdf": "results/comparison/figure_02/output/figure_02_overlay.pdf",
+      "png": "results/comparison/figure_02/output/figure_02_overlay.png"
+    },
+    "error": {
+      "pdf": "results/comparison/figure_02/output/figure_02_error.pdf",
+      "png": "results/comparison/figure_02/output/figure_02_error.png"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+# Parámetros numéricos del PWE para la Figura 1 (la física está en configs/figure_01.yaml).
+# n_max = harmonics_per_layer × (número de capas de Sm); N = 2 n_max + 1 ondas planas.
+rule: inverse
+harmonics_per_layer: 8
+frequency_points: 1500

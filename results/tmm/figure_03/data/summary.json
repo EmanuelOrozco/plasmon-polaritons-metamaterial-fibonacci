@@ -1,0 +1,8 @@
+{
+  "config": "configs/figure_03.yaml",
+  "outputs": {
+    "pdf": "results/tmm/figure_03/output/figure_03.pdf",
+    "png": "results/tmm/figure_03/output/figure_03.png",
+    "svg": "results/tmm/figure_03/output/figure_03.svg"
+  }
+}

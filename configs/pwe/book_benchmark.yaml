@@ -1,0 +1,14 @@
+# Benchmark del capítulo 1D (Sukhoivanov y Guryev): bicapa ε1 = 1, ε2 = 9.
+thickness_1_um: 0.2
+thickness_2_um: 0.8
+epsilon_1: 1.0
+epsilon_2: 9.0
+n_max: 50                 # numG = 50 en el notebook del libro
+k_points: 201
+n_bands: 8
+field_k_over_pi: 0.0666666666666667   # k = π/(15 a) como en el notebook
+field_band: 10                          # in1 = 10 en el notebook (base 0)
+synthesis_n_max: [5, 25, 250]
+off_axis_q_max: 2.0                     # q a / (2π) máximo del diagrama proyectado
+off_axis_q_points: 81
+off_axis_n_max: 30

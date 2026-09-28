@@ -3,9 +3,9 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fibonacci-tmm"
+name = "fibonacci-photonics"
 version = "0.1.0"
-description = "Reimplementación TMM de plasmon-polaritones en superredes Fibonacci (Reyes-Gómez et al., PRB 81, 153101, 2010)"
+description = "Plasmon-polaritones en superredes Fibonacci (Reyes-Gómez et al., PRB 81, 153101, 2010): TMM y método de ondas planas (PWE)"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "Emanuel Orozco Gallego" }]
@@ -28,7 +28,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q --import-mode=importlib"
 pythonpath = ["src"]
 
 [tool.ruff]

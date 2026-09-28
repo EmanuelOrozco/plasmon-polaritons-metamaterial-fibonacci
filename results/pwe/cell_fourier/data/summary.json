@@ -1,0 +1,11 @@
+{
+  "m": 4,
+  "nu_ghz": 2.0,
+  "epsilon_b": -1.2499999999999996,
+  "mu_b": 0.75,
+  "word": "ABAAB",
+  "outputs": {
+    "pdf": "results/pwe/cell_fourier/output/cell_fourier.pdf",
+    "png": "results/pwe/cell_fourier/output/cell_fourier.png"
+  }
+}

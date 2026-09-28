@@ -1,0 +1,39 @@
+# Estudio de convergencia y costo del PWE.
+book:
+  thickness_1_um: 0.2
+  thickness_2_um: 0.8
+  epsilon_1: 1.0
+  epsilon_2: 9.0
+  n_max_values: [5, 10, 20, 40, 80, 160]
+  k_over_pi: [0.25, 0.5, 0.75]
+  n_bands: 4
+drude:
+  physics: figure_05.yaml
+  polarizations: [TE, TM]
+  theta_rad: 0.5235987755982988        # π/6
+  fibonacci_orders: [3, 4, 5]
+  harmonics_per_layer: [1, 2, 4, 8, 16, 32]
+  frequency_min_ghz: 0.3
+  frequency_max_ghz: 5.0
+  frequency_points: 60
+cost:
+  physics: figure_05.yaml
+  theta_rad: 0.2617993877991494        # π/12
+  window_ghz: [0.9955, 0.9994]
+  frequency_points: 6
+  cases:                                # (m, harmonics_per_layer)
+    - [3, 16]
+    - [4, 16]
+    - [5, 16]
+    - [6, 8]
+    - [6, 16]
+    - [7, 8]
+    - [7, 16]
+    - [8, 8]
+near_pole:
+  physics: figure_05.yaml
+  theta_rad: 0.2617993877991494
+  fibonacci_order: 3
+  harmonics_per_layer: 16
+  offsets_ghz: [1.0e-10, 1.0e-2]
+  points: 120

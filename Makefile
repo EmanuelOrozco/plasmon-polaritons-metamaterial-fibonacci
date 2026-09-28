@@ -1,57 +1,70 @@
-.PHONY: all tests figures paper docs guides presentation clean
+.PHONY: all reproduce tests results tmm pwe comparison figures documents paper docs guides pwe-docs \
+        verify presentation clean
 
 PYTHON := .venv/bin/python
-PYTEST := .venv/bin/pytest
+export MPLCONFIGDIR ?= /tmp/mpl
 
-all: tests figures paper docs guides
+# Documentos LaTeX (docs/<carpeta>/<nombre>.tex); cada PDF se copia también a la raíz.
+PWE_DOCS   := docs/metodo_ondas_planas/metodo_ondas_planas.pdf docs/comparacion_tmm_pwe/comparacion_tmm_pwe.pdf
+GUIDES     := docs/guia_conceptual/guia_conceptual.pdf docs/solucion_numerica/solucion_numerica.pdf \
+              docs/arquitectura/arquitectura.pdf
+PAPER      := docs/scientific_paper/paper_reimplementation.pdf
+SOFTWARE   := docs/software_documentation/software_documentation.pdf
+ALL_DOCS   := $(PWE_DOCS) $(GUIDES) $(PAPER) $(SOFTWARE)
+
+# Entradas de cada documento: si cambian las figuras o tablas, el PDF se recompila.
+TMM_FIGURES := $(wildcard results/tmm/figure_0*/output/*.pdf)
+PWE_INPUTS  := $(wildcard results/pwe/*/output/*.pdf results/comparison/*/output/*.pdf \
+                          results/comparison/tables/*.tex)
+
+all: tests results documents verify
+
+# Todo desde cero: resultados, documentos y verificación.
+reproduce: results documents verify
 
 tests:
-	$(PYTEST) tests
+	$(PYTHON) -m pytest tests
 
-figures:
-	$(PYTHON) scripts/reproduce_all.py
-	$(PYTHON) scripts/analyze_convergence.py
+# Resultados por método: results/tmm, results/pwe y results/comparison.
+results: tmm pwe comparison
 
-paper: docs/scientific_paper/paper_reimplementation.pdf
-	cp docs/scientific_paper/paper_reimplementation.pdf paper_reimplementation.pdf
+tmm:
+	$(PYTHON) scripts/tmm/run_all.py
 
-docs: docs/software_documentation/software_documentation.pdf
-	cp docs/software_documentation/software_documentation.pdf software_documentation.pdf
+pwe:
+	$(PYTHON) scripts/pwe/run_all.py
 
-guides: docs/guia_conceptual/guia_conceptual.pdf docs/solucion_numerica/solucion_numerica.pdf docs/arquitectura/arquitectura.pdf
-	cp docs/guia_conceptual/guia_conceptual.pdf guia_conceptual.pdf
-	cp docs/solucion_numerica/solucion_numerica.pdf solucion_numerica.pdf
-	cp docs/arquitectura/arquitectura.pdf arquitectura.pdf
+comparison:
+	$(PYTHON) scripts/comparison/run_all.py
 
-docs/scientific_paper/paper_reimplementation.pdf: docs/scientific_paper/paper_reimplementation.tex
-	cd docs/scientific_paper && pdflatex -interaction=nonstopmode paper_reimplementation.tex
-	cd docs/scientific_paper && pdflatex -interaction=nonstopmode paper_reimplementation.tex
+# Compatibilidad: 'make figures' reproduce las figuras del paper con la TMM.
+figures: tmm
 
-docs/software_documentation/software_documentation.pdf: docs/software_documentation/software_documentation.tex
-	cd docs/software_documentation && pdflatex -interaction=nonstopmode software_documentation.tex
-	cd docs/software_documentation && pdflatex -interaction=nonstopmode software_documentation.tex
+documents: pwe-docs guides paper docs
 
-docs/guia_conceptual/guia_conceptual.pdf: docs/guia_conceptual/guia_conceptual.tex
-	cd docs/guia_conceptual && pdflatex -interaction=nonstopmode guia_conceptual.tex
-	cd docs/guia_conceptual && pdflatex -interaction=nonstopmode guia_conceptual.tex
+pwe-docs: $(PWE_DOCS)
+guides: $(GUIDES)
+paper: $(PAPER)
+docs: $(SOFTWARE)
 
-docs/solucion_numerica/solucion_numerica.pdf: docs/solucion_numerica/solucion_numerica.tex
-	cd docs/solucion_numerica && pdflatex -interaction=nonstopmode solucion_numerica.tex
-	cd docs/solucion_numerica && pdflatex -interaction=nonstopmode solucion_numerica.tex
+$(PWE_DOCS): $(PWE_INPUTS) $(TMM_FIGURES)
+$(GUIDES) $(PAPER) $(SOFTWARE): $(TMM_FIGURES)
 
-docs/arquitectura/arquitectura.pdf: docs/arquitectura/arquitectura.tex
-	cd docs/arquitectura && pdflatex -interaction=nonstopmode arquitectura.tex
-	cd docs/arquitectura && pdflatex -interaction=nonstopmode arquitectura.tex
+docs/%.pdf: docs/%.tex
+	cd $(dir $<) && for pass in 1 2; do \
+	  pdflatex -interaction=nonstopmode -halt-on-error $(notdir $<) > /dev/null \
+	  || { grep -a -A4 '^!' $(notdir $(basename $<)).log; exit 1; }; done
+	cp $@ $(notdir $@)
+
+# Comprueba salidas, criterios TMM vs PWE y que los PDF estén al día y compilen limpios.
+verify:
+	$(PYTHON) scripts/verify_results.py
 
 presentation:
-	MPLCONFIGDIR=/tmp/mpl $(PYTHON) presentacion/scripts/generar_imagenes.py
+	$(PYTHON) presentacion/scripts/generar_imagenes.py
 	cd presentacion && pdflatex -interaction=nonstopmode presentacion.tex
 	cd presentacion && pdflatex -interaction=nonstopmode presentacion.tex
 
 clean:
-	rm -f presentacion/*.aux presentacion/*.log presentacion/*.out presentacion/*.toc presentacion/*.nav presentacion/*.snm presentacion/*.vrb
-	rm -f docs/scientific_paper/*.aux docs/scientific_paper/*.log docs/scientific_paper/*.out docs/scientific_paper/*.toc
-	rm -f docs/software_documentation/*.aux docs/software_documentation/*.log docs/software_documentation/*.out docs/software_documentation/*.toc
-	rm -f docs/guia_conceptual/*.aux docs/guia_conceptual/*.log docs/guia_conceptual/*.out docs/guia_conceptual/*.toc
-	rm -f docs/solucion_numerica/*.aux docs/solucion_numerica/*.log docs/solucion_numerica/*.out docs/solucion_numerica/*.toc
-	rm -f docs/arquitectura/*.aux docs/arquitectura/*.log docs/arquitectura/*.out docs/arquitectura/*.toc
+	find docs presentacion -type f \( -name '*.aux' -o -name '*.log' -o -name '*.out' -o -name '*.toc' \
+	  -o -name '*.nav' -o -name '*.snm' -o -name '*.vrb' -o -name '*.lof' -o -name '*.lot' \) -delete

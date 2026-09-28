@@ -1,0 +1,257 @@
+{
+  "dispersion": {
+    "figure_01": {
+      "worst_max_abs_delta_r_in_bands": 0.0190314178081486,
+      "worst_classification_agreement": 0.9993333333333333
+    },
+    "figure_02": {
+      "worst_max_abs_delta_r_in_bands": 0.0014311637746213801,
+      "worst_classification_agreement": 1.0
+    },
+    "figure_03": {
+      "worst_max_abs_delta_r_in_bands": 0.0004474546507817201,
+      "worst_classification_agreement": 0.9993333333333333
+    },
+    "figure_04": {
+      "worst_max_abs_delta_r_in_bands": 5.1744018018329285e-05,
+      "worst_classification_agreement": 1.0
+    }
+  },
+  "mode_counts": {
+    "rows": [
+      {
+        "figure": "figure_02",
+        "m": 3,
+        "expected": 1,
+        "tmm": 1,
+        "pwe": 1
+      },
+      {
+        "figure": "figure_02",
+        "m": 4,
+        "expected": 2,
+        "tmm": 2,
+        "pwe": 2
+      },
+      {
+        "figure": "figure_02",
+        "m": 5,
+        "expected": 3,
+        "tmm": 3,
+        "pwe": 3
+      },
+      {
+        "figure": "figure_02",
+        "m": 6,
+        "expected": 5,
+        "tmm": 5,
+        "pwe": 5
+      },
+      {
+        "figure": "figure_04",
+        "m": 3,
+        "expected": 1,
+        "tmm": 1,
+        "pwe": 1
+      },
+      {
+        "figure": "figure_04",
+        "m": 3,
+        "expected": 1,
+        "tmm": 1,
+        "pwe": 1
+      },
+      {
+        "figure": "figure_04",
+        "m": 4,
+        "expected": 2,
+        "tmm": 2,
+        "pwe": 2
+      },
+      {
+        "figure": "figure_04",
+        "m": 4,
+        "expected": 2,
+        "tmm": 2,
+        "pwe": 2
+      }
+    ],
+    "all_equal": true
+  },
+  "plasmon": {
+    "worst_edge_error_ghz": 9.6540124561173e-08,
+    "worst_relative_width_error": 4.107126051225377e-06,
+    "counts_equal": true,
+    "n_cases": 70
+  },
+  "pwe_numerics": {
+    "book_residual_laurent": 0.1567671069868088,
+    "book_residual_inverse": 0.00015667203813649055,
+    "cost": [
+      {
+        "m": 3,
+        "layers": 3,
+        "harmonics_per_layer": 16,
+        "n_plane_waves": 97,
+        "pwe_seconds_per_frequency": 0.049345856667059707,
+        "tmm_seconds_per_frequency": 1.520799833087949e-05,
+        "max_abs_delta_r": 1.5648618783004054e-06,
+        "max_abs_r_tmm": 2.015931989759685
+      },
+      {
+        "m": 4,
+        "layers": 5,
+        "harmonics_per_layer": 16,
+        "n_plane_waves": 161,
+        "pwe_seconds_per_frequency": 0.143387096166407,
+        "tmm_seconds_per_frequency": 1.4245053334889234e-05,
+        "max_abs_delta_r": 1.9529831081888105e-05,
+        "max_abs_r_tmm": 1.1354933042329731
+      },
+      {
+        "m": 5,
+        "layers": 8,
+        "harmonics_per_layer": 16,
+        "n_plane_waves": 257,
+        "pwe_seconds_per_frequency": 0.48125145816690446,
+        "tmm_seconds_per_frequency": 1.0404820004623616e-05,
+        "max_abs_delta_r": 8.808586776254401e-05,
+        "max_abs_r_tmm": 4.055774507853033
+      },
+      {
+        "m": 6,
+        "layers": 13,
+        "harmonics_per_layer": 8,
+        "n_plane_waves": 209,
+        "pwe_seconds_per_frequency": 0.2239698489999379,
+        "tmm_seconds_per_frequency": 1.0284836668385347e-05,
+        "max_abs_delta_r": 0.0028518383987998774,
+        "max_abs_r_tmm": 7.194677604532116
+      },
+      {
+        "m": 6,
+        "layers": 13,
+        "harmonics_per_layer": 16,
+        "n_plane_waves": 417,
+        "pwe_seconds_per_frequency": 1.3639161721657729,
+        "tmm_seconds_per_frequency": 1.0035676665817543e-05,
+        "max_abs_delta_r": 0.00035280767697720705,
+        "max_abs_r_tmm": 7.194677604532116
+      },
+      {
+        "m": 7,
+        "layers": 21,
+        "harmonics_per_layer": 8,
+        "n_plane_waves": 337,
+        "pwe_seconds_per_frequency": 0.940372876333034,
+        "tmm_seconds_per_frequency": 1.1565881668502698e-05,
+        "max_abs_delta_r": 0.03320984658837034,
+        "max_abs_r_tmm": 57.22448673713199
+      },
+      {
+        "m": 7,
+        "layers": 21,
+        "harmonics_per_layer": 16,
+        "n_plane_waves": 673,
+        "pwe_seconds_per_frequency": 4.631323009332846,
+        "tmm_seconds_per_frequency": 2.4072533330278628e-05,
+        "max_abs_delta_r": 0.004108948732223894,
+        "max_abs_r_tmm": 57.22448673713199
+      },
+      {
+        "m": 8,
+        "layers": 34,
+        "harmonics_per_layer": 8,
+        "n_plane_waves": 545,
+        "pwe_seconds_per_frequency": 2.3916155498324465,
+        "tmm_seconds_per_frequency": 1.0204715830089602e-05,
+        "max_abs_delta_r": 0.8033334124824023,
+        "max_abs_r_tmm": 819.3676918091243
+      }
+    ],
+    "pollution": {
+      "21": 14,
+      "41": 27,
+      "81": 53,
+      "161": 106,
+      "241": 160
+    }
+  },
+  "timing": {
+    "labels": [
+      "Fig. 1",
+      "Fig. 2",
+      "Fig. 3",
+      "Fig. 4",
+      "Fig. 5",
+      "Fig. 6"
+    ],
+    "tmm_seconds": [
+      0.002950263992435547,
+      0.0027427567728216563,
+      0.002927381751822094,
+      0.003061267219891306,
+      0.03519869700539857,
+      0.22555670200381428
+    ],
+    "pwe_single_core_seconds": [
+      194.34876824743696,
+      985.0643801255501,
+      194.34876824743696,
+      1242.7345399992191,
+      977.271229571008,
+      14289.237038088992
+    ],
+    "outputs": {
+      "pdf": "results/comparison/timing/output/timing.pdf",
+      "png": "results/comparison/timing/output/timing.png"
+    }
+  },
+  "efficiency": {
+    "pwe_time_exponent_in_n": 2.649007852913606,
+    "tmm_product_time_exponent_in_layers": 0.9409246298037007,
+    "figure_ratio_range": [
+      27764.41495607408,
+      405954.2832210982
+    ],
+    "tmm_fastest": {
+      "method": "TMM, recurrencia (vectorizada)",
+      "n_plane_waves": null,
+      "seconds_per_frequency": 1.5104149997569038e-06,
+      "max_abs_error": 2.886579864025407e-15
+    },
+    "pwe_most_accurate": {
+      "method": "PWE",
+      "harmonics_per_layer": 24,
+      "n_plane_waves": 385,
+      "seconds_per_frequency": 1.062285940199945,
+      "max_abs_error": 1.0310338556251963e-06
+    },
+    "book": {
+      "n_plane_waves": 101,
+      "k_points": 41,
+      "n_bands": 8,
+      "pwe_seconds": 0.11593053999968106,
+      "tmm_root_seconds": 0.07502627700159792,
+      "tmm_grid_seconds": 0.01413688574975822,
+      "tmm_grid_points": 60001,
+      "pwe_max_rel_error": 4.588178838805775e-06,
+      "tmm_missing_roots": 0
+    },
+    "recommended_method": "TMM"
+  },
+  "tables": [
+    "results/comparison/tables/book_convergence.tex",
+    "results/comparison/tables/cost.tex",
+    "results/comparison/tables/dispersion.tex",
+    "results/comparison/tables/efficiency_book.tex",
+    "results/comparison/tables/efficiency_figures.tex",
+    "results/comparison/tables/efficiency_macros.tex",
+    "results/comparison/tables/efficiency_scaling.tex",
+    "results/comparison/tables/efficiency_work_precision.tex",
+    "results/comparison/tables/figure_05.tex",
+    "results/comparison/tables/figure_06.tex",
+    "results/comparison/tables/mode_counts.tex",
+    "results/comparison/tables/pollution.tex"
+  ]
+}

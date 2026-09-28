@@ -1,0 +1,32 @@
+# Estudio de eficiencia TMM vs PWE. Todas las mediciones usan un núcleo
+# (un hilo de BLAS) para que los tiempos de los dos métodos sean comparables.
+physics: figure_05.yaml
+polarization: TE
+
+scaling:                       # tiempo por frecuencia frente al orden de Fibonacci
+  theta_rad: 0.2617993877991494     # π/12
+  window_ghz: [0.9955, 0.9994]
+  tmm_orders: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 20]
+  tmm_frequencies: 1000
+  tmm_scalar_frequencies: 50
+  pwe_orders: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+  pwe_harmonics_per_layer: 8
+  pwe_frequencies: {default: 4, 9: 2, 10: 2}
+  extrapolate_orders: [12, 15]
+
+work_precision:                # error frente a tiempo, referencia TMM en precisión extendida
+  fibonacci_order: 5
+  theta_rad: 0.5235987755982988     # π/6
+  frequency_min_ghz: 0.3
+  frequency_max_ghz: 5.0
+  frequency_points: 40
+  harmonics_per_layer: [1, 2, 4, 8, 16, 24]
+
+figures:                       # costo de un núcleo para los barridos de las Figs. 1-4
+  sample_frequencies: 8
+  parallel_workers_used: 16         # procesos con que se corrieron scripts/pwe/figure_0[1-4].py
+
+book:                          # caso favorable al PWE: cristal no dispersivo del libro
+  config: pwe/book_benchmark.yaml
+  k_points: 41
+  grid_points: 4001

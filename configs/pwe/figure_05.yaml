@@ -1,0 +1,12 @@
+# Parámetros numéricos del PWE para la Figura 5 (física en configs/figure_05.yaml).
+# Solo m <= 6: el costo del PWE crece como N^3 con N ∝ F_m y con m = 7, 8 la
+# semitraza alcanza |R| ~ 10^2–10^3 dentro de la ventana (ver results/pwe/convergence).
+rule: inverse
+fibonacci_orders: [2, 3, 4, 5, 6]
+harmonics_per_layer: {2: 16, 3: 16, 4: 16, 5: 8, 6: 8}
+# Malla logarítmica en ν_m − ν; los bordes se refinan con Brent.
+grid_points: 300
+# Muy cerca de ν_m (gap con |R| ≫ 1e4, |Im k Lm| ≳ 10) el PWE produce bandas
+# espurias; se descartan validando cada banda con 1.5× ondas planas. El corte
+# evita además gastar evaluaciones donde no hay subbandas físicas para θ ≥ 5°.
+nu_m_min_offset_ghz: 1.0e-7

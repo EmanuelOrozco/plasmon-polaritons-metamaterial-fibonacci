@@ -1,0 +1,70 @@
+{
+  "config": "configs/pwe/figure_01.yaml",
+  "numerics": {
+    "rule": "inverse",
+    "harmonics_per_layer": 8,
+    "frequency_points": 1500
+  },
+  "runs": [
+    {
+      "m": 3,
+      "theta": 0.0,
+      "theta_label": "0",
+      "seconds": 3.0584427709982265,
+      "n_allowed": 1500
+    },
+    {
+      "m": 4,
+      "theta": 0.0,
+      "theta_label": "0",
+      "seconds": 7.665795683002216,
+      "n_allowed": 1500
+    },
+    {
+      "m": 3,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "seconds": 2.4484941519986023,
+      "n_allowed": 1443
+    },
+    {
+      "m": 4,
+      "theta": 0.2617993877991494,
+      "theta_label": "pi/12",
+      "seconds": 7.836979425999743,
+      "n_allowed": 1428
+    },
+    {
+      "m": 3,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "seconds": 2.4829860190002364,
+      "n_allowed": 1366
+    },
+    {
+      "m": 4,
+      "theta": 0.5235987755982988,
+      "theta_label": "pi/6",
+      "seconds": 7.9510363369990955,
+      "n_allowed": 1252
+    },
+    {
+      "m": 3,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "seconds": 2.573371006998059,
+      "n_allowed": 751
+    },
+    {
+      "m": 4,
+      "theta": 1.0471975511965976,
+      "theta_label": "pi/3",
+      "seconds": 8.009490545999142,
+      "n_allowed": 709
+    }
+  ],
+  "outputs": {
+    "pdf": "results/pwe/figure_01/output/figure_01.pdf",
+    "png": "results/pwe/figure_01/output/figure_01.png"
+  }
+}

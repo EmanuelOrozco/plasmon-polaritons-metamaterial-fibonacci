@@ -1,10 +1,17 @@
-# Plasmon-polaritones en superredes Fibonacci (TMM)
+# Plasmon-polaritones en superredes Fibonacci (TMM y PWE)
 
 Reimplementación computacional en Python del artículo de Reyes-Gómez *et al.*,
 [Phys. Rev. B **81**, 153101 (2010)](https://doi.org/10.1103/PhysRevB.81.153101),
 a cargo de **Emanuel Orozco Gallego**.
 
-El método es **matriz de transferencia (TMM)** a incidencia oblicua.
+Las figuras del paper se calculan con dos métodos independientes:
+
+- **Matriz de transferencia (TMM)** a incidencia oblicua: exacta para medios
+  estratificados; es el método de producción.
+- **Expansión en ondas planas (PWE)**, siguiendo el capítulo 1D de Sukhoivanov
+  y Guryev (`references/pwe/`), en la forma $k(\omega)$ con la regla inversa de
+  Li para tratar el metamaterial de Drude; sirve de verificación independiente.
+
 No se usa FDTD ni elementos finitos.
 
 ## Documentación
@@ -18,14 +25,17 @@ No se usa FDTD ni elementos finitos.
 
 ### PDF incluidos en el repositorio
 
-**Resultados de la simulación (figuras):**
+**Resultados de la simulación (TMM):**
 
-- [figure_01.pdf](figures/figure_01/output/figure_01.pdf)
-- [figure_02.pdf](figures/figure_02/output/figure_02.pdf)
-- [figure_03.pdf](figures/figure_03/output/figure_03.pdf)
-- [figure_04.pdf](figures/figure_04/output/figure_04.pdf)
-- [figure_05.pdf](figures/figure_05/output/figure_05.pdf)
-- [figure_06.pdf](figures/figure_06/output/figure_06.pdf)
+- [figure_01.pdf](results/tmm/figure_01/output/figure_01.pdf)
+- [figure_02.pdf](results/tmm/figure_02/output/figure_02.pdf)
+- [figure_03.pdf](results/tmm/figure_03/output/figure_03.pdf)
+- [figure_04.pdf](results/tmm/figure_04/output/figure_04.pdf)
+- [figure_05.pdf](results/tmm/figure_05/output/figure_05.pdf)
+- [figure_06.pdf](results/tmm/figure_06/output/figure_06.pdf)
+
+Las mismas figuras con ondas planas están en `results/pwe/figure_0N/output/` y
+las superposiciones y errores TMM vs PWE en `results/comparison/`.
 
 **Documentos del proyecto:**
 
@@ -34,6 +44,8 @@ No se usa FDTD ni elementos finitos.
 - [guia_conceptual.pdf](docs/guia_conceptual/guia_conceptual.pdf)
 - [solucion_numerica.pdf](docs/solucion_numerica/solucion_numerica.pdf)
 - [arquitectura.pdf](docs/arquitectura/arquitectura.pdf)
+- [metodo_ondas_planas.pdf](docs/metodo_ondas_planas/metodo_ondas_planas.pdf): paper del método de ondas planas
+- [comparacion_tmm_pwe.pdf](docs/comparacion_tmm_pwe/comparacion_tmm_pwe.pdf): anexo de comparación TMM vs PWE
 
 ---
 
@@ -53,52 +65,81 @@ python3 -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install --upgrade pip
 pip install -r requirements.txt
-pip install -e .                   # opcional: instala el paquete fibonacci_tmm
+pip install -e .                   # opcional: instala el paquete fibonacci_photonics
 ```
 
 Dependencias: `numpy`, `scipy`, `matplotlib`, `pyyaml`, `pytest`.
 
 ## Cómo ejecutar
 
+### Todo de una vez
+
+```bash
+make all            # tests + resultados (TMM, PWE, comparación) + PDF + verificación
+make reproduce      # lo mismo sin los tests
+make verify         # solo la verificación de resultados y documentos
+```
+
+`make verify` (`scripts/verify_results.py`) comprueba que existan todas las
+salidas, que TMM y PWE cumplan los criterios de acuerdo (conteos $F_{m-2}$,
+error de semitraza, error de borde y de ancho) y que cada PDF esté al día con
+sus figuras y tablas y compile sin errores. Con `--reference DIR` compara además
+los datos con una corrida anterior.
+
 ### Tests
 
 ```bash
-.venv/bin/pytest
+make tests          # o: .venv/bin/python -m pytest
 ```
 
-### Todas las figuras
+### Todos los resultados
 
 ```bash
-.venv/bin/python scripts/reproduce_all.py
+make results        # TMM + PWE + comparación
 ```
 
-También: `make figures` (incluye el análisis de convergencia).
+Por método:
+
+```bash
+.venv/bin/python scripts/tmm/run_all.py          # results/tmm/        (segundos)
+.venv/bin/python scripts/pwe/run_all.py          # results/pwe/        (horas; PWE_WORKERS=n limita procesos)
+.venv/bin/python scripts/comparison/run_all.py   # results/comparison/ (requiere los dos anteriores)
+```
+
+`make figures` sigue reproduciendo las figuras TMM (incluye la convergencia).
 
 ### Una figura por aparte
 
 ```bash
-.venv/bin/python scripts/reproduce_figure_01.py
-.venv/bin/python scripts/reproduce_figure_02.py
-.venv/bin/python scripts/reproduce_figure_03.py
-.venv/bin/python scripts/reproduce_figure_04.py
-.venv/bin/python scripts/reproduce_figure_05.py
-.venv/bin/python scripts/reproduce_figure_06.py
+.venv/bin/python scripts/tmm/figure_03.py        # TMM
+.venv/bin/python scripts/pwe/figure_03.py        # PWE
 ```
+
+Los scripts antiguos `scripts/reproduce_figure_0N.py` y `scripts/reproduce_all.py`
+siguen funcionando: llaman a `scripts/tmm/`.
 
 Salidas:
 
-- Imágenes: `figures/figure_0N/output/` (PNG, SVG, PDF)
-- Datos y resumen: `figures/figure_0N/data/`
-- Parámetros: `configs/figure_0N.yaml`
+- Imágenes: `results/<método>/figure_0N/output/` (PDF y PNG; la TMM también SVG)
+- Datos y resumen: `results/<método>/figure_0N/data/`
+- Parámetros físicos: `configs/figure_0N.yaml` (comunes a los dos métodos)
+- Parámetros numéricos del PWE: `configs/pwe/`
+- Estudio de tiempos TMM vs PWE (un núcleo): `configs/comparison/efficiency.yaml`,
+  `scripts/comparison/efficiency.py` → `results/comparison/efficiency/`. Conclusión: la TMM es
+  el método óptimo en 1D (exacta; 0.27 s frente a ≈5 h del PWE para las seis figuras).
 
 ### Regenerar documentación PDF (opcional)
 
 ```bash
-make paper    # artículo de la reimplementación
-make docs     # documentación del software
-make guides   # guía conceptual, solución numérica, arquitectura
-make all      # tests + figuras + todos los PDF
+make paper      # artículo de la reimplementación
+make docs       # documentación del software
+make guides     # guía conceptual, solución numérica, arquitectura
+make pwe-docs   # paper del PWE y anexo de comparación
+make documents  # todos los anteriores
 ```
+
+Cada PDF depende de su `.tex` y de las figuras y tablas que incluye: `make` solo
+recompila lo que cambió y se detiene en el primer error de LaTeX.
 
 ## Qué hace cada figura
 
@@ -127,14 +168,41 @@ frequency_points: 20000            # más resolución en frecuencia
 ## Estructura del repositorio
 
 ```text
-configs/             YAML por figura (+ base)
-src/fibonacci_tmm/   biblioteca TMM
-scripts/             reproducción de figuras
-figures/figure_0N/   output/ (PNG, SVG, PDF), data/, README
-tests/               pytest
-docs/                LaTeX, PDF y anexos Markdown
-notebooks/           exploración / validación (opcional)
+configs/                     YAML por figura (física) + configs/pwe/ (numérica del PWE)
+                             + configs/comparison/ (estudio de eficiencia)
+src/fibonacci_photonics/     biblioteca
+  core/                      constantes, materiales de Drude, Fibonacci, parámetros, bandas
+  tmm/                       matriz de transferencia y barrido en frecuencia
+  pwe/                       ondas planas: Fourier de la celda, solver k(ω), forma ω(k) del libro
+  analysis/                  modos de plasmón, anchos de banda, comparación, localización de bordes
+  plotting.py                estilo común de las figuras
+src/fibonacci_tmm/           alias del nombre antiguo (compatibilidad)
+scripts/tmm/                 figuras 1–6 y convergencia con la TMM
+scripts/pwe/                 benchmark del libro, estudios numéricos y figuras 1–6 con el PWE
+scripts/comparison/          superposiciones, errores, tablas LaTeX y eficiencia (tiempo, memoria)
+scripts/verify_results.py    verificación automática (make verify)
+scripts/reproduce_*.py       envoltorios antiguos de scripts/tmm/ (los usa la presentación)
+results/tmm/                 salidas TMM (figures/ es un enlace a esta carpeta)
+results/pwe/                 salidas PWE
+results/comparison/          comparación TMM vs PWE y tablas
+references/pwe/              cuaderno PWE-1d.ipynb y PWE_2D.m (el PDF del capítulo es local)
+tests/                       pytest, organizado por paquete (core, tmm, pwe, analysis, compat)
+docs/                        LaTeX, PDF y anexos Markdown
+presentacion/                presentación (independiente; no se regenera con make results)
+notebooks/                   exploración / validación (opcional)
 ```
+
+### Qué se sube al repositorio
+
+El `.gitignore` deja fuera todo lo que se regenera o es local:
+
+- Se sube: código (`src/`, `scripts/`, `tests/`), configuración (`configs/`),
+  figuras y resúmenes (`results/**/output/`, `summary.json`, `results/comparison/tables/`),
+  los barridos PWE (`results/pwe/**/data/*.npz`, horas de cómputo que usa la comparación),
+  las fuentes y los PDF de `docs/`, `presentacion/` y el enlace `figures`.
+- No se sube: entorno y cachés, auxiliares de LaTeX, copias de los PDF en la raíz,
+  barridos TMM (`results/tmm/**/data/*.npz`, segundos de cómputo), metadatos de
+  corrida y el material con copyright (`references/paper/`, `references/pwe/*.pdf`).
 
 ## Convención física importante
 

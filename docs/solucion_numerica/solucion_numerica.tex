@@ -6,7 +6,7 @@
 \usepackage{graphicx,booktabs,hyperref,listings,geometry,enumitem}
 \usepackage{siunitx}
 \geometry{margin=2.4cm}
-\graphicspath{{../../figures/}{figures/}{../figures/}}
+\graphicspath{{../../results/tmm/}{../../figures/}}
 \hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue}
 \lstset{
   language=Python,
@@ -30,6 +30,7 @@ de las ecuaciones del PRB 2010 a las seis figuras}
 \author{Emanuel Orozco Gallego}
 \date{31 de agosto de 2026}
 
+\setlength{\emergencystretch}{3em}
 \begin{document}
 \maketitle
 
@@ -57,7 +58,7 @@ esa frecuencia es banda o gap.
 \item \texttt{params.spec\_from\_mapping} convierte milímetros y GHz a SI.
 \item \texttt{scan\_dispersion} recorre \(\nu\), calcula \(R_m\) y
 \(k L_m/\pi\).
-\item Los scripts \texttt{scripts/reproduce\_figure\_0N.py} dibujan y
+\item Los scripts \texttt{scripts/tmm/figure\_0N.py} dibujan y
 guardan PDF/PNG/SVG más los datos \texttt{.npz} y un \texttt{summary.json}.
 \end{enumerate}
 
@@ -319,7 +320,7 @@ Estilos: \(S_3\) rojo discontinuo, \(S_4\) azul continuo, ticks hacia dentro.
 
 \subsection{Figura 1}
 
-Script: \texttt{scripts/reproduce\_figure\_01.py}.
+Script: \texttt{scripts/tmm/figure\_01.py}.
 Config: \(\nu_e=\nu_m=3\,\mathrm{GHz}\), \(m\in\{3,4\}\),
 \(\theta\in\{0,\pi/12,\pi/6,\pi/3\}\),
 \(12000\) puntos en \([0.15,5]\,\mathrm{GHz}\) (se evita \(\nu=0\), polo de
@@ -406,6 +407,12 @@ las subbandas por debajo de \(\sim3^\circ\) y parte de ellas hasta
 \item \texttt{bandwidth\_versus\_angle} sin fusionar intervalos: en cada
 \(\theta>0\) se obtienen exactamente \(F_{m-2}\) subbandas conexas (el
 script avisa si algún ángulo no las tiene).
+\item Cada borde se refina con Brent entre la última muestra con
+\(|R_m|\le1\) y su vecina exterior, hasta donde \(|R_m|=1\)
+(\texttt{refine=True}). Sin este paso el ancho queda subestimado hasta en dos
+pasos de malla, lo que importa en las subbandas más estrechas: con \(m=7\)
+algunas perdían más del 1\,\% de su ancho. Lo mismo se hace con los bordes de
+la Fig.~5.
 \item Como el número de subbandas no cambia con \(\theta\), la subbanda
 \(i\)-ésima contada desde abajo es la misma rama física en todos los ángulos
 y conserva su color.
@@ -467,21 +474,24 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 pytest
-python scripts/reproduce_all.py
-# o una sola: python scripts/reproduce_figure_04.py
+python scripts/tmm/run_all.py
+# o una sola: python scripts/tmm/figure_04.py
 \end{lstlisting}
 
 Salida de cada figura:
 
 \begin{itemize}
-\item \texttt{figures/figure\_0N/output/figure\_0N.pdf} (y PNG, SVG).
-\item \texttt{figures/figure\_0N/data/*.npz}: \(\nu\), \(\lvert R\rvert\),
+\item \texttt{results/tmm/figure\_0N/output/figure\_0N.pdf} (y PNG, SVG).
+\item \texttt{results/tmm/figure\_0N/data/*.npz}: \(\nu\), \(\lvert R\rvert\),
 máscara, \(k L_m/\pi\).
-\item \texttt{figures/figure\_0N/data/summary.json}: recuentos y anchos.
-\item Copia en \texttt{figures/reproduced/figure\_0N/}.
+\item \texttt{results/tmm/figure\_0N/data/summary.json}: recuentos y anchos.
 \end{itemize}
 
-\texttt{make figures} lanza además \texttt{analyze\_convergence.py}.
+\texttt{make figures} (o \texttt{make tmm}) lanza además
+\texttt{scripts/tmm/convergence.py}. La verificación con ondas planas
+(\texttt{scripts/pwe/}, \texttt{scripts/comparison/}) está descrita en el
+documento \textit{El método de expansión en ondas planas} y en el anexo
+\textit{Comparación TMM vs PWE}.
 
 Para TM: \texttt{polarization: TM} en el YAML (no hay figuras TM en el
 original; el código está listo).
@@ -518,12 +528,12 @@ No se calibró nada contra el dibujo impreso.
 \toprule
 Figura & Script & Núcleo \\
 \midrule
-1 & \texttt{reproduce\_figure\_01.py} & \texttt{scan\_dispersion} + \texttt{plot\_dispersion\_branches} \\
-2 & \texttt{reproduce\_figure\_02.py} & idem + \texttt{detect\_plasmon\_modes} \\
-3 & \texttt{reproduce\_figure\_03.py} & igual que 1, otro YAML \\
-4 & \texttt{reproduce\_figure\_04.py} & ventanas densas + anchos \\
-5 & \texttt{reproduce\_figure\_05.py} & \texttt{allowed\_intervals} por \(m\) \\
-6 & \texttt{reproduce\_figure\_06.py} & \texttt{bandwidth\_versus\_angle} + \texttt{fill\_between} \\
+1 & \texttt{tmm/figure\_01.py} & \texttt{scan\_dispersion} + \texttt{plot\_dispersion\_branches} \\
+2 & \texttt{tmm/figure\_02.py} & idem + \texttt{detect\_plasmon\_modes} \\
+3 & \texttt{tmm/figure\_03.py} & igual que 1, otro YAML \\
+4 & \texttt{tmm/figure\_04.py} & ventanas densas + anchos \\
+5 & \texttt{tmm/figure\_05.py} & \texttt{allowed\_intervals} por \(m\) \\
+6 & \texttt{tmm/figure\_06.py} & \texttt{bandwidth\_versus\_angle} + \texttt{fill\_between} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -531,9 +541,9 @@ Figura & Script & Núcleo \\
 El camino mínimo, para una sola curva, es:
 
 \begin{lstlisting}[style=tiny]
-from fibonacci_tmm.params import load_spec
-from fibonacci_tmm.dispersion import scan_dispersion
-from fibonacci_tmm.electromagnetics import Polarization
+from fibonacci_photonics.core.params import load_spec
+from fibonacci_photonics.tmm.dispersion import scan_dispersion
+from fibonacci_photonics.core.electromagnetics import Polarization
 import numpy as np
 
 spec = load_spec("configs/figure_02.yaml")

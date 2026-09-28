@@ -18,11 +18,12 @@
 }
 \setlist[itemize]{topsep=0.3em,itemsep=0.15em}
 \setlist[enumerate]{topsep=0.3em,itemsep=0.15em}
+\setlength{\emergencystretch}{12em}
 
 \title{Arquitectura, flujo y ejecución del proyecto\\
-\texttt{fibonacci\_tmm}}
+\texttt{fibonacci\_photonics}}
 \author{Emanuel Orozco Gallego}
-\date{31 de agosto de 2026}
+\date{28 de septiembre de 2026}
 
 \begin{document}
 \maketitle
@@ -34,7 +35,8 @@ Describe cómo está organizado el código, cómo circulan los datos desde un
 YAML hasta una figura, qué dependencias hacen falta y cómo instalar y
 ejecutar el proyecto de punta a punta.
 La física está en \textit{Guía conceptual}; el algoritmo TMM, en
-\textit{Solución numérica e implementación}.
+\textit{Solución numérica e implementación}; el método de ondas planas, en
+\textit{El método de expansión en ondas planas}.
 \end{abstract}
 
 \tableofcontents
@@ -42,16 +44,19 @@ La física está en \textit{Guía conceptual}; el algoritmo TMM, en
 
 \section{Qué es este repositorio}
 
-Es una reimplementación en Python del método de matriz de transferencia (TMM)
-del Brief Report de 2010. No hay servidor web ni interfaz gráfica: el producto
-son \emph{datos}, \emph{figuras} y \emph{PDFs}.
+Es una reimplementación en Python del Brief Report de 2010 con dos métodos
+independientes: la matriz de transferencia (TMM), que es el método de
+producción, y la expansión en ondas planas (PWE), que la verifica. No hay
+servidor web ni interfaz gráfica: el producto son \emph{datos}, \emph{figuras}
+y \emph{PDFs}, separados por método en \texttt{results/tmm/},
+\texttt{results/pwe/} y \texttt{results/comparison/}.
 
 Tres capas, de dentro hacia afuera:
 
 \begin{enumerate}
-\item \textbf{Biblioteca} \texttt{src/fibonacci\_tmm/}: física y numerica.
+\item \textbf{Biblioteca} \texttt{src/fibonacci\_photonics/}: física y numérica.
 No sabe de Matplotlib ni de números de figura.
-\item \textbf{Scripts} \texttt{scripts/}: leen YAML, llaman a la biblioteca,
+\item \textbf{Scripts} \texttt{scripts/\{tmm,pwe,comparison\}/}: leen YAML, llaman a la biblioteca,
 dibujan y escriben archivos.
 \item \textbf{Documentos} \texttt{docs/}: LaTeX que incrusta las figuras
 generadas.
@@ -65,18 +70,34 @@ editar Python.
 
 \begin{lstlisting}
 analisis_numerico/
-  src/fibonacci_tmm/     biblioteca (layout src)
-  tests/                 pytest
-  configs/               YAML por figura + base.yaml
-  scripts/               reproduccion de Figs. 1-6
-  figures/figure_0N/     data/, output/, README.md
-  figures/reproduced/    copia de las imagenes finales
-  docs/                  auditoria, paper, guias, este documento
-  data/                  crudo / procesado / referencia (reserva)
-  notebooks/             reserva
-  pyproject.toml         paquete, pytest, pythonpath
-  requirements.txt       pip
-  Makefile               tests, figuras, PDFs
+  src/fibonacci_photonics/   biblioteca (layout src)
+    core/                    constantes, materiales, Fibonacci, parametros, bandas
+    tmm/                     matriz de transferencia y barrido
+    pwe/                     ondas planas: Fourier, solver k(w), forma w(k)
+    analysis/                modos, anchos, comparacion, bordes de banda
+    plotting.py              estilo y guardado de figuras
+  src/fibonacci_tmm/         alias del nombre antiguo (compatibilidad)
+  tests/{core,tmm,pwe,analysis,compat}/   pytest
+  configs/                   YAML por figura (fisica) + base.yaml
+  configs/pwe/               parametros numericos del PWE
+  scripts/_common.py         utilidades compartidas
+  scripts/tmm/               Figs. 1-6 y convergencia con TMM
+  scripts/pwe/               benchmark del libro, estudios y Figs. 1-6 con PWE
+  scripts/comparison/        superposiciones, errores, tablas y tiempos
+  scripts/reproduce_*.py     envoltorios antiguos (llaman a scripts/tmm/)
+  scripts/verify_results.py  verificacion automatica (make verify)
+  results/tmm/figure_0N/     data/, output/, README.md
+  results/pwe/<estudio>/     data/, output/
+  results/comparison/        figuras, summary.json y tables/*.tex
+  figures -> results/tmm     enlace de compatibilidad
+  references/pwe/            PWE-1d.ipynb, PWE_2D.m (el PDF del libro es local)
+  references/paper/          articulo APS y recortes (local, no se sube)
+  docs/                      auditoria, papers, guias, este documento
+  presentacion/              presentacion (no la toca make results)
+  notebooks/                 exploracion
+  pyproject.toml             paquete, pytest, pythonpath
+  requirements.txt           pip
+  Makefile                   tests, resultados, PDFs
 \end{lstlisting}
 
 El entorno virtual \texttt{.venv/} y las cachés (\texttt{\_\_pycache\_\_},
@@ -87,10 +108,16 @@ El entorno virtual \texttt{.venv/} y las cachés (\texttt{\_\_pycache\_\_},
 \section{Arquitectura de la biblioteca}
 
 El paquete usa el \emph{src layout}: las importaciones son
-\texttt{from fibonacci\_tmm.\ldots} y Setuptools busca paquetes en
+\texttt{from fibonacci\_photonics.\ldots} y Setuptools busca paquetes en
 \texttt{src/} (\texttt{pyproject.toml}).
 Pytest añade \texttt{src} a \texttt{PYTHONPATH}. Los scripts hacen
 \texttt{sys.path.insert} a \texttt{src/} al arrancar.
+
+El nombre antiguo \texttt{fibonacci\_tmm} se conserva como alias: cada módulo
+\texttt{fibonacci\_tmm.X} reemplaza su entrada en \texttt{sys.modules} por el
+módulo nuevo correspondiente, así que los cuadernos, la presentación y
+cualquier código externo siguen funcionando sin cambios
+(\texttt{tests/compat/test\_legacy\_imports.py} lo comprueba).
 
 \subsection{Módulos y responsabilidades}
 
@@ -100,17 +127,25 @@ Pytest añade \texttt{src} a \texttt{PYTHONPATH}. Los scripts hacen
 \toprule
 Módulo & Depende de & Responsabilidad \\
 \midrule
-\texttt{constants.py} & --- & \(c\), GHz, mm, tolerancias \\
-\texttt{fibonacci.py} & constants & \(S_m\), \(F_m\), \(L_m\) \\
-\texttt{materials.py} & --- & aire y Drude \(\varepsilon(\omega),\mu(\omega)\) \\
-\texttt{electromagnetics.py} & constants & \(n\), \(q\), \(Q\), \(\chi\), TE/TM \\
-\texttt{params.py} & materials, electromagnetics & YAML \(\to\) SI \\
-\texttt{transfer\_matrix.py} & electromagnetics, fibonacci, params & \(M\), \(T_m\), \(R_m\) \\
-\texttt{dispersion.py} & transfer\_matrix & barrido, bandas, \(k L_m/\pi\) \\
-\texttt{plasmon\_modes.py} & dispersion, fibonacci & recuento de subbandas \\
-\texttt{bandwidth.py} & dispersion, plasmon\_modes & \(\nu_{\min},\nu_{\max}\) vs \(\theta\) \\
-\texttt{plotting.py} & dispersion, matplotlib & estilo PRB y curvas \\
-\texttt{provenance.py} & params, constants & metadatos JSON de cada corrida \\
+\texttt{core/constants.py} & --- & \(c\), GHz, mm, tolerancias \\
+\texttt{core/fibonacci.py} & constants & \(S_m\), \(F_m\), \(L_m\) \\
+\texttt{core/materials.py} & --- & aire y Drude \(\varepsilon(\omega),\mu(\omega)\) \\
+\texttt{core/electromagnetics.py} & constants & \(n\), \(q\), \(Q\), \(\chi\), TE/TM \\
+\texttt{core/params.py} & materials, electromagnetics & YAML \(\to\) SI \\
+\texttt{core/bands.py} & --- & \texttt{DispersionScan}, máscara de banda, \(kL_m/\pi\) \\
+\texttt{core/effective\_medium.py} & materials & \(\langle n\rangle\), gap de índice nulo \\
+\texttt{core/provenance.py} & params, constants & metadatos JSON de cada corrida \\
+\texttt{tmm/transfer\_matrix.py} & core & \(M\), \(T_m\), \(R_m\) \\
+\texttt{tmm/dispersion.py} & transfer\_matrix, bands & barrido TMM \\
+\texttt{pwe/fourier.py} & fibonacci & coeficientes de la celda, Toeplitz \\
+\texttt{pwe/bloch.py} & fourier, params & QEP en \(k\), selección del modo \\
+\texttt{pwe/dispersion.py} & bloch, bands & barrido PWE, \texttt{SemitraceEvaluator} \\
+\texttt{pwe/eigenfrequency.py} & fourier & forma \(\omega(k)\) del libro y de Drude \\
+\texttt{analysis/plasmon\_modes.py} & bands, fibonacci & recuento de subbandas \\
+\texttt{analysis/bandwidth.py} & plasmon\_modes, band\_edges & \(\nu_{\min},\nu_{\max}\) vs \(\theta\) \\
+\texttt{analysis/comparison.py} & bands & métricas TMM vs PWE, Brent \\
+\texttt{analysis/band\_edges.py} & comparison & localización, refinamiento y validación de subbandas \\
+\texttt{plotting.py} & bands, matplotlib & estilo PRB, curvas, \texttt{save\_figure} \\
 \texttt{\_\_init\_\_.py} & los anteriores & API pública \\
 \bottomrule
 \end{tabular}
@@ -118,8 +153,10 @@ Módulo & Depende de & Responsabilidad \\
 }
 
 La dependencia es acíclica y va de lo más físico a lo más aplicado:
-constantes \(\to\) materiales y Fibonacci \(\to\) TMM \(\to\) barrido \(\to\)
-modos y anchos \(\to\) dibujo.
+\texttt{core} \(\to\) \texttt{tmm} y \texttt{pwe} (en paralelo, sin depender
+uno del otro) \(\to\) \texttt{analysis} \(\to\) dibujo. Los dos métodos
+producen el mismo objeto \texttt{DispersionScan}, de modo que el análisis
+(modos, anchos, bordes) y el dibujo no saben qué método generó los datos.
 
 \texttt{plotting.py} es el único módulo de la biblioteca que importa
 Matplotlib. El núcleo numérico puede usarse sin pintar nada.
@@ -149,9 +186,18 @@ Archivo & Uso \\
 \texttt{configs/figure\_04.yaml} & ventanas densas cerca de \(1\,\mathrm{GHz}\) \\
 \texttt{configs/figure\_05.yaml} & palos vs \(m=2\ldots 8\) \\
 \texttt{configs/figure\_06.yaml} & \(\nu(\theta)\) relleno, \(m=2\ldots 7\) (inferida) \\
+\texttt{configs/pwe/figure\_0N.yaml} & armónicos por capa, mallas y órdenes del PWE \\
+\texttt{configs/pwe/book\_benchmark.yaml} & cristal \(\varepsilon_1=1\), \(\varepsilon_2=9\) del libro \\
+\texttt{configs/pwe/convergence.yaml} & estudios de convergencia y costo \\
+\texttt{configs/pwe/spectral\_pollution.yaml} & forma \(\omega(k)\) con Drude \\
+\texttt{configs/comparison/efficiency.yaml} & estudio de tiempos TMM vs PWE en un núcleo \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+La física de cada figura está en un solo sitio (\texttt{configs/figure\_0N.yaml})
+y la leen los dos métodos; \texttt{configs/pwe/} solo añade parámetros
+numéricos del PWE.
 
 Cada YAML mezcla \emph{física} (espesores, plasmas, polarización) con
 \emph{numérica de gráfica} (malla de \(\nu\), lista de \(\theta\), ventanas).
@@ -164,29 +210,46 @@ Campo \texttt{source}: \texttt{paper} si el original da los números;
 \section{Capa de scripts}
 
 \texttt{scripts/\_common.py} reúne utilidades compartidas: cargar YAML,
-crear los directorios de datos y de salida de cada figura, guardar
-archivos \texttt{.npz} y JSON, y escribir el sidecar de provenance.
+crear los directorios \texttt{results/<método>/<estudio>/\{data,output\}},
+guardar archivos \texttt{.npz} y JSON, escribir el sidecar de provenance y
+repartir tareas entre procesos (\texttt{parallel\_map}, con un hilo de BLAS
+por proceso; \texttt{PWE\_WORKERS=n} limita su número).
 
-Cada \texttt{reproduce\_figure\_0N.py} hace el mismo esqueleto:
+Cada \texttt{scripts/tmm/figure\_0N.py} hace el mismo esqueleto:
 
 \begin{enumerate}
 \item \texttt{load\_figure\_config("figure\_0N.yaml")}.
 \item Construir la malla de \(\nu\) (y de \(\theta\) si aplica).
 \item Llamar a \texttt{scan\_dispersion} o a \texttt{bandwidth\_versus\_angle}.
 \item Dibujar con \texttt{plotting}.
-\item Escribir PDF, PNG (300 dpi), SVG, datos y \texttt{README.md}.
-\item Copiar las imágenes a \texttt{figures/reproduced/figure\_0N/}.
+\item Escribir PDF, PNG (300 dpi), SVG, datos y \texttt{README.md} en
+\texttt{results/tmm/figure\_0N/}.
 \end{enumerate}
 
-\texttt{reproduce\_all.py} lanza los seis scripts en orden, con el mismo
-intérprete (\texttt{sys.executable}), y aborta si uno falla
-(\texttt{check=True}).
+\texttt{scripts/pwe/figure\_0N.py} sigue el mismo esqueleto con
+\texttt{fibonacci\_photonics.pwe.scan\_dispersion} y escribe en
+\texttt{results/pwe/figure\_0N/}. Además, \texttt{scripts/pwe/} contiene el
+benchmark del libro (\texttt{book\_benchmark.py}), la ilustración de la celda
+(\texttt{cell\_fourier.py}), la contaminación espectral de la forma
+\(\omega(k)\) (\texttt{spectral\_pollution.py}) y la convergencia y el costo
+(\texttt{convergence.py}).
 
-\texttt{figures/figure\_0N/generate.py} es un atajo: ejecuta el script
-correspondiente con \texttt{runpy}.
+\texttt{scripts/comparison/} lee los datos de los dos métodos, recalcula la TMM
+en la misma malla que el PWE y escribe superposiciones, errores,
+\texttt{summary.json} y las tablas LaTeX de \texttt{results/comparison/tables/}
+que incluyen el paper del PWE y el anexo de comparación.
+\texttt{efficiency.py} mide en un núcleo el tiempo por frecuencia frente a \(m\),
+el diagrama trabajo-precisión, el costo de cada figura y la memoria
+(\texttt{--plot-only} redibuja sin medir).
 
-\texttt{analyze\_convergence.py} no pinta el paper: estudia cómo \(\Delta\nu\)
-de la Fig.~4 cambia con el número de puntos.
+Cada carpeta tiene un \texttt{run\_all.py} que lanza sus scripts en orden con
+el mismo intérprete (\texttt{sys.executable}) y aborta si uno falla
+(\texttt{check=True}). Los envoltorios \texttt{scripts/reproduce\_figure\_0N.py}
+y \texttt{scripts/reproduce\_all.py} ejecutan los de \texttt{scripts/tmm/} con
+\texttt{runpy}.
+
+\texttt{scripts/tmm/convergence.py} no pinta el paper: estudia cómo
+\(\Delta\nu\) de la Fig.~4 cambia con el número de puntos.
 
 \section{Flujo de una corrida}
 
@@ -201,12 +264,12 @@ configs/figure_0N.yaml
         v
   SuperlatticeSpec
         |
-        +--> scan_dispersion(spec, m, theta, nu, TE)
-        |         |
+        +--> tmm.scan_dispersion(spec, m, theta, nu, TE)
         |         +--> semitrace_by_recurrence   (por defecto)
-        |         +--> allowed_mask, arccos
+        +--> pwe.scan_dispersion(spec, m, theta, nu, TE, n_max)
+        |         +--> QEP en k (regla inversa), R = Re cos(kL)
         |         v
-        |    DispersionScan
+        |    DispersionScan   (mismo objeto para los dos metodos)
         |
         +--> detect_plasmon_modes / allowed_intervals   (Figs. 2, 4, 5)
         +--> bandwidth_versus_angle                     (Fig. 6)
@@ -214,31 +277,48 @@ configs/figure_0N.yaml
         v
   plotting.save_figure
         |
-        +--> figures/figure_0N/output/figure_0N.{pdf,png,svg}
-        +--> figures/figure_0N/data/*.npz
-        +--> figures/figure_0N/data/summary.json
-        +--> figures/figure_0N/data/metadata.json
+        +--> results/<metodo>/figure_0N/output/figure_0N.{pdf,png,svg}
+        +--> results/<metodo>/figure_0N/data/*.npz
+        +--> results/<metodo>/figure_0N/data/summary.json
+        +--> results/<metodo>/figure_0N/data/metadata.json
 \end{lstlisting}
 
-Los PDFs científicos (\texttt{paper\_reimplementation.pdf}, las tres guías)
-no recalculan física: incluyen las figuras ya generadas en
-\texttt{figures/figure\_0N/output/}. Por eso hay que generar las figuras
-\emph{antes} de compilar el paper si se cambió el código.
+Los PDFs científicos no recalculan física: incluyen las figuras ya generadas
+en \texttt{results/} (o en \texttt{figures/}, que apunta a
+\texttt{results/tmm/}). Por eso hay que generar los resultados \emph{antes} de
+compilar los documentos si se cambió el código.
 
 Flujo del \texttt{Makefile}:
 
 \begin{lstlisting}
 make all
   make tests      -> pytest tests
-  make figures    -> reproduce_all.py + analyze_convergence.py
-  make paper      -> pdflatex paper_reimplementation.tex (dos pases)
-  make docs       -> pdflatex software_documentation.tex
-  make guides     -> pdflatex guia_conceptual, solucion_numerica,
-                     arquitectura; copia los PDF a la raiz
+  make results    -> make tmm pwe comparison
+    make tmm        -> scripts/tmm/run_all.py (Figs. 1-6 + convergencia)
+    make pwe        -> scripts/pwe/run_all.py (horas de CPU)
+    make comparison -> scripts/comparison/run_all.py (incluye eficiencia)
+  make documents  -> pwe-docs, guides, paper, docs
+    make pwe-docs   -> metodo_ondas_planas, comparacion_tmm_pwe
+    make guides     -> guia_conceptual, solucion_numerica, arquitectura
+    make paper      -> paper_reimplementation
+    make docs       -> software_documentation
+  make verify     -> scripts/verify_results.py
+make reproduce    -> results + documents + verify (sin tests)
+make figures      -> alias de make tmm
+make presentation -> presentacion/ (objetivo aparte, no lo llama make all)
 \end{lstlisting}
 
-Cada objetivo de PDF se copia también a la raíz del repo para abrirlos sin
-entrar en \texttt{docs/}.
+Todos los PDF se compilan con una sola regla de patrón (dos pases de
+\texttt{pdflatex}, que se detiene en el primer error). Cada PDF depende de su
+\texttt{.tex} y de las figuras y tablas que incluye, así que \texttt{make}
+solo recompila lo que cambió. El PDF se copia también a la raíz del repo
+(esas copias no se suben) para abrirlo sin entrar en \texttt{docs/}.
+
+\texttt{make verify} comprueba que existan todas las salidas, que se cumplan los
+criterios de acuerdo TMM vs PWE (conteos $F_{m-2}$, errores de semitraza, de
+borde y de ancho), que cada tabla y figura citada exista y que cada PDF esté al
+día y compile sin errores ni referencias indefinidas. Con
+\texttt{--reference DIR} compara además los datos con una corrida anterior.
 
 \section{Tests}
 
@@ -251,17 +331,22 @@ testear.
 \toprule
 Archivo & Qué garantiza \\
 \midrule
-\texttt{test\_fibonacci.py} & palabras, inflación, \(N_B\), \(L_m\) \\
-\texttt{test\_materials.py} & ceros de Drude, \(\nu_e\), \(\nu_m\) \\
-\texttt{test\_transfer\_matrix.py} & \(\det T=1\), eqs.\ (7)--(9), dos vías de \(R_m\) \\
-\texttt{test\_dispersion.py} & máscara de banda, gap \(\langle n\rangle=0\) \\
-\texttt{test\_validation.py} & \(N_{\mathrm{modos}}=F_{m-2}\) \\
-\texttt{test\_params.py} & YAML de las seis figuras \\
+\texttt{core/test\_fibonacci.py} & palabras, inflación, \(N_B\), \(L_m\) \\
+\texttt{core/test\_materials.py} & ceros de Drude, \(\nu_e\), \(\nu_m\) \\
+\texttt{core/test\_params.py} & YAML de las seis figuras \\
+\texttt{tmm/test\_transfer\_matrix.py} & \(\det T=1\), eqs.\ (7)--(9), dos vías de \(R_m\) \\
+\texttt{tmm/test\_dispersion.py} & máscara de banda, gap \(\langle n\rangle=0\) \\
+\texttt{pwe/test\_fourier.py} & ec.~(4.38), fracción de llenado, Toeplitz, síntesis \\
+\texttt{pwe/test\_solver.py} & libro, \(R_{\rm PWE}\approx R_{\rm TMM}\), Laurent vs inversa, contaminación \\
+\texttt{analysis/test\_validation.py} & \(N_{\mathrm{modos}}=F_{m-2}\) \\
+\texttt{analysis/test\_comparison.py} & métricas, Brent, localización y validación de bandas \\
+\texttt{compat/test\_legacy\_imports.py} & el alias \texttt{fibonacci\_tmm} \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\texttt{conftest.py} expone dos fixtures de \texttt{SuperlatticeSpec}:
+\texttt{conftest.py} fija un hilo de BLAS (las matrices del PWE son pequeñas y
+el multihilo solo añade sobrecarga) y expone dos fixtures de \texttt{SuperlatticeSpec}:
 plasmas iguales (\(3,3\,\mathrm{GHz}\), Figs.~1--2) y partidos
 (\(3,1\,\mathrm{GHz}\), Figs.~3--6).
 
@@ -282,7 +367,7 @@ Python 3.14.
 Paquete & Mínimo & Para qué \\
 \midrule
 \texttt{numpy} & 1.24 & arrays, \(\sqrt{\,}\), trigonométricas complejas \\
-\texttt{scipy} & 1.10 & (disponible; el TMM núcleo es NumPy) \\
+\texttt{scipy} & 1.10 & Brent, \texttt{eigh} generalizado del PWE \\
 \texttt{matplotlib} & 3.7 & Figs.~1--6 \\
 \texttt{pyyaml} & 6.0 & configs \\
 \texttt{pytest} & 7.0 & tests (extra \texttt{dev} en pyproject) \\
@@ -351,14 +436,15 @@ Debe terminar con todos los casos en verde salvo tres \texttt{skipped}.
 \subsection{3. Figuras}
 
 \begin{lstlisting}
-.venv/bin/python scripts/reproduce_all.py
-# una sola:
-.venv/bin/python scripts/reproduce_figure_04.py
-make figures    # all + analisis de convergencia
+.venv/bin/python scripts/tmm/run_all.py         # TMM, segundos
+.venv/bin/python scripts/tmm/figure_04.py       # una sola
+PWE_WORKERS=8 .venv/bin/python scripts/pwe/run_all.py   # PWE, horas
+.venv/bin/python scripts/comparison/run_all.py  # requiere los dos
+make results    # los tres
 \end{lstlisting}
 
-Salida esperada: seis bloques ``Figura N escrita\ldots'' y archivos en
-\texttt{figures/figure\_0N/output/}.
+Salida esperada: bloques ``Figura N escrita\ldots'' y archivos en
+\texttt{results/<método>/figure\_0N/output/}.
 
 \subsection{4. Documentos PDF}
 
@@ -367,10 +453,13 @@ make paper      # paper_reimplementation.pdf
 make docs       # software_documentation.pdf
 make guides     # guia_conceptual.pdf, solucion_numerica.pdf,
                 # arquitectura.pdf
+make pwe-docs   # metodo_ondas_planas.pdf, comparacion_tmm_pwe.pdf
+make documents  # todos
+make verify     # comprobacion final
 \end{lstlisting}
 
-\texttt{make guides} exige que las figuras existan, porque la guía conceptual
-incluye los PDF ya generados en \texttt{figures/}.
+\texttt{make guides} exige que las figuras TMM existan, y \texttt{make pwe-docs}
+que existan \texttt{results/pwe/} y \texttt{results/comparison/}.
 
 \subsection{5. Todo de una vez}
 
@@ -379,9 +468,9 @@ source .venv/bin/activate
 make all
 \end{lstlisting}
 
-Orden interno: tests \(\to\) figuras \(\to\) paper \(\to\) documentación de
-software \(\to\) guías. Si los tests fallan, \texttt{make} se detiene y no
-genera figuras.
+Orden interno: tests \(\to\) resultados (TMM, PWE, comparación) \(\to\)
+documentos \(\to\) verificación. Si los tests fallan, \texttt{make} se detiene
+y no genera figuras.
 
 \subsection{Cambiar un parámetro y volver a correr}
 
@@ -395,7 +484,7 @@ TM; el código sí la implementa (\(\chi=\varepsilon\)).
 \subsection{Limpieza}
 
 \begin{lstlisting}
-make clean    # auxiliares .aux .log .out .toc de docs/
+make clean    # auxiliares de LaTeX de docs/ y presentacion/
 \end{lstlisting}
 
 No borra figuras ni el entorno virtual.
@@ -403,7 +492,7 @@ No borra figuras ni el entorno virtual.
 \section{Problemas frecuentes}
 
 \begin{itemize}
-\item \texttt{ModuleNotFoundError: fibonacci\_tmm}: está ejecutando un
+\item \texttt{ModuleNotFoundError: fibonacci\_photonics}: está ejecutando un
 script fuera de \texttt{scripts/} sin \texttt{src} en el path. Use los
 scripts del repo o \texttt{PYTHONPATH=src}.
 \item \texttt{ZeroDivisionError} en \(\omega=0\): el Drude diverge; el YAML
@@ -414,7 +503,9 @@ es adaptación de impedancia.
 \item \texttt{pdflatex: command not found}: instale TeX Live; tests y
 figuras no lo necesitan.
 \item Figuras viejas en el paper: regenerar con
-\texttt{reproduce\_all.py} y luego \texttt{make paper}.
+\texttt{scripts/tmm/run\_all.py} y luego \texttt{make paper}.
+\item El PWE tarda mucho o satura la máquina: limite los procesos con
+\texttt{PWE\_WORKERS=n}.
 \item El \texttt{Makefile} apunta a \texttt{.venv/bin/python}. Si el venv
 está en otra ruta, invoque los comandos con el intérprete explícito.
 \end{itemize}
@@ -431,6 +522,8 @@ PDF en la raíz & Contenido \\
 \texttt{guia\_conceptual.pdf} & física desde cero \\
 \texttt{solucion\_numerica.pdf} & TMM y código de las figuras \\
 \texttt{arquitectura.pdf} & este documento \\
+\texttt{metodo\_ondas\_planas.pdf} & formulación y resultados del PWE \\
+\texttt{comparacion\_tmm\_pwe.pdf} & anexo de comparación TMM vs PWE \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -438,7 +531,8 @@ PDF en la raíz & Contenido \\
 Fuentes LaTeX en \texttt{docs/}.
 Auditoría previa al código: \texttt{docs/fase\_A\_auditoria\_matematica.md}.
 Informe de validación: \texttt{docs/INFORME\_VALIDACION.md}.
-Paper original: PDF en la raíz del repo.
+Paper original: PDF en la raíz del repo (no versionado).
+Capítulo del libro y cuaderno del PWE: \texttt{references/pwe/}.
 
 \section{Resumen operativo}
 
@@ -446,7 +540,7 @@ Paper original: PDF en la raíz del repo.
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pytest
-python scripts/reproduce_all.py
+python scripts/tmm/run_all.py
 make paper docs guides
 \end{lstlisting}
 

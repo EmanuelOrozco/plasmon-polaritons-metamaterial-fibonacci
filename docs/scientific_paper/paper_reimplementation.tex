@@ -9,7 +9,7 @@
 \usepackage{siunitx}
 \usepackage{geometry}
 \geometry{margin=2.4cm}
-\graphicspath{{../../figures/}{figures/}{../figures/}}
+\graphicspath{{../../results/tmm/}{../../figures/}}
 \hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue}
 
 \title{Reimplementación computacional de plasmon-polaritones\\
@@ -139,7 +139,7 @@ Tolerancia de banda: $\lvert R\rvert\le 1+10^{-12}$, documentada.
 \section{Reproducción de resultados}
 
 Todas las figuras de esta sección se generaron con
-\texttt{python scripts/reproduce\_figure\_0N.py}, sin edición manual.
+\texttt{python scripts/tmm/figure\_0N.py}, sin edición manual.
 
 \subsection{Figura 1}
 Parámetros: $\nu_e=\nu_m=3\,\mathrm{GHz}$, $S_3$ y $S_4$,
@@ -157,7 +157,7 @@ el panel a baja $\nu$. Concordancia: \textbf{buena}.
 \centering
 \includegraphics[width=0.95\linewidth]{figure_01/output/figure_01.pdf}
 \caption{Reproducción de la Fig.~1. Dispersión TE para $S_3$ (discontinuo) y $S_4$ (continuo).
-Script: \texttt{scripts/reproduce\_figure\_01.py}.}
+Script: \texttt{scripts/tmm/figure\_01.py}.}
 \end{figure}
 
 \subsection{Figura 2}
@@ -289,7 +289,7 @@ $\omega=2\pi\nu$, $\nu$ en GHz, longitudes en mm convertidas a SI.
 No se mezcla $f$ con $\omega$.
 
 \section{Cómo reproducir}
-\texttt{pytest}; \texttt{python scripts/reproduce\_all.py}; \texttt{make paper}.
+\texttt{pytest}; \texttt{python scripts/tmm/run\_all.py}; \texttt{make paper}.
 
 \begin{thebibliography}{9}
 \bibitem{Reyes2010}
