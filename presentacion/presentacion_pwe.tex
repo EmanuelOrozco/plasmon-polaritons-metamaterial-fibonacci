@@ -69,16 +69,20 @@
 % =====================================================================
 
 \begin{frame}{El problema en una imagen}
-  \begin{columns}[c]
-    \begin{column}{0.55\textwidth}
-      \includegraphics[width=\linewidth]{superred_geometria.pdf}
-    \end{column}
-    \begin{column}{0.43\textwidth}
+  \centering
+  \includegraphics[width=0.82\linewidth,height=0.42\textheight,keepaspectratio]{superred_geometria.pdf}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
       \small
       \begin{itemize}
         \item Superred cuya celda es la palabra de Fibonacci $S_m$: capas de aire (A) y de metamaterial (B).
         \item B tiene respuesta de Drude:
           \[\varepsilon_B=1-\frac{\omega_e^2}{\omega^2},\qquad \mu_B=1-\frac{\omega_m^2}{\omega^2}.\]
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
+      \begin{itemize}
         \item La pregunta del paper: ¿para qué frecuencias hay \textbf{bandas} (la onda se propaga) y
           para cuáles hay \textbf{gaps}?
         \item Todo se resume en la semitraza
@@ -439,10 +443,10 @@
 
 \begin{frame}{Contaminación espectral}
   \begin{columns}[c]
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.62\textwidth}
       \includegraphics[width=\linewidth]{pwe/spectral_pollution/output/spectral_pollution.pdf}
     \end{column}
-    \begin{column}{0.40\textwidth}
+    \begin{column}{0.36\textwidth}
       \footnotesize
       $m=3$, $\theta=\pi/12$, $kL_m=\pi/2$, $N=21\dots241$:
       \begin{itemize}
@@ -550,7 +554,7 @@
     \end{column}
     \begin{column}{0.40\textwidth}
       \small
-      Parámetros de la Fig.~5 del paper, $\theta=\pi/6$, 60 frecuencias entre 0.3 y 5~GHz; error máximo en $R$
+      Superred de la Fig.~5 ($\nue=3$, $\num=1$~GHz), $\theta=\pi/6$, 60 frecuencias entre 0.3 y 5~GHz; error máximo en $R$
       dentro de las bandas frente a la TMM.
       \begin{itemize}
         \item \textbf{Inversa} (continua): $\sim N^{-3}$ para $m=3,4,5$, en TE y TM.
@@ -563,10 +567,10 @@
 
 \begin{frame}{Límite de validez junto a $\num$}
   \begin{columns}[c]
-    \begin{column}{0.58\textwidth}
+    \begin{column}{0.62\textwidth}
       \includegraphics[width=\linewidth]{pwe/convergence/output/validity_near_nu_m.pdf}
     \end{column}
-    \begin{column}{0.40\textwidth}
+    \begin{column}{0.36\textwidth}
       \small
       Justo debajo de $\num$, $\mu_B\to0^-$ y la onda es muy evanescente en las capas B: $|R|$ llega a $10^4$
       y más. El modo está amortiguado exponencialmente y el truncamiento de Fourier no lo representa.
@@ -796,37 +800,50 @@ r = np.cos(k_phys).real                      # R_PWE
   $4.5\times10^{-4}$ (Fig.~3).
 \end{frame}
 
-\begin{frame}{Figuras 2 y 4: contar las subbandas}
+\begin{frame}{Superposición TMM--PWE: Figuras 2 y 4}
+  \begin{columns}[c]
+    \begin{column}{0.49\textwidth}
+      \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{comparison/figure_02/output/figure_02_overlay.pdf}
+    \end{column}
+    \begin{column}{0.49\textwidth}
+      \includegraphics[width=\linewidth,height=0.72\textheight,keepaspectratio]{comparison/figure_04/output/figure_04_overlay.pdf}
+    \end{column}
+  \end{columns}
+  \small Los dos métodos cuentan exactamente $F_{m-2}$ subbandas: $1,2,3,5$ para $m=3\dots6$ (Fig.~2) y
+  $1,2$ para $m=3,4$ (Fig.~4). Error máximo en $R$: $1.4\times10^{-3}$ y $5\times10^{-5}$.
+\end{frame}
+
+\begin{frame}{Figura 5: subbandas frente al orden de Fibonacci}
   \begin{columns}[c]
     \begin{column}{0.58\textwidth}
-      \includegraphics[width=\linewidth,height=0.40\textheight,keepaspectratio]{pwe/figure_02/output/figure_02.pdf}\\
-      \includegraphics[width=\linewidth,height=0.40\textheight,keepaspectratio]{pwe/figure_04/output/figure_04.pdf}
+      \centering
+      \figfull{comparison/figure_05/output/figure_05_comparison.pdf}
     \end{column}
     \begin{column}{0.40\textwidth}
-      \footnotesize
-      \IfFileExists{../results/comparison/tables/mode_counts.tex}
-        {\resizebox{\linewidth}{!}{\input{../results/comparison/tables/mode_counts.tex}}}{}
-      \begin{exampleblock}{Resultado}
-        \small PWE y TMM encuentran exactamente $F_{m-2}=1,2,3,5$ subbandas.
-      \end{exampleblock}
+      \small
+      \begin{itemize}
+        \item Arriba: barras negras y de color, TMM; trazos blancos al lado, PWE.
+        \item Abajo: error relativo del ancho de cada subbanda, PWE frente a TMM.
+        \item $m=2\dots6$ con los dos métodos; $m=7,8$ solo con TMM, por costo.
+        \item Conteos iguales a $F_{m-2}$ y error relativo de ancho $<5\times10^{-6}$.
+      \end{itemize}
     \end{column}
   \end{columns}
 \end{frame}
 
-\begin{frame}{Figuras 5 y 6: bordes de subbandas frente al orden y al ángulo}
+\begin{frame}{Figura 6: subbandas frente al ángulo}
   \begin{columns}[c]
-    \begin{column}{0.49\textwidth}
-      \figfull{pwe/figure_05/output/figure_05.pdf}
-    \end{column}
-    \begin{column}{0.49\textwidth}
-      \footnotesize
+    \begin{column}{0.50\textwidth}
       \centering
-      \includegraphics[width=\linewidth,height=0.38\textheight,keepaspectratio]{pwe/figure_06/output/figure_06.pdf}
-      \raggedright
+      \figfull{comparison/figure_06/output/figure_06_overlay.pdf}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
       \begin{itemize}
-        \item $m=2\dots6$ ($m=7,8$ solo con TMM, por costo); con el PWE se omite $\theta=0$, donde las
-          subbandas quedan a menos de $10^{-5}$~GHz de $\num$.
-        \item 70 casos comparados: error de borde $\le10^{-7}$~GHz y error relativo de ancho $\le4\times10^{-6}$.
+        \item Relleno: TMM; trazos blancos: bordes de cada subbanda con el PWE.
+        \item Con el PWE se omite $\theta=0$, donde las subbandas quedan a menos de $10^{-5}$~GHz de $\num$.
+        \item Entre las Figs.~5 y 6 hay 70 casos comparados: error de borde $<10^{-7}$~GHz y ningún
+          conteo distinto.
       \end{itemize}
     \end{column}
   \end{columns}
@@ -834,10 +851,10 @@ r = np.cos(k_phys).real                      # R_PWE
 
 \begin{frame}{Costo: por qué la TMM sigue siendo el método de producción}
   \begin{columns}[c]
-    \begin{column}{0.55\textwidth}
+    \begin{column}{0.62\textwidth}
       \figfull{pwe/convergence/output/cost_and_accuracy.pdf}
     \end{column}
-    \begin{column}{0.43\textwidth}
+    \begin{column}{0.36\textwidth}
       \small
       \begin{itemize}
         \item PWE: $O(N^3)$ por frecuencia con $N=2hF_m+1$ y $F_m\sim\phi^m$: el costo crece como $\phi^{3m}$.
@@ -881,7 +898,7 @@ r = np.cos(k_phys).real                      # R_PWE
     Formulación & producto de matrices $2\times2$ & autovalores de una matriz $2N\times2N$ \\
     Exactitud en 1D & exacta (redondeo de máquina) & error $\propto N^{-3}$ \\
     Costo por frecuencia & $O(m)$, microsegundos & $O(N^3)$, de ms a decenas de s \\
-    Junto a $\num$ & estable & falla en gaps profundos ($<10^{-6}$ GHz) \\
+    Junto a $\num$ & estable & falla a menos de $10^{-7}$~GHz de $\num$ \\
     Dispersión de Drude & trivial & obliga a la forma $k(\omega)$ \\
     Generaliza a 2D/3D & no & sí \\
     Papel en el proyecto & producción & verificación independiente \\
@@ -892,13 +909,13 @@ r = np.cos(k_phys).real                      # R_PWE
 \begin{frame}[fragile]{Cómo reproducir los resultados del PWE}
 \footnotesize
 \begin{verbatim}
-pip install -r requirements.txt && pip install -e .
+pip install -r requirements.txt                 # instala el paquete y sus dependencias
 
-python scripts/run_figure.py 3 --method pwe          # una figura con el PWE
-python scripts/run_figure.py all --method both        # las seis, TMM y PWE
-python scripts/pwe/run_all.py                         # PWE + estudios (PWE_WORKERS=n)
-python scripts/comparison/run_all.py                  # superposiciones y tablas TMM vs PWE
-make presentation-pwe                                 # esta presentación
+python scripts/run_figure.py 3 --method pwe     # una figura con el PWE
+python scripts/run_figure.py all --method both  # las seis, TMM y PWE
+python scripts/pwe/run_all.py                   # PWE + estudios (PWE_WORKERS=n)
+python scripts/comparison/run_all.py            # superposiciones y tablas TMM vs PWE
+make presentation-pwe                           # esta presentación
 \end{verbatim}
   \vspace{0.3em}
   \small

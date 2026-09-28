@@ -17,9 +17,10 @@ from matplotlib.patches import Arc, FancyArrowPatch, Rectangle
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
+from fibonacci_photonics.analysis.band_closure import close_band_edges  # noqa: E402
 from fibonacci_photonics.config import load_figure, load_spec  # noqa: E402
 from fibonacci_photonics.physics.effective_medium import average_epsilon_mu  # noqa: E402
-from fibonacci_photonics.physics.fibonacci import n_layers_a, n_layers_b, sequence  # noqa: E402
+from fibonacci_photonics.physics.fibonacci import n_layers_b, sequence  # noqa: E402
 from fibonacci_photonics.physics.units import omega_from_nu_ghz  # noqa: E402
 from fibonacci_photonics.solvers import TMMSolver  # noqa: E402
 from fibonacci_photonics.viz.dispersion import plot_dispersion_branches  # noqa: E402
@@ -72,12 +73,14 @@ def save(fig: plt.Figure, name: str) -> None:
     print("  ", name)
 
 
-def draw_word(ax, word: str, x0: float, y0: float, w: float = 1.0, h: float = 1.0, labels: bool = True) -> None:
+def draw_word(
+    ax, word: str, x0: float, y0: float, w: float = 1.0, h: float = 1.0, labels: bool = True, fontsize: float = 11
+) -> None:
     for i, layer in enumerate(word):
         color = COLOR_A if layer == "A" else COLOR_B
         ax.add_patch(Rectangle((x0 + i * w, y0), w, h, facecolor=color, edgecolor=EDGE, lw=1.0))
         if labels:
-            ax.text(x0 + (i + 0.5) * w, y0 + h / 2, layer, ha="center", va="center", fontsize=11, weight="bold")
+            ax.text(x0 + (i + 0.5) * w, y0 + h / 2, layer, ha="center", va="center", fontsize=fontsize, weight="bold")
 
 
 def fig_superred() -> None:
@@ -133,29 +136,21 @@ def fig_superred() -> None:
 
 def fig_fibonacci() -> None:
     """Construcción S_m = S_{m-1} S_{m-2}."""
-    fig, ax = plt.subplots(figsize=(11, 5.2))
-    rows = list(range(0, 7))
-    for row, m in enumerate(rows):
-        y = -row * 1.25
+    fig, ax = plt.subplots(figsize=(8.0, 6.0))
+    x0, w, n_col = 1.1, 0.8, 1.1 + 13 * 0.8 + 0.4
+    for m in range(7):
+        y = -m * 1.25
         word = sequence(m)
-        draw_word(ax, word, 3.2, y, w=0.8, h=0.9, labels=len(word) <= 13)
-        ax.text(0.0, y + 0.45, rf"$S_{m}$", va="center", fontsize=14, weight="bold")
+        draw_word(ax, word, x0, y, w=w, h=0.95, fontsize=13)
+        ax.text(0.0, y + 0.47, rf"$S_{m}$", va="center", fontsize=17, weight="bold")
         if m >= 2:
-            split = len(sequence(m - 1))
-            xs = 3.2 + split * 0.8
-            ax.plot([xs, xs], [y - 0.12, y + 1.02], color=RED, lw=2.2)
-            ax.text(1.0, y + 0.45, rf"$=S_{m-1}\,S_{m-2}$", va="center", fontsize=11, color="#555555")
-        ax.text(
-            3.2 + 13 * 0.8 + 0.6,
-            y + 0.45,
-            rf"$N_A={n_layers_a(m)}$   $N_B={n_layers_b(m)}$   $N={len(word)}$",
-            va="center",
-            fontsize=11,
-        )
-    ax.text(3.2, 1.35, "celda (palabra de Fibonacci)", fontsize=11, color="#555555")
-    ax.text(3.2 + 13 * 0.8 + 0.6, 1.35, r"capas A, capas B ($=F_{m-2}$), total", fontsize=11, color="#555555")
-    ax.set_xlim(-0.2, 3.2 + 13 * 0.8 + 6.2)
-    ax.set_ylim(-6 * 1.25 - 0.4, 1.9)
+            xs = x0 + len(sequence(m - 1)) * w
+            ax.plot([xs, xs], [y - 0.15, y + 1.1], color=RED, lw=3)
+        ax.text(n_col, y + 0.47, rf"$N_B={n_layers_b(m)}$", va="center", fontsize=14)
+    ax.text(x0, 1.3, "celda $S_m$ (la línea roja separa $S_{m-1}$ de $S_{m-2}$)", fontsize=13, color="#555555")
+    ax.text(n_col, 1.3, "capas B", fontsize=13, color="#555555")
+    ax.set_xlim(-0.1, n_col + 2.0)
+    ax.set_ylim(-6 * 1.25 - 0.3, 1.9)
     ax.axis("off")
     save(fig, "fibonacci_construccion")
 
@@ -291,7 +286,7 @@ def fig_semitraza() -> None:
     ax_r.set_title(r"paso 1: calcular $R_m$ con matrices $2\times2$", fontsize=12)
     ax_r.text(0, 4.75, r"$|R_m|\leq 1$", ha="center", color=RED, fontsize=12, bbox=dict(fc="white", ec="none", alpha=0.8))
 
-    plot_dispersion_branches(ax_k, scan, color=BLUE, linestyle="-", linewidth=1.6)
+    plot_closed(ax_k, scan, color=BLUE, linestyle="-", linewidth=1.6)
     ax_k.set_xlim(-1, 1)
     ax_k.set_xlabel(r"$kL_m/\pi = \pm\arccos(R_m)/\pi$")
     ax_k.set_title(r"paso 2: $\cos(kL_m)=R_m$ → bandas $\nu(k)$", fontsize=12)
@@ -302,11 +297,16 @@ def fig_semitraza() -> None:
     save(fig, "semitraza_bandas")
 
 
+def plot_closed(ax, scan, **style) -> None:
+    edges = close_band_edges(TMM_FIG1, scan)
+    plot_dispersion_branches(ax, scan, edge_nu_ghz=edges.nu_ghz, edge_k_lm_over_pi=edges.k_lm_over_pi, **style)
+
+
 def fig_leer_dispersion() -> None:
     nu = np.linspace(0.15, 5.0, 10000)
     scan = TMM_FIG1.scan(4, np.pi / 6, nu)
-    fig, ax = plt.subplots(figsize=(10.0, 5.0))
-    plot_dispersion_branches(ax, scan, color=BLUE, linestyle="-", linewidth=1.8)
+    fig, ax = plt.subplots(figsize=(6.4, 5.6))
+    plot_closed(ax, scan, color=BLUE, linestyle="-", linewidth=1.8)
 
     def point_on_band(nu_lo: float, nu_hi: float, k_target: float) -> tuple[float, float]:
         sel = scan.allowed & (nu > nu_lo) & (nu < nu_hi)
@@ -331,24 +331,24 @@ def fig_leer_dispersion() -> None:
     ax.annotate(
         "gap: no hay curva\n(frecuencia prohibida)",
         xy=(0.8, 0.5 * (top_gap[0] + top_gap[1])),
-        xytext=(1.06, 4.55),
-        fontsize=11,
+        xytext=(1.05, 4.55),
+        fontsize=12.5,
         annotation_clip=False,
         arrowprops=arrow,
     )
     ax.annotate(
         "banda: cada punto es un\nmodo que se propaga",
         xy=point_on_band(3.3, 4.0, 0.55),
-        xytext=(1.06, 3.55),
-        fontsize=11,
+        xytext=(1.05, 3.55),
+        fontsize=12.5,
         annotation_clip=False,
         arrowprops=arrow,
     )
     ax.annotate(
         "banda casi plana cerca de $\\nu_m$:\nmodo plasmon-polaritón\n(casi no se propaga)",
         xy=point_on_band(2.88, 2.97, 0.75),
-        xytext=(1.06, 2.2),
-        fontsize=11,
+        xytext=(1.05, 2.2),
+        fontsize=12.5,
         annotation_clip=False,
         arrowprops=arrow,
     )
@@ -400,7 +400,7 @@ def fig_convergencia() -> None:
     data = json.loads(path.read_text(encoding="utf-8"))
     n = np.array([d["n_points"] for d in data])
     w = np.array([d["width_ghz"] for d in data]) * 1e3
-    fig, ax = plt.subplots(figsize=(6.5, 4.0))
+    fig, ax = plt.subplots(figsize=(6.0, 4.6))
     ax.semilogx(n, w, "o-", color=BLUE, lw=2, ms=7)
     ax.axhline(w[-1], color="gray", ls="--", lw=1)
     ax.fill_between([n[0] * 0.8, n[-1] * 1.25], w[-1] * 0.998, w[-1] * 1.002, color=GREEN, alpha=0.18, label=r"$\pm 0.2\%$")

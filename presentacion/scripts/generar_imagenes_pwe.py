@@ -136,17 +136,17 @@ def fig_bloch() -> None:
     phase = np.exp(-1j * np.angle(h[0]))
     u, h = u * phase, h * phase
 
-    fig, axes = plt.subplots(2, 1, figsize=(10.0, 4.6), sharex=True)
+    fig, axes = plt.subplots(2, 1, figsize=(7.6, 5.4), sharex=True)
     for ax in axes:
         for j in range(4):
             ax.axvspan(j + BOOK_FRACTIONS[0], j + 1, color=COLOR_B, alpha=0.35, lw=0)
             ax.axvline(j, color=GRAY, lw=0.6, ls=":")
     axes[0].plot(z, h.real, color=GREEN, lw=1.5, label=r"$\mathrm{Re}\,h(z)$: periódica, se repite en cada celda")
-    axes[0].legend(loc="upper right", fontsize=9)
+    axes[0].legend(loc="upper center", fontsize=9, ncol=1, bbox_to_anchor=(0.5, 1.22), frameon=False)
     axes[0].set_yticks([])
     axes[1].plot(z, u.real, color=BLUE, lw=1.5, label=r"$\mathrm{Re}\,u(z)=\mathrm{Re}\,[h(z)\,e^{ikz}]$")
     axes[1].plot(z, np.cos(k * z) * np.abs(h).max(), color=RED, lw=1.0, ls="--", label=r"$\cos(kz)$")
-    axes[1].legend(loc="upper right", fontsize=9)
+    axes[1].legend(loc="upper center", fontsize=9, ncol=2, bbox_to_anchor=(0.5, 1.2), frameon=False)
     axes[1].set_yticks([])
     axes[1].set_xlabel(r"$z/a$  (sombreado: capa $\varepsilon_2=9$)")
     fig.suptitle(rf"Modo de Bloch, banda 2, $ka=0.4\pi$, $\omega a/2\pi c={freqs[0, 1]:.3f}$", fontsize=12)
@@ -199,7 +199,7 @@ def fig_toeplitz() -> None:
     omega = float(omega_from_nu_ghz(0.9))
     mu_b = complex(spec.medium_b.mu(omega))
     t = cell.toeplitz(1.0, mu_b)
-    fig, axes = plt.subplots(1, 2, figsize=(10.0, 4.2), gridspec_kw={"width_ratios": [1.0, 1.2]})
+    fig, axes = plt.subplots(1, 2, figsize=(9.0, 4.6), gridspec_kw={"width_ratios": [1.0, 1.2]})
     ax = axes[0]
     im = ax.imshow(np.log10(np.abs(t) + 1e-6), cmap="viridis", vmin=-3, vmax=0)
     ax.set_title(rf"$\log_{{10}}|[\![\mu]\!]_{{nn'}}|$, $S_4$, $\nu=0.9$ GHz, $N={cell.size}$", fontsize=12)
@@ -286,7 +286,7 @@ def fig_regla_li() -> None:
     chi = np.concatenate(chi_all)
     flux = du / chi
 
-    fig, axes = plt.subplots(3, 1, figsize=(9.5, 5.2), sharex=True)
+    fig, axes = plt.subplots(3, 1, figsize=(7.6, 5.8), sharex=True)
     for ax in axes:
         for j in range(2):
             ax.axvspan(j + d[0], j + 1, color=COLOR_B, alpha=0.35, lw=0)
