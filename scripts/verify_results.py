@@ -217,7 +217,7 @@ def check_reference(report: Report, reference: Path, tol: float) -> None:
             compare_values(load(new_path), load(old_path), rel.name, tol, diffs)
         else:
             with np.load(new_path) as new, np.load(old_path) as old:
-                for key in set(new.files) & set(old.files) - {"seconds"}:
+                for key in sorted(k for k in set(new.files) & set(old.files) if not TIMING_KEY.search(k)):
                     if new[key].shape != old[key].shape or not np.allclose(new[key], old[key], rtol=tol,
                                                                            atol=1e-12, equal_nan=True):
                         diffs.append(key)

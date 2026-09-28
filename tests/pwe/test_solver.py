@@ -7,7 +7,15 @@ from fibonacci_photonics.core.bands import omega_from_nu_ghz
 from fibonacci_photonics.core.electromagnetics import Polarization
 from fibonacci_photonics.core.params import spec_from_mapping
 from fibonacci_photonics.pwe.bloch import n_max_for, select_bloch_wavevector
-from fibonacci_photonics.pwe.dispersion import pwe_semitrace, scan_dispersion as pwe_scan
+from fibonacci_photonics.pwe.dispersion import (
+    EDGE,
+    EXTREMUM,
+    SemitraceEvaluator,
+    edge_brackets,
+    pwe_band_edges,
+    pwe_semitrace,
+    scan_dispersion as pwe_scan,
+)
 from fibonacci_photonics.pwe.eigenfrequency import (
     drude_qep_frequencies_ghz,
     mode_profile,
@@ -100,6 +108,70 @@ def test_parallel_matches_serial(paper_split_plasma):
     serial = pwe_semitrace(paper_split_plasma, 3, np.pi / 3, nu, harmonics_per_layer=4)
     parallel = pwe_semitrace(paper_split_plasma, 3, np.pi / 3, nu, harmonics_per_layer=4, workers=2)
     np.testing.assert_allclose(parallel, serial, rtol=0, atol=1e-12)
+
+
+@pytest.fixture
+def coarse_pwe_scan(paper_split_plasma):
+    nu = np.linspace(0.5, 5.0, 60)
+    return pwe_scan(paper_split_plasma, 3, np.pi / 3, nu, harmonics_per_layer=4)
+
+
+def test_band_edges_lie_on_unit_semitrace(paper_split_plasma, coarse_pwe_scan):
+    edges = pwe_band_edges(paper_split_plasma, 3, np.pi / 3, coarse_pwe_scan, harmonics_per_layer=4)
+    brackets = edge_brackets(coarse_pwe_scan)
+    assert edges.n_edges >= len(brackets) > 0
+    evaluator = SemitraceEvaluator(paper_split_plasma, 3, np.pi / 3, n_max=n_max_for(3, 4))
+    is_edge = edges.kind == EDGE
+    np.testing.assert_allclose(evaluator.many(edges.nu_ghz[is_edge]), edges.r[is_edge], rtol=0, atol=1e-5)
+    np.testing.assert_array_equal(edges.k_lm_over_pi[is_edge], np.where(edges.r[is_edge] > 0, 0.0, 1.0))
+    for inside, outside, _ in brackets:
+        lo, hi = sorted((inside, outside))
+        assert np.any(is_edge & (edges.nu_ghz >= lo) & (edges.nu_ghz <= hi))
+
+
+def test_extrema_close_touching_bands(paper_equal_plasma):
+    """Con impedancias iguales y θ = 0 no hay gaps: R = cos φ(ν) toca ±1 entre muestras."""
+    nu = np.linspace(0.5, 5.0, 80)
+    scan = pwe_scan(paper_equal_plasma, 3, 0.0, nu, harmonics_per_layer=4)
+    edges = pwe_band_edges(paper_equal_plasma, 3, 0.0, scan, harmonics_per_layer=4)
+    assert edges.n_extrema > 0
+    tips = edges.kind == EXTREMUM
+    k_tips = edges.k_lm_over_pi[tips]
+    assert np.all(np.minimum(k_tips, 1.0 - k_tips) < 1e-3)
+    sampled = np.where(scan.allowed, scan.k_lm_over_pi, np.nan)
+    assert np.nanmin(np.minimum(sampled, 1.0 - sampled)) > np.max(np.minimum(k_tips, 1.0 - k_tips))
+
+
+def test_band_edges_parallel_matches_serial(paper_split_plasma, coarse_pwe_scan):
+    serial = pwe_band_edges(paper_split_plasma, 3, np.pi / 3, coarse_pwe_scan, harmonics_per_layer=4)
+    parallel = pwe_band_edges(
+        paper_split_plasma, 3, np.pi / 3, coarse_pwe_scan, harmonics_per_layer=4, workers=2
+    )
+    np.testing.assert_allclose(parallel.nu_ghz, serial.nu_ghz, rtol=0, atol=1e-12)
+    np.testing.assert_array_equal(parallel.r, serial.r)
+
+
+def test_branches_close_at_band_edges(paper_split_plasma, coarse_pwe_scan):
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from fibonacci_photonics.plotting import plot_dispersion_branches
+
+    edges = pwe_band_edges(paper_split_plasma, 3, np.pi / 3, coarse_pwe_scan, harmonics_per_layer=4)
+    fig, ax = plt.subplots()
+    plot_dispersion_branches(ax, coarse_pwe_scan, color="k", linestyle="-",
+                             edge_nu_ghz=edges.nu_ghz, edge_k_lm_over_pi=edges.k_lm_over_pi)
+    k_line, nu_line = ax.lines[1].get_xdata(), ax.lines[1].get_ydata()
+    for nu_edge, k_edge in zip(edges.nu_ghz, edges.k_lm_over_pi, strict=True):
+        if not np.isfinite(k_edge):
+            continue
+        i = int(np.flatnonzero(nu_line == nu_edge)[0])
+        assert k_line[i] == k_edge
+        neighbours = k_line[max(i - 1, 0): i + 2]
+        assert np.count_nonzero(np.isfinite(neighbours)) >= 2
+    plt.close(fig)
 
 
 def test_selection_prefers_propagating_mode():

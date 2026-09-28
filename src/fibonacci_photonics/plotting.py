@@ -53,11 +53,18 @@ def apply_prb_style() -> None:
     )
 
 
-def _fill_isolated_nans(k: np.ndarray, max_dk: float) -> np.ndarray:
-    """Cierra huecos de un solo punto (artefacto de malla en k = 0)."""
+def _fill_isolated_nans(
+    k: np.ndarray, max_dk: float, protected: np.ndarray | None = None
+) -> np.ndarray:
+    """Cierra huecos de un solo punto (artefacto de malla en k = 0).
+
+    Las muestras ``protected`` no se rellenan: son gaps reales delimitados por bordes.
+    """
     k = np.asarray(k, dtype=float).copy()
     n = k.size
     for i in range(1, n - 1):
+        if protected is not None and protected[i]:
+            continue
         if np.isfinite(k[i]) or not np.isfinite(k[i - 1]) or not np.isfinite(k[i + 1]):
             continue
         if abs(k[i - 1] - k[i + 1]) < max_dk:
@@ -65,8 +72,15 @@ def _fill_isolated_nans(k: np.ndarray, max_dk: float) -> np.ndarray:
     return k
 
 
-def _polyline_with_breaks(k: np.ndarray, nu: np.ndarray, max_dk: float) -> tuple[np.ndarray, np.ndarray]:
-    """Inserta NaN cuando k salta, para no cruzar la zona de Brillouin con una recta."""
+def _polyline_with_breaks(
+    k: np.ndarray, nu: np.ndarray, max_dk: float, anchors: np.ndarray | None = None
+) -> tuple[np.ndarray, np.ndarray]:
+    """Inserta NaN cuando k salta, para no cruzar la zona de Brillouin con una recta.
+
+    Con ``anchors`` (bordes de banda exactos) no se corta un salto que forma parte
+    de un tramo monótono que termina en un borde: cerca del borde k ∝ √|ν − ν_borde|
+    varía rápido y, dentro de una banda, k es monótono hasta su borde.
+    """
     k = np.asarray(k, dtype=float)
     nu = np.asarray(nu, dtype=float)
     if k.size < 2:
@@ -74,8 +88,57 @@ def _polyline_with_breaks(k: np.ndarray, nu: np.ndarray, max_dk: float) -> tuple
     k_out = k.copy()
     finite = np.isfinite(k)
     jump = finite & np.concatenate(([False], np.abs(np.diff(k)) > max_dk))
+    if anchors is not None:
+        anchors = np.asarray(anchors, dtype=bool)
+        for i in np.flatnonzero(jump):
+            if _monotonic_run_to_anchor(k, anchors, i - 1, i):
+                jump[i] = False
     k_out[jump] = np.nan
     return k_out, nu
+
+
+def _monotonic_run_to_anchor(k: np.ndarray, anchors: np.ndarray, left: int, right: int) -> bool:
+    """¿El salto k[left] → k[right] sigue monótono, sin huecos, hasta un borde exacto?"""
+    step = np.sign(k[right] - k[left])
+    if step == 0.0:
+        return True
+    for start, direction in ((right, 1), (left, -1)):
+        i = start
+        while True:
+            if anchors[i]:
+                return True
+            j = i + direction
+            if j < 0 or j >= k.size or not np.isfinite(k[j]):
+                break
+            if np.sign(k[max(i, j)] - k[min(i, j)]) not in (step, 0.0):
+                break
+            i = j
+    return False
+
+
+def _merge_band_edges(
+    nu: np.ndarray,
+    k: np.ndarray,
+    edge_nu: np.ndarray,
+    edge_k: np.ndarray,
+    max_dk: float,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Intercala los puntos de cierre entre las muestras de la malla.
+
+    Un punto con k finito (borde o punta) es un ancla de la curva; uno con k = NaN
+    marca un gap oculto entre dos muestras y corta la curva.
+    """
+    protected = np.zeros(nu.size, dtype=bool)
+    idx = np.searchsorted(nu, edge_nu)
+    protected[np.clip(idx - 1, 0, nu.size - 1)] = True
+    protected[np.clip(idx, 0, nu.size - 1)] = True
+    protected &= ~np.isfinite(k)
+    k = _fill_isolated_nans(k, max_dk, protected)
+    nu_all = np.concatenate((nu, edge_nu))
+    k_all = np.concatenate((k, edge_k))
+    anchors = np.concatenate((np.zeros(nu.size, dtype=bool), np.isfinite(edge_k)))
+    order = np.argsort(nu_all, kind="stable")
+    return nu_all[order], k_all[order], anchors[order]
 
 
 def plot_dispersion_branches(
@@ -87,16 +150,33 @@ def plot_dispersion_branches(
     linewidth: float = 0.75,
     label: str | None = None,
     max_dk: float = 0.12,
+    edge_nu_ghz: np.ndarray | None = None,
+    edge_k_lm_over_pi: np.ndarray | None = None,
 ) -> None:
-    """Curvas ±k(ω) cortadas en gaps y en saltos de k (como en el PRB)."""
+    """Curvas ±k(ω) cortadas en gaps y en saltos de k (como en el PRB).
+
+    Con ``edge_nu_ghz``/``edge_k_lm_over_pi`` (bordes |R| = 1 y puntas refinadas)
+    cada banda se cierra en su borde exacto, k = 0 o k = ±1, en lugar de terminar
+    en la última muestra de la malla.
+    """
     nu = scan.nu_ghz
     k = scan.k_lm_over_pi
     allowed = scan.allowed
     if not np.any(allowed):
         return
     k_pos = np.where(allowed, k, np.nan)
-    k_pos = _fill_isolated_nans(k_pos, max_dk)
-    k_pos, nu_p = _polyline_with_breaks(k_pos, nu, max_dk)
+    if edge_nu_ghz is not None and np.size(edge_nu_ghz):
+        nu, k_pos, anchors = _merge_band_edges(
+            nu,
+            k_pos,
+            np.asarray(edge_nu_ghz, dtype=float),
+            np.asarray(edge_k_lm_over_pi, dtype=float),
+            max_dk,
+        )
+        k_pos, nu_p = _polyline_with_breaks(k_pos, nu, max_dk, anchors)
+    else:
+        k_pos = _fill_isolated_nans(k_pos, max_dk)
+        k_pos, nu_p = _polyline_with_breaks(k_pos, nu, max_dk)
     k_neg = -k_pos
     ax.plot(k_neg, nu_p, color=color, linestyle=linestyle, linewidth=linewidth, label=label)
     ax.plot(k_pos, nu_p, color=color, linestyle=linestyle, linewidth=linewidth)

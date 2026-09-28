@@ -730,8 +730,8 @@
       "layers": 3,
       "harmonics_per_layer": 16,
       "n_plane_waves": 97,
-      "pwe_seconds_per_frequency": 0.049345856667059707,
-      "tmm_seconds_per_frequency": 1.520799833087949e-05,
+      "pwe_seconds_per_frequency": 0.03322062816732796,
+      "tmm_seconds_per_frequency": 7.576810833901012e-06,
       "max_abs_delta_r": 1.5648618783004054e-06,
       "max_abs_r_tmm": 2.015931989759685
     },
@@ -740,8 +740,8 @@
       "layers": 5,
       "harmonics_per_layer": 16,
       "n_plane_waves": 161,
-      "pwe_seconds_per_frequency": 0.143387096166407,
-      "tmm_seconds_per_frequency": 1.4245053334889234e-05,
+      "pwe_seconds_per_frequency": 0.12582999333487047,
+      "tmm_seconds_per_frequency": 8.873389172852816e-06,
       "max_abs_delta_r": 1.9529831081888105e-05,
       "max_abs_r_tmm": 1.1354933042329731
     },
@@ -750,8 +750,8 @@
       "layers": 8,
       "harmonics_per_layer": 16,
       "n_plane_waves": 257,
-      "pwe_seconds_per_frequency": 0.48125145816690446,
-      "tmm_seconds_per_frequency": 1.0404820004623616e-05,
+      "pwe_seconds_per_frequency": 0.4493646170012653,
+      "tmm_seconds_per_frequency": 1.1899114166832684e-05,
       "max_abs_delta_r": 8.808586776254401e-05,
       "max_abs_r_tmm": 4.055774507853033
     },
@@ -760,8 +760,8 @@
       "layers": 13,
       "harmonics_per_layer": 8,
       "n_plane_waves": 209,
-      "pwe_seconds_per_frequency": 0.2239698489999379,
-      "tmm_seconds_per_frequency": 1.0284836668385347e-05,
+      "pwe_seconds_per_frequency": 0.2116263143325341,
+      "tmm_seconds_per_frequency": 9.599140830687248e-06,
       "max_abs_delta_r": 0.0028518383987998774,
       "max_abs_r_tmm": 7.194677604532116
     },
@@ -770,8 +770,8 @@
       "layers": 13,
       "harmonics_per_layer": 16,
       "n_plane_waves": 417,
-      "pwe_seconds_per_frequency": 1.3639161721657729,
-      "tmm_seconds_per_frequency": 1.0035676665817543e-05,
+      "pwe_seconds_per_frequency": 1.3908681401662761,
+      "tmm_seconds_per_frequency": 9.860933326611606e-06,
       "max_abs_delta_r": 0.00035280767697720705,
       "max_abs_r_tmm": 7.194677604532116
     },
@@ -780,8 +780,8 @@
       "layers": 21,
       "harmonics_per_layer": 8,
       "n_plane_waves": 337,
-      "pwe_seconds_per_frequency": 0.940372876333034,
-      "tmm_seconds_per_frequency": 1.1565881668502698e-05,
+      "pwe_seconds_per_frequency": 0.9267243594998339,
+      "tmm_seconds_per_frequency": 1.1144678343650108e-05,
       "max_abs_delta_r": 0.03320984658837034,
       "max_abs_r_tmm": 57.22448673713199
     },
@@ -790,8 +790,8 @@
       "layers": 21,
       "harmonics_per_layer": 16,
       "n_plane_waves": 673,
-      "pwe_seconds_per_frequency": 4.631323009332846,
-      "tmm_seconds_per_frequency": 2.4072533330278628e-05,
+      "pwe_seconds_per_frequency": 5.535470878833924,
+      "tmm_seconds_per_frequency": 1.1966360834776425e-05,
       "max_abs_delta_r": 0.004108948732223894,
       "max_abs_r_tmm": 57.22448673713199
     },
@@ -800,8 +800,8 @@
       "layers": 34,
       "harmonics_per_layer": 8,
       "n_plane_waves": 545,
-      "pwe_seconds_per_frequency": 2.3916155498324465,
-      "tmm_seconds_per_frequency": 1.0204715830089602e-05,
+      "pwe_seconds_per_frequency": 2.957694277499589,
+      "tmm_seconds_per_frequency": 1.1421412503599034e-05,
       "max_abs_delta_r": 0.8033334124824023,
       "max_abs_r_tmm": 819.3676918091243
     }

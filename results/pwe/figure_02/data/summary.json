@@ -10,7 +10,12 @@
       "m": 3,
       "expected": 1,
       "detected": 1,
-      "seconds": 5.745407787995646,
+      "seconds": 6.310154423001222,
+      "n_edges": 2,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 17,
+      "edge_seconds": 0.10093183199933264,
       "intervals": [
         {
           "nu_min": 2.0440146715571856,
@@ -23,7 +28,12 @@
       "m": 4,
       "expected": 2,
       "detected": 2,
-      "seconds": 16.044319478001853,
+      "seconds": 17.778890398010844,
+      "n_edges": 4,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 32,
+      "edge_seconds": 0.28361495900026057,
       "intervals": [
         {
           "nu_min": 2.083361120373458,
@@ -41,7 +51,12 @@
       "m": 5,
       "expected": 3,
       "detected": 3,
-      "seconds": 48.66207246900012,
+      "seconds": 51.65162903099554,
+      "n_edges": 6,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 49,
+      "edge_seconds": 0.8992291460017441,
       "intervals": [
         {
           "nu_min": 2.0700233411137043,
@@ -64,7 +79,12 @@
       "m": 6,
       "expected": 5,
       "detected": 5,
-      "seconds": 167.13472864899813,
+      "seconds": 177.39238466200186,
+      "n_edges": 10,
+      "n_extrema": 0,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 84,
+      "edge_seconds": 5.277701602011803,
       "intervals": [
         {
           "nu_min": 2.0753584528176057,

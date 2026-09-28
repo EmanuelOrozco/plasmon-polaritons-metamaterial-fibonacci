@@ -10,57 +10,97 @@
       "m": 3,
       "theta": 0.0,
       "theta_label": "0",
-      "seconds": 3.0584427709982265,
-      "n_allowed": 1500
+      "seconds": 3.265157216999796,
+      "n_allowed": 1500,
+      "n_edges": 0,
+      "n_extrema": 6,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 84,
+      "edge_seconds": 0.251885816003778
     },
     {
       "m": 4,
       "theta": 0.0,
       "theta_label": "0",
-      "seconds": 7.665795683002216,
-      "n_allowed": 1500
+      "seconds": 8.234852588997455,
+      "n_allowed": 1500,
+      "n_edges": 0,
+      "n_extrema": 11,
+      "n_hidden_gaps": 0,
+      "edge_evaluations": 137,
+      "edge_seconds": 0.8646675069903722
     },
     {
       "m": 3,
       "theta": 0.2617993877991494,
       "theta_label": "pi/12",
-      "seconds": 2.4484941519986023,
-      "n_allowed": 1443
+      "seconds": 2.926937693002401,
+      "n_allowed": 1443,
+      "n_edges": 13,
+      "n_extrema": 0,
+      "n_hidden_gaps": 3,
+      "edge_evaluations": 220,
+      "edge_seconds": 0.7593707890046062
     },
     {
       "m": 4,
       "theta": 0.2617993877991494,
       "theta_label": "pi/12",
-      "seconds": 7.836979425999743,
-      "n_allowed": 1428
+      "seconds": 8.327891830005683,
+      "n_allowed": 1428,
+      "n_edges": 24,
+      "n_extrema": 1,
+      "n_hidden_gaps": 7,
+      "edge_evaluations": 445,
+      "edge_seconds": 2.865191886012326
     },
     {
       "m": 3,
       "theta": 0.5235987755982988,
       "theta_label": "pi/6",
-      "seconds": 2.4829860190002364,
-      "n_allowed": 1366
+      "seconds": 2.6371871960000135,
+      "n_allowed": 1366,
+      "n_edges": 12,
+      "n_extrema": 0,
+      "n_hidden_gaps": 2,
+      "edge_evaluations": 174,
+      "edge_seconds": 0.6130462870060001
     },
     {
       "m": 4,
       "theta": 0.5235987755982988,
       "theta_label": "pi/6",
-      "seconds": 7.9510363369990955,
-      "n_allowed": 1252
+      "seconds": 8.83123879499908,
+      "n_allowed": 1252,
+      "n_edges": 26,
+      "n_extrema": 0,
+      "n_hidden_gaps": 6,
+      "edge_evaluations": 411,
+      "edge_seconds": 2.785418286002823
     },
     {
       "m": 3,
       "theta": 1.0471975511965976,
       "theta_label": "pi/3",
-      "seconds": 2.573371006998059,
-      "n_allowed": 751
+      "seconds": 2.72734756799764,
+      "n_allowed": 751,
+      "n_edges": 12,
+      "n_extrema": 0,
+      "n_hidden_gaps": 1,
+      "edge_evaluations": 144,
+      "edge_seconds": 0.6073996869963594
     },
     {
       "m": 4,
       "theta": 1.0471975511965976,
       "theta_label": "pi/3",
-      "seconds": 8.009490545999142,
-      "n_allowed": 709
+      "seconds": 8.781174776013358,
+      "n_allowed": 709,
+      "n_edges": 23,
+      "n_extrema": 0,
+      "n_hidden_gaps": 3,
+      "edge_evaluations": 314,
+      "edge_seconds": 2.401969355996698
     }
   ],
   "outputs": {

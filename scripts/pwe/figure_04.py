@@ -6,7 +6,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from _shared import scan_arrays, timed_pwe_scan
+from _shared import edge_record, edge_text, scan_arrays, timed_pwe_solution
 from _common import (
     dump_json,
     load_pwe_config,
@@ -41,9 +41,11 @@ def main() -> None:
     for ax, (m, label, theta, color, panel) in zip(axes.ravel(), PANELS, strict=True):
         window = windows[label]
         nu = np.linspace(window[0], window[1], numerics["frequency_points"])
-        scan, seconds = timed_pwe_scan(spec, m, theta, nu, polarization, numerics)
-        save_scan_npz(dirs["data"] / f"m{m}_{label.replace('/', '_')}.npz", **scan_arrays(scan, seconds))
-        plot_dispersion_branches(ax, scan, color=color, linestyle="-", linewidth=1.0)
+        scan, edges, seconds, edge_seconds = timed_pwe_solution(spec, m, theta, nu, polarization, numerics)
+        save_scan_npz(dirs["data"] / f"m{m}_{label.replace('/', '_')}.npz",
+                      **scan_arrays(scan, seconds, edges, edge_seconds))
+        plot_dispersion_branches(ax, scan, color=color, linestyle="-", linewidth=1.0,
+                                 edge_nu_ghz=edges.nu_ghz, edge_k_lm_over_pi=edges.k_lm_over_pi)
         format_dispersion_axes(ax, nu_min=window[0], nu_max=window[1], panel=panel,
                                theta_label=THETA_TEX[label], m_label=str(m))
         report = detect_plasmon_modes(scan, nu_min_ghz=window[0], nu_max_ghz=window[1], min_points=4)
@@ -54,13 +56,15 @@ def main() -> None:
                 "theta": label,
                 "detected": len(intervals),
                 "seconds": seconds,
+                **edge_record(edges, edge_seconds),
                 "intervals": [
                     {"nu_min": i.nu_min_ghz, "nu_max": i.nu_max_ghz, "width": i.bandwidth_ghz}
                     for i in intervals
                 ],
             }
         )
-        print(f"  m={m} θ={label}: {len(intervals)} subbandas, {seconds:.1f} s")
+        print(f"  m={m} θ={label}: {len(intervals)} subbandas, {seconds:.1f} s, "
+              f"{edge_text(edges, edge_seconds)}")
 
     fig.tight_layout()
     paths = save_figure(fig, dirs["output"], "figure_04", formats=("pdf", "png"))
@@ -71,7 +75,8 @@ def main() -> None:
     write_figure_readme(
         dirs["root"] / "README.md",
         "Figura 4 (PWE)",
-        "Zoom de modos plasmon-polaritón con ondas planas. m=3: 1 subbanda; m=4: 2.\n\n"
+        "Zoom de modos plasmon-polaritón con ondas planas. m=3: 1 subbanda; m=4: 2. "
+        "Los bordes de banda (k = 0 y k = ±1) se refinan con Brent sobre R_PWE.\n\n"
         "Script: `python scripts/pwe/figure_04.py`",
     )
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import matplotlib.pyplot as plt
 import numpy as np
 
-from _shared import scan_arrays, timed_pwe_scan  # noqa: F401  (ajusta sys.path)
+from _shared import edge_record, edge_text, scan_arrays, timed_pwe_solution  # noqa: F401  (ajusta sys.path)
 from _common import (
     dump_json,
     load_pwe_config,
@@ -40,12 +40,14 @@ def run(figure_id: str, title: str, description: str) -> None:
         axes.ravel(), physics["thetas_rad"], physics["theta_labels"], "abcd", strict=True
     ):
         for m in physics["fibonacci_orders"]:
-            scan, seconds = timed_pwe_scan(spec, m, theta, nu, polarization, numerics)
-            save_scan_npz(dirs["data"] / f"m{m}_theta_{label.replace('/', '_')}.npz", **scan_arrays(scan, seconds))
-            plot_dispersion_branches(ax, scan, **styles[m])
+            scan, edges, seconds, edge_seconds = timed_pwe_solution(spec, m, theta, nu, polarization, numerics)
+            save_scan_npz(dirs["data"] / f"m{m}_theta_{label.replace('/', '_')}.npz",
+                          **scan_arrays(scan, seconds, edges, edge_seconds))
+            plot_dispersion_branches(ax, scan, edge_nu_ghz=edges.nu_ghz,
+                                     edge_k_lm_over_pi=edges.k_lm_over_pi, **styles[m])
             runs.append({"m": m, "theta": theta, "theta_label": label, "seconds": seconds,
-                         "n_allowed": int(scan.allowed.sum())})
-            print(f"  m={m} θ={label}: {seconds:.1f} s")
+                         "n_allowed": int(scan.allowed.sum()), **edge_record(edges, edge_seconds)})
+            print(f"  m={m} θ={label}: {seconds:.1f} s, {edge_text(edges, edge_seconds)}")
         format_dispersion_axes(ax, nu_min=0.0, nu_max=5.0, panel=panel, theta_label=label)
     fig.tight_layout()
     paths = save_figure(fig, dirs["output"], figure_id, formats=("pdf", "png"))
@@ -56,7 +58,8 @@ def run(figure_id: str, title: str, description: str) -> None:
     write_figure_readme(
         dirs["root"] / "README.md",
         f"{title} (PWE)",
-        f"{description}\n\nCalculada con el método de ondas planas, forma k(ω) y regla inversa.\n\n"
+        f"{description}\n\nCalculada con el método de ondas planas, forma k(ω) y regla inversa; "
+        "los bordes de banda (k = 0 y k = ±1) se refinan con Brent sobre R_PWE.\n\n"
         f"Script: `python scripts/pwe/{figure_id}.py`",
     )
     print(title, "(PWE) escrita en", dirs["output"])
